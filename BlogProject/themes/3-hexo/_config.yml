@@ -11,7 +11,7 @@ blog_path: /
 link:
   theme: color # 链接样式，color: 彩色图标  white: 黑白图标
   items:
-    rss: 
+    rss: /atom.xml
     github: https://github.com/xinzhuzi
     facebook: 
     twitter:
@@ -31,7 +31,7 @@ link:
 
 ##########多作者模式############
 author:
-  on: false
+  on: true
   authors:
     author1: 新诸子
     author2: 诸子百家-谁的天下?
