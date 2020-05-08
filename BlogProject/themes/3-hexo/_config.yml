@@ -11,18 +11,18 @@ blog_path: /
 link:
   theme: color # 链接样式，color: 彩色图标  white: 黑白图标
   items:
-    rss: /atom.xml
+    rss: 
     github: https://github.com/xinzhuzi
-    facebook: https://www.facebook.com/faker.tops
+    facebook: 
     twitter:
     linkedin:
-    instagram: https://www.facebook.com/faker.tops
-    reddit: https://www.reddit.com/user/xinzhuzi/
-    weibo: http://weibo.com/u/2307534817
-    jianshu: https://www.jianshu.com/u/ff56736de7cf
-    zhihu: https://www.zhihu.com/people/jaytp/activities
+    instagram: 
+    reddit: 
+    weibo: 
+    jianshu: https://www.jianshu.com/u/e7aab68810b1
+    zhihu: 
     csdn:
-    oschina: https://my.oschina.net/xinzhuzi
+    oschina: 
     juejin:
     email: 1487842110@qq.com
     qq: 1487842110
