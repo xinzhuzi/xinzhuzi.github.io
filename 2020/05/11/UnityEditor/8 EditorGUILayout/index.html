@@ -2,9 +2,9 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Hexo 的简单操作 | 新诸子</title>
-  <meta name="keywords" content=" hexo ">
-  <meta name="description" content="Hexo 的简单操作 | 新诸子">
+  <title>UnityEditor/8 EditorGUILayout | 新诸子</title>
+  <meta name="keywords" content="">
+  <meta name="description" content="UnityEditor/8 EditorGUILayout | 新诸子">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="description" content="页面未找到！">
 <meta property="og:type" content="website">
@@ -427,36 +427,24 @@
 </aside>
 <div class="post">
     <div class="pjax">
-        <article id="post-Hexo 的简单操作" class="article article-type-post" itemscope itemprop="blogPost">
+        <article id="post-UnityEditor/8 EditorGUILayout" class="article article-type-post" itemscope itemprop="blogPost">
     
-        <h1 class="article-title">Hexo 的简单操作</h1>
+        <h1 class="article-title">UnityEditor/8 EditorGUILayout</h1>
     
     <div class="article-meta">
         
         
         
-        <span class="book">
-            
-                <a  data-rel="博客">博客</a>
-            
-        </span>
-        
-        
-        <span class="tag">
-            
-            <a class="color5">hexo</a>
-            
-        </span>
         
     </div>
     <div class="article-meta">
         
-            Created At : <time class="date" title='更新时间: 2020-05-09 13:14:18'>2020-05-08 11:41</time>
+            Created At : <time class="date" title='更新时间: 2020-05-11 19:01:15'>2020-05-11 19:01</time>
         
     </div>
     <div class="article-meta">
         
-        <span>字数:75</span>
+        <span>字数:948</span>
         
         
         <span id="busuanzi_container_page_pv">
@@ -486,7 +474,7 @@
     
     <div class="toc-ref">
     
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Quick-Start"><span class="toc-text">Quick Start</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Create-a-new-post"><span class="toc-text">Create a new post</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Run-server"><span class="toc-text">Run server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Generate-static-files"><span class="toc-text">Generate static files</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Deploy-to-remote-sites"><span class="toc-text">Deploy to remote sites</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#EditorGUILayout-在一个脚本的检视面板上进行提示可视化代码编写"><span class="toc-text">EditorGUILayout 在一个脚本的检视面板上进行提示可视化代码编写.</span></a></li></ol>
     
 <style>
     .left-col .switch-btn,
@@ -502,16 +490,155 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><pre><code class="bash">$ hexo new &quot;My New Post&quot;</code></pre>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><pre><code class="bash">$ hexo server</code></pre>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><pre><code class="bash">$ hexo generate</code></pre>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><pre><code class="bash">$ hexo deploy</code></pre>
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+        <h1 id="EditorGUILayout-在一个脚本的检视面板上进行提示可视化代码编写"><a href="#EditorGUILayout-在一个脚本的检视面板上进行提示可视化代码编写" class="headerlink" title="EditorGUILayout 在一个脚本的检视面板上进行提示可视化代码编写."></a>EditorGUILayout 在一个脚本的检视面板上进行提示可视化代码编写.</h1><ul>
+<li>1:使用编辑器编写一个简单的展示界面</li>
+<li>2:写一个mono脚本,挂在到一个game object上面<pre><code>using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+</code></pre></li>
+</ul>
+<p>public class Player : MonoBehaviour<br>{<br>    public int id;</p>
+<pre><code>public string playerName;
+public string backStory;
+public float health;
+public float damage;
 
+public float weaponDamage1, weaponDamage2;
+
+public string shoeName;
+public int shoeSize;
+public string shoeType;
+
+void Start()
+{
+    health = 50;
+}</code></pre><p>}</p>
+<pre><code>* 3:写一个PlayerInspector脚本,放在Editor目录下面</code></pre><p>using System.Collections;<br>using System.Collections.Generic;<br>using UnityEngine;<br>using UnityEditor;</p>
+<p>//CustomEditor(typeof()) 用于关联你要自定义的脚本<br>[CustomEditor(typeof(Player))]<br>//必须要让该类继承自Editor<br>public class PlayerInspector : Editor<br>{<br>    Player player;<br>    bool showWeapons;<br>    private void OnEnable()<br>    {<br>        //获取当前编辑自定义Inspector的对象<br>        player = target as Player;<br>    }</p>
+<pre><code>//执行这一个函数来一个自定义检视面板
+public override void OnInspectorGUI()
+{
+    //base.OnInspectorGUI();//有这个API,表示原生的unity自带的自动展示出来的布局,有这个不需要下面的代码
+    EditorGUILayout.BeginVertical();
+
+    {
+        //空2行
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+    }
+
+
+    //绘制Player的基本信息
+    EditorGUILayout.LabelField(&quot;基本信息&quot;);
+    player.id = EditorGUILayout.IntField(&quot;Player ID&quot;, player.id);
+    player.playerName = EditorGUILayout.TextField(&quot;PlayerName&quot;, player.playerName);
+
+    {
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+    }
+
+    //绘制Player的背景故事
+    EditorGUILayout.LabelField(&quot;背景故事&quot;);
+    player.backStory = EditorGUILayout.TextArea(player.backStory,GUILayout.MinHeight(60));
+
+    {
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+    }
+
+    //使用滑块制作Player的生命值        
+    player.health = EditorGUILayout.Slider(&quot;生命值:&quot;, player.health, 0, 100);
+    Color color = Color.gray;
+    if (player.health&lt;20)
+    {
+        color = Color.red;
+    }
+    else if (player.health&gt;80)
+    {
+        color = Color.green;
+    }
+    GUI.color = color;
+    //指定生命值的宽高
+    Rect progressRect = GUILayoutUtility.GetRect(50, 50);
+    //绘制生命条
+    EditorGUI.ProgressBar(progressRect, player.health, &quot;生命值:&quot;);
+    //用此处理,防止上面的颜色影响下面的颜色
+    GUI.color = Color.white;
+
+    {
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+    }
+
+    //使用滑块绘制伤害值
+    player.damage = EditorGUILayout.Slider(&quot;Damage&quot;, player.damage, 0, 20);
+
+    //根据伤害值的大小设置显示的类型和伤害语
+    if (player.damage&lt;5)
+    {
+        EditorGUILayout.HelpBox(&quot;伤害太低,打不动敌人&quot;, MessageType.Error);
+    }
+    else if (player.damage&gt;15)
+    {
+        EditorGUILayout.HelpBox(&quot;伤害太高,对玩家不利于成长&quot;, MessageType.Warning);
+    }
+    else
+    {
+        EditorGUILayout.HelpBox(&quot;伤害适中&quot;, MessageType.Info);
+    }
+
+    {
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+    }
+
+
+    //设置内容折叠
+    showWeapons = EditorGUILayout.Foldout(showWeapons, &quot;Weapons&quot;);
+    if (showWeapons)
+    {
+        player.weaponDamage1 = EditorGUILayout.FloatField(&quot;武器伤害1&quot;, player.weaponDamage1);
+        player.weaponDamage2 = EditorGUILayout.FloatField(&quot;武器伤害1&quot;, player.weaponDamage2);
+    }
+
+    {
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+    }
+
+    //绘制鞋子的信息
+    EditorGUILayout.LabelField(&quot;鞋子&quot;);
+    EditorGUILayout.BeginHorizontal();
+    EditorGUILayout.LabelField(&quot;名字&quot;, GUILayout.MaxWidth(60));
+    player.shoeName = EditorGUILayout.TextField(player.shoeName);
+    EditorGUILayout.LabelField(&quot;尺寸&quot;, GUILayout.MaxWidth(60));
+    player.shoeSize = EditorGUILayout.IntField(player.shoeSize,GUILayout.MaxWidth(120));
+    EditorGUILayout.LabelField(&quot;类型&quot;, GUILayout.MaxWidth(60));
+    player.shoeType = EditorGUILayout.TextField(player.shoeType);
+    EditorGUILayout.EndHorizontal();
+
+    EditorGUILayout.EndVertical();
+}</code></pre><p>}</p>
+<pre><code>
+* 4:分析关键词:Vertical-垂直布局,在这对兄弟里面做的布局都是以垂直方向来排列的。</code></pre><p>EditorGUILayout.BeginVertical();<br>//code<br>EditorGUILayout.EndVertical();</p>
+<pre><code>* 5:Horizontal-水平布局,在这对兄弟里面做的布局都是以水平方向来排列的。</code></pre><p>EditorGUILayout.BeginHorizontal();<br>//code<br>EditorGUILayout.EndHorizontal();</p>
+<pre><code>* 6:它们的规律就是方法名都是以 Field 结尾，大伙们可以根据绘制的类型选择相对应的方法。 一般括号里面的参数，第一个为绘制该字段的名字（string 类型），第二个为绘制该字段的值，如下所示： 
+</code></pre><p>EditorGUILayout.LabelField()标签字段<br>EditorGUILayout.IntField() 整数字段<br>EditorGUILayout.FloatField() 浮点数字段<br>EditorGUILayout.TextField() 文本字段<br>EditorGUILayout.Vector2Field() 二维向量字段<br>EditorGUILayout.Vector3Field() 三维向量字段<br>EditorGUILayout.Vector4Field() 四维向量字段<br>EditorGUILayout.ColorField() 颜色字段<br>EditorGUILayout.Slider()滑块进度条</p>
+<pre><code>* 7:EditorGUILayout.Slider() 制作一个滑动条用户可以拖动来改变值，在最小和最大值之间,
+GUILayoutUtility获取Rect的通用方法
+EditorGUI.ProgressBar（）用于绘制一个进度条，从上可知：
+第一个参数是设置进度条的大小，类型是一个 Rect。 
+第二个参数是设置显示的值， 
+第三个参数是设置进度条的名字
+* 8:EditorGUILayout.HelpBox(),帮助框/提示框
+* 
+</code></pre>
       
        <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 1487842110@qq.com </span>
     </div>
@@ -524,12 +651,12 @@
 
 
 <div class="article_copyright">
-    <p><span class="copy-title">Title:</span>Hexo 的简单操作</p>
-    <p><span class="copy-title">文章字数:</span><span class="post-count">75</span></p>
+    <p><span class="copy-title">Title:</span>UnityEditor/8 EditorGUILayout</p>
+    <p><span class="copy-title">文章字数:</span><span class="post-count">948</span></p>
     <p><span class="copy-title">Author:</span><a  title="诸子百家-谁的天下?">诸子百家-谁的天下?</a></p>
-    <p><span class="copy-title">Created At:</span>2020-05-08, 11:41:32</p>
-    <p><span class="copy-title">Updated At:</span>2020-05-09, 13:14:18</p>
-    <span class="copy-title">Url:</span><a class="post-url" href="/2020/05/08/Hexo%20%E7%9A%84%E7%AE%80%E5%8D%95%E6%93%8D%E4%BD%9C/" title="Hexo 的简单操作">http://yoursite.com/2020/05/08/Hexo%20%E7%9A%84%E7%AE%80%E5%8D%95%E6%93%8D%E4%BD%9C/</a>
+    <p><span class="copy-title">Created At:</span>2020-05-11, 19:01:15</p>
+    <p><span class="copy-title">Updated At:</span>2020-05-11, 19:01:15</p>
+    <span class="copy-title">Url:</span><a class="post-url" href="/2020/05/11/UnityEditor/8%20EditorGUILayout/" title="UnityEditor/8 EditorGUILayout">http://yoursite.com/2020/05/11/UnityEditor/8%20EditorGUILayout/</a>
     <p>
         <span class="copy-title">Copyright:</span><i class="fa fa-creative-commons"></i> <a rel="license noopener" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
     </p>

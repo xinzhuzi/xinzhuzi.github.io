@@ -2,9 +2,9 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Hexo 的简单操作 | 新诸子</title>
-  <meta name="keywords" content=" hexo ">
-  <meta name="description" content="Hexo 的简单操作 | 新诸子">
+  <title>UnityEditor/5 EditorWindow | 新诸子</title>
+  <meta name="keywords" content="">
+  <meta name="description" content="UnityEditor/5 EditorWindow | 新诸子">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="description" content="页面未找到！">
 <meta property="og:type" content="website">
@@ -427,36 +427,24 @@
 </aside>
 <div class="post">
     <div class="pjax">
-        <article id="post-Hexo 的简单操作" class="article article-type-post" itemscope itemprop="blogPost">
+        <article id="post-UnityEditor/5 EditorWindow" class="article article-type-post" itemscope itemprop="blogPost">
     
-        <h1 class="article-title">Hexo 的简单操作</h1>
+        <h1 class="article-title">UnityEditor/5 EditorWindow</h1>
     
     <div class="article-meta">
         
         
         
-        <span class="book">
-            
-                <a  data-rel="博客">博客</a>
-            
-        </span>
-        
-        
-        <span class="tag">
-            
-            <a class="color5">hexo</a>
-            
-        </span>
         
     </div>
     <div class="article-meta">
         
-            Created At : <time class="date" title='更新时间: 2020-05-09 13:14:18'>2020-05-08 11:41</time>
+            Created At : <time class="date" title='更新时间: 2020-05-11 19:01:15'>2020-05-11 19:01</time>
         
     </div>
     <div class="article-meta">
         
-        <span>字数:75</span>
+        <span>字数:649</span>
         
         
         <span id="busuanzi_container_page_pv">
@@ -486,7 +474,7 @@
     
     <div class="toc-ref">
     
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Quick-Start"><span class="toc-text">Quick Start</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Create-a-new-post"><span class="toc-text">Create a new post</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Run-server"><span class="toc-text">Run server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Generate-static-files"><span class="toc-text">Generate static files</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Deploy-to-remote-sites"><span class="toc-text">Deploy to remote sites</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#EditorWindow-编辑器窗口"><span class="toc-text">EditorWindow 编辑器窗口</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#编写弹出窗口代码"><span class="toc-text">编写弹出窗口代码</span></a></li></ol>
     
 <style>
     .left-col .switch-btn,
@@ -502,15 +490,209 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><pre><code class="bash">$ hexo new &quot;My New Post&quot;</code></pre>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><pre><code class="bash">$ hexo server</code></pre>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><pre><code class="bash">$ hexo generate</code></pre>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><pre><code class="bash">$ hexo deploy</code></pre>
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+        <h1 id="EditorWindow-编辑器窗口"><a href="#EditorWindow-编辑器窗口" class="headerlink" title="EditorWindow 编辑器窗口"></a>EditorWindow 编辑器窗口</h1><ul>
+<li>1:介绍,unity中的场景窗口、游戏窗口、电影窗口等，所有这些都是EditorWindow。Unity编辑是集合了具有各种功能的editor窗而成的。</li>
+</ul>
+<h1 id="编写弹出窗口代码"><a href="#编写弹出窗口代码" class="headerlink" title="编写弹出窗口代码"></a>编写弹出窗口代码</h1><ul>
+<li><p>1:第一种写法弹出窗口</p>
+<pre><code>  public class TestEditorWindow : EditorWindow
+  {
+      static TestEditorWindow testWindow;
+
+      [MenuItem(&quot;Tools/Example&quot;)]
+      static void Open()
+      {
+          if (testWindow == null)
+          {
+              testWindow = CreateInstance&lt;TestEditorWindow&gt;();
+          }
+          testWindow.Show();
+      }
+  }</code></pre></li>
+<li><p>2:第二种写法,GetWindow方法是上面写的一堆API的集合,并且缓存了一个 TestEditorWindow 再次获取并不会重新生成一个</p>
+<pre><code>  public class TestEditorWindow : EditorWindow
+  {
+      static TestEditorWindow testWindow;
+
+      [MenuItem(&quot;Tools/Example&quot;)]
+      static void Open()
+      {
+          GetWindow&lt;TestEditorWindow&gt;();
+      }
+  }</code></pre></li>
+<li><p>3: EditorWindow.ShowUtility 工具窗口将总是在标准窗口的前面，并在用户切换另一个应用程序时隐藏。</p>
+<pre><code>      if (exampleWindow == null) {
+          exampleWindow = CreateInstance&lt;Example&gt; ();
+      }
+      exampleWindow.ShowUtility ();</code></pre></li>
+<li><p>4:  EditorWindow.ShowPopup 没有关闭按钮,按下esc键关闭</p>
+<pre><code>  public class TestEditorWindow : EditorWindow
+  {
+      static TestEditorWindow testWindow;
+
+      [MenuItem(&quot;Tools/Example&quot;)]
+      static void Open()
+      {
+
+          if (testWindow == null)
+          {
+              testWindow = CreateInstance&lt;TestEditorWindow&gt;();
+          }
+          testWindow.ShowPopup();
+      }
+
+</code></pre></li>
+</ul>
+<pre><code>    void OnGUI()
+    {
+        if (Event.current.keyCode == KeyCode.Escape)
+        {
+            testWindow.Close();
+        }
+    }
+}</code></pre><pre><code>* 5: PopupWindow,在Editor中再弹出一个窗口</code></pre><pre><code>public class TestPopupWindow : EditorWindow
+{
+    static TestPopupWindow testWindow;
+    [MenuItem(&quot;Tools/Pop&quot;)]
+    static void Open()
+    {
+        GetWindow&lt;TestPopupWindow&gt;();
+    }
+
+    ExamplePupupContent popupContent = new ExamplePupupContent();
+
+    void OnGUI()
+    {
+        if (GUILayout.Button(&quot;PopupContent&quot;, GUILayout.Width(128)))
+        {
+            var activatorRect = GUILayoutUtility.GetLastRect();
+            PopupWindow.Show(activatorRect, popupContent);
+        }
+    }
+}
+
+public class ExamplePupupContent : PopupWindowContent
+{
+    public override void OnGUI(Rect rect)
+    {
+        EditorGUILayout.LabelField(&quot;Lebel&quot;);
+    }
+
+    public override void OnOpen()
+    {
+        Debug.Log(&quot;打开pop窗口&quot;);
+    }
+
+    public override void OnClose()
+    {
+        Debug.Log(&quot;关闭pop窗口&quot;);
+    }
+
+    public override Vector2 GetWindowSize()
+    {
+        return new Vector2(300, 100);
+    }
+}</code></pre><pre><code>* 6:点击其他区域会关闭</code></pre><pre><code>public class Example : EditorWindow
+{
+    static Example exampleWindow;
+
+    [MenuItem(&quot;Tools/Drop&quot;)]
+    static void Open()
+    {
+        if (exampleWindow == null)
+        {
+            exampleWindow = CreateInstance&lt;Example&gt;();
+        }
+
+        var buttonRect = new Rect(100, 100, 300, 100);
+        var windowSize = new Vector2(300, 100);
+        exampleWindow.ShowAsDropDown(buttonRect, windowSize);
+    }
+}</code></pre><pre><code>* 7:ScriptableWizard简单制作</code></pre><p>public class Example1 : ScriptableWizard<br>{<br>    [MenuItem(“Tools/ScriptableWizard”)]<br>    static void Open()<br>    {<br>        DisplayWizard<Example1>(“Example Wizard”);<br>    }</p>
+<pre><code>void OnWizardCreate()
+{
+    new GameObject(&quot;gameObjectName&quot;);
+}
+void OnWizardUpdate()
+{
+    Debug.Log(&quot;Update&quot;);
+}
+protected override bool DrawWizardGUI()
+{
+    EditorGUILayout.LabelField(&quot;Label&quot;);
+    return true;
+}
+void OnWizardOtherButton()
+{
+    var gameObject = GameObject.Find(&quot;gameObjectName&quot;);
+
+    if (gameObject == null)
+    {
+        Debug.Log(&quot;找不到&quot;);
+    }
+}</code></pre><p>}</p>
+<pre><code>* 8:PreferenceItem是用于在Unity Preferences中添加菜单的功能。Unity Preferences是为了对Unity编辑产生影响的设定。</code></pre><pre><code>using UnityEditor;
+
+public class Example
+{
+    [PreferenceItem(&quot;Example&quot;)]
+    static void OnPreferenceGUI ()
+    {
+
+    }
+}</code></pre><pre><code>* 9:添加菜单的IHasCustomMenu</code></pre><pre><code>using UnityEditor;
+using UnityEngine;
+
+public class Example : EditorWindow, IHasCustomMenu
+{
+
+    public void AddItemsToMenu (GenericMenu menu)
+    {
+        menu.AddItem (new GUIContent (&quot;example&quot;), false, () =&gt; {
+
+        });
+
+        menu.AddItem (new GUIContent (&quot;example2&quot;), true, () =&gt; {
+
+        });
+    }
+
+    [MenuItem(&quot;Window/Example&quot;)]
+    static void Open ()
+    {
+        GetWindow&lt;Example&gt; ();
+    }
+}</code></pre><pre><code>* 10:重设图标和title</code></pre><pre><code>using UnityEditor;
+using UnityEngine;
+
+public class Example : EditorWindow
+{
+    [MenuItem (&quot;Window/Example&quot;)]
+    static void SaveEditorWindow ()
+    {
+        var window = GetWindow&lt;Example&gt; ();
+
+        var icon = AssetDatabase.LoadAssetAtPath&lt;Texture&gt; (&quot;Assets/Editor/Example.png&quot;);
+
+        window.titleContent = new GUIContent (&quot;Hoge&quot;, icon);
+    }
+}</code></pre><pre><code>* 11:将EditorWindow中的数据保存为ScriptableObject </code></pre><pre><code>using UnityEditor;
+using UnityEngine;
+public class Example : EditorWindow
+{
+    [MenuItem (&quot;Assets/Save EditorWindow&quot;)]
+    static void SaveEditorWindow ()
+    {
+        AssetDatabase.CreateAsset (CreateInstance&lt;Example&gt; (), &quot;Assets/Example.asset&quot;);
+        AssetDatabase.Refresh ();
+    }
+
+    [SerializeField]
+    string text;
+
+    [SerializeField]
+    bool boolean;
+}</code></pre><p>```</p>
 
       
        <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 1487842110@qq.com </span>
@@ -524,12 +706,12 @@
 
 
 <div class="article_copyright">
-    <p><span class="copy-title">Title:</span>Hexo 的简单操作</p>
-    <p><span class="copy-title">文章字数:</span><span class="post-count">75</span></p>
+    <p><span class="copy-title">Title:</span>UnityEditor/5 EditorWindow</p>
+    <p><span class="copy-title">文章字数:</span><span class="post-count">649</span></p>
     <p><span class="copy-title">Author:</span><a  title="诸子百家-谁的天下?">诸子百家-谁的天下?</a></p>
-    <p><span class="copy-title">Created At:</span>2020-05-08, 11:41:32</p>
-    <p><span class="copy-title">Updated At:</span>2020-05-09, 13:14:18</p>
-    <span class="copy-title">Url:</span><a class="post-url" href="/2020/05/08/Hexo%20%E7%9A%84%E7%AE%80%E5%8D%95%E6%93%8D%E4%BD%9C/" title="Hexo 的简单操作">http://yoursite.com/2020/05/08/Hexo%20%E7%9A%84%E7%AE%80%E5%8D%95%E6%93%8D%E4%BD%9C/</a>
+    <p><span class="copy-title">Created At:</span>2020-05-11, 19:01:15</p>
+    <p><span class="copy-title">Updated At:</span>2020-05-11, 19:01:15</p>
+    <span class="copy-title">Url:</span><a class="post-url" href="/2020/05/11/UnityEditor/5%20EditorWindow/" title="UnityEditor/5 EditorWindow">http://yoursite.com/2020/05/11/UnityEditor/5%20EditorWindow/</a>
     <p>
         <span class="copy-title">Copyright:</span><i class="fa fa-creative-commons"></i> <a rel="license noopener" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
     </p>

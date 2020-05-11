@@ -2,9 +2,9 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Hexo 的简单操作 | 新诸子</title>
-  <meta name="keywords" content=" hexo ">
-  <meta name="description" content="Hexo 的简单操作 | 新诸子">
+  <title>UnityEditor/6 MenuItem | 新诸子</title>
+  <meta name="keywords" content="">
+  <meta name="description" content="UnityEditor/6 MenuItem | 新诸子">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="description" content="页面未找到！">
 <meta property="og:type" content="website">
@@ -427,36 +427,24 @@
 </aside>
 <div class="post">
     <div class="pjax">
-        <article id="post-Hexo 的简单操作" class="article article-type-post" itemscope itemprop="blogPost">
+        <article id="post-UnityEditor/6 MenuItem" class="article article-type-post" itemscope itemprop="blogPost">
     
-        <h1 class="article-title">Hexo 的简单操作</h1>
+        <h1 class="article-title">UnityEditor/6 MenuItem</h1>
     
     <div class="article-meta">
         
         
         
-        <span class="book">
-            
-                <a  data-rel="博客">博客</a>
-            
-        </span>
-        
-        
-        <span class="tag">
-            
-            <a class="color5">hexo</a>
-            
-        </span>
         
     </div>
     <div class="article-meta">
         
-            Created At : <time class="date" title='更新时间: 2020-05-09 13:14:18'>2020-05-08 11:41</time>
+            Created At : <time class="date" title='更新时间: 2020-05-11 19:01:15'>2020-05-11 19:01</time>
         
     </div>
     <div class="article-meta">
         
-        <span>字数:75</span>
+        <span>字数:221</span>
         
         
         <span id="busuanzi_container_page_pv">
@@ -486,7 +474,7 @@
     
     <div class="toc-ref">
     
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Quick-Start"><span class="toc-text">Quick Start</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Create-a-new-post"><span class="toc-text">Create a new post</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Run-server"><span class="toc-text">Run server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Generate-static-files"><span class="toc-text">Generate static files</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Deploy-to-remote-sites"><span class="toc-text">Deploy to remote sites</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#MenuItem"><span class="toc-text">MenuItem</span></a></li></ol>
     
 <style>
     .left-col .switch-btn,
@@ -502,15 +490,61 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><pre><code class="bash">$ hexo new &quot;My New Post&quot;</code></pre>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><pre><code class="bash">$ hexo server</code></pre>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><pre><code class="bash">$ hexo generate</code></pre>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><pre><code class="bash">$ hexo deploy</code></pre>
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+        <h1 id="MenuItem"><a href="#MenuItem" class="headerlink" title="MenuItem"></a>MenuItem</h1><ul>
+<li><p>1:是在Unity editer上侧的菜单栏或上下文菜单上追加项目所需的功能.</p>
+</li>
+<li><p>2:放在编辑器下面的静态方法上面,priority参数指定顺序,值越小越显示再上面</p>
+</li>
+<li><p>3:让menu item不生效,再unity里面查看区别</p>
+<pre><code>  using UnityEditor;
+
+  public class EditorTest2 : Editor
+  {
+      [MenuItem(&quot;CustomMenu/Example/Child1&quot;)]
+      static void GetBultinAssetNames()
+      {
+      }
+
+      [MenuItem(&quot;CustomMenu/Example/Child2&quot;)]
+      static void Example2()
+      {
+
+      }
+
+      [MenuItem(&quot;CustomMenu/Example/Child2&quot;, true)]
+      static bool ValidateExample2()
+      {
+          return false;
+      }
+  }</code></pre></li>
+<li><p>4:在菜单前面有个对号,后面 %#g 表示快捷键,百度查一下即可</p>
+<pre><code>  [MenuItem(&quot;CustomMenu/Example  %#g&quot;)]
+  static void Example()
+  {
+      var menuPath = &quot;CustomMenu/Example&quot;;
+      var _checked = Menu.GetChecked(menuPath);
+      Menu.SetChecked(menuPath, !_checked);
+  }</code></pre></li>
+<li><p>5:CONTEXT/组件名/(自定义的)组件方法名字  </p>
+<pre><code>  using UnityEditor;
+
+  public class NewBehaviourScript
+  {
+      [MenuItem(&quot;CONTEXT/Transform/Example1&quot;)]
+      static void Example1 () { }
+
+      [MenuItem(&quot;CONTEXT/Component/Example2&quot;)]
+      static void Example2 () { }
+
+      [MenuItem(&quot;CONTEXT/Transform/Example3&quot;)]
+      static void Example1 (MenuCommand menuCommand)
+      {
+          //実行した Transform の情報が取得できる
+          Debug.Log (menuCommand.context);
+      }
+  }
+}</code></pre></li>
+</ul>
 
       
        <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 1487842110@qq.com </span>
@@ -524,12 +558,12 @@
 
 
 <div class="article_copyright">
-    <p><span class="copy-title">Title:</span>Hexo 的简单操作</p>
-    <p><span class="copy-title">文章字数:</span><span class="post-count">75</span></p>
+    <p><span class="copy-title">Title:</span>UnityEditor/6 MenuItem</p>
+    <p><span class="copy-title">文章字数:</span><span class="post-count">221</span></p>
     <p><span class="copy-title">Author:</span><a  title="诸子百家-谁的天下?">诸子百家-谁的天下?</a></p>
-    <p><span class="copy-title">Created At:</span>2020-05-08, 11:41:32</p>
-    <p><span class="copy-title">Updated At:</span>2020-05-09, 13:14:18</p>
-    <span class="copy-title">Url:</span><a class="post-url" href="/2020/05/08/Hexo%20%E7%9A%84%E7%AE%80%E5%8D%95%E6%93%8D%E4%BD%9C/" title="Hexo 的简单操作">http://yoursite.com/2020/05/08/Hexo%20%E7%9A%84%E7%AE%80%E5%8D%95%E6%93%8D%E4%BD%9C/</a>
+    <p><span class="copy-title">Created At:</span>2020-05-11, 19:01:15</p>
+    <p><span class="copy-title">Updated At:</span>2020-05-11, 19:01:15</p>
+    <span class="copy-title">Url:</span><a class="post-url" href="/2020/05/11/UnityEditor/6%20MenuItem/" title="UnityEditor/6 MenuItem">http://yoursite.com/2020/05/11/UnityEditor/6%20MenuItem/</a>
     <p>
         <span class="copy-title">Copyright:</span><i class="fa fa-creative-commons"></i> <a rel="license noopener" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
     </p>
