@@ -2,9 +2,9 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>博客搭建以及编写 | 新诸子</title>
-  <meta name="keywords" content=" hexo ">
-  <meta name="description" content="博客搭建以及编写 | 新诸子">
+  <title>帧同步 | 新诸子</title>
+  <meta name="keywords" content=" Unity ">
+  <meta name="description" content="帧同步 | 新诸子">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="description" content="页面未找到！">
 <meta property="og:type" content="website">
@@ -571,36 +571,38 @@
 </aside>
 <div class="post">
     <div class="pjax">
-        <article id="post-博客搭建以及编写" class="article article-type-post" itemscope itemprop="blogPost">
+        <article id="post-Unity/FrameSynchronization/FrameSync" class="article article-type-post" itemscope itemprop="blogPost">
     
-        <h1 class="article-title">博客搭建以及编写</h1>
+        <h1 class="article-title">帧同步</h1>
     
     <div class="article-meta">
+        
+        <span class="top"><a>置顶</a></span>
         
         
         
         <span class="book">
             
-                <a  data-rel="博客">博客</a>
+                <a  data-rel="Unity">Unity</a>
             
         </span>
         
         
         <span class="tag">
             
-            <a class="color5">hexo</a>
+            <a class="color1">Unity</a>
             
         </span>
         
     </div>
     <div class="article-meta">
         
-            Created At : <time class="date" title='更新时间: 2020-05-12 10:42:42'>2020-05-08 11:41</time>
+            Created At : <time class="date" title='更新时间: 2020-05-15 10:57:43'>2020-05-11 11:41</time>
         
     </div>
     <div class="article-meta">
         
-        <span>字数:626</span>
+        <span>字数:1.5k</span>
         
         
         <span id="busuanzi_container_page_pv">
@@ -630,7 +632,7 @@
     
     <div class="toc-ref">
     
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#在本地写文章"><span class="toc-text">在本地写文章</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#仓库地址"><span class="toc-text">仓库地址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#搭建博客"><span class="toc-text">搭建博客</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#主题"><span class="toc-text">主题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HEXO插入图片（详细版）"><span class="toc-text">HEXO插入图片（详细版）</span></a></li></ol></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#帧同步"><span class="toc-text">帧同步</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#介绍"><span class="toc-text">介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#帧数据"><span class="toc-text">帧数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#插件选择与使用方式"><span class="toc-text">插件选择与使用方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据计算"><span class="toc-text">数据计算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#网络"><span class="toc-text">网络</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#渲染层"><span class="toc-text">渲染层</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#服务器"><span class="toc-text">服务器</span></a></li></ol></li></ol>
     
 <style>
     .left-col .switch-btn,
@@ -646,96 +648,48 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="在本地写文章"><a href="#在本地写文章" class="headerlink" title="在本地写文章"></a>在本地写文章</h1><ul>
-<li>1:使用 vscode 打开 xinzhuzi.github.io</li>
-<li>2:终端打开, <pre><code>cd xinzhuzi.github.io</code></pre></li>
-<li>3:开始写文章,<pre><code>hexo new 文章名字</code></pre></li>
-<li>4:写完之后输入<pre><code>hexo clean
-hexo g</code></pre></li>
-<li>5:使用 Github Desktop 上传到 GitHub 网站</li>
+        <h1 id="帧同步"><a href="#帧同步" class="headerlink" title="帧同步"></a>帧同步</h1><h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ul>
+<li>1:逻辑在客户端实现,服务器主要负责广播和验证操作,逻辑直观,数据量小,可重播</li>
+<li>2:客户端上传操作,服务器收集,固定频率广播收到的数据,不在乎客户端是否上传成功,不影响其他客户端的表现.</li>
+<li>3:最重要的概念: <strong><em>相同输入，经过相同计算过程，得出相同计算结果</em></strong> ,运行结果不与硬件运行速度快慢相关联.需要注意的是,不能使用 unity3d 自带的系统 API,例如Time类/Invoke函数/脚本的方法/物理引擎/协程,因为会造成不同步.需要自己开线程使用固定的时间片段进帧数据操作,逻辑帧执行的次数是恒定的.</li>
+<li>4:需求以及要求:高一致性,低流量消耗,多人实时性,战斗回放功能,加速功能,服务器同步逻辑校验防作弊,服务器逻辑简化,弱网络环境,</li>
+<li>5:逻辑帧固定为0.033(即 1 秒 30 逻辑帧),渲染帧设定为60(update 里面最大可以1s 跑 60 次),如果CPU 运行不过来,update 执行次数会降低.卡顿以及丢帧:是因为逻辑帧跑了很多帧之后,渲染帧才执行了一帧.</li>
+<li>6:<a href="https://blog.csdn.net/qq_18536721/article/details/52713564" target="_blank" rel="noopener">核心文章1</a> <a href="https://blog.csdn.net/game_jqd/article/details/72870289" target="_blank" rel="noopener">核心文章2</a></li>
 </ul>
-<h3 id="仓库地址"><a href="#仓库地址" class="headerlink" title="仓库地址"></a>仓库地址</h3><ul>
-<li><a href="https://github.com/xinzhuzi/xinzhuzi.github.io" target="_blank" rel="noopener">https://github.com/xinzhuzi/xinzhuzi.github.io</a></li>
-<li><a href="https://github.com/xinzhuzi/Record" target="_blank" rel="noopener">https://github.com/xinzhuzi/Record</a> hexo 项目地址<h3 id="搭建博客"><a href="#搭建博客" class="headerlink" title="搭建博客"></a>搭建博客</h3></li>
-<li><a href="https://www.jianshu.com/p/83b3b7d4e649" target="_blank" rel="noopener">https://www.jianshu.com/p/83b3b7d4e649</a></li>
+<h2 id="帧数据"><a href="#帧数据" class="headerlink" title="帧数据"></a>帧数据</h2><ul>
+<li>1:关键帧.服务器按固定频率广播的操作数据帧，使用唯一ID标识，主要包括客户端输入数据或服务器发送的关键信息(例如游戏战斗开始或结束等消息),网络数据.</li>
+<li>2:填充帧.由于设备性能和网络延迟等原因,服务器广播频率不可能达到客户端的更新频率,若只使用关键帧来驱动游戏运作，就会造成游戏卡顿，影响体验.因此，除关键帧外，客户端需要自行添加若干空数据帧，以使游戏表现更为流畅.网络数据或者本地伪造数据.</li>
+<li>3:逻辑帧:客户端执行一帧所需时间，可根据设备性能和网络环境等因素动态变化.</li>
+<li>4:服务器帧更新时间：服务器广播帧数据的固定频率，一般用于帧间隔时间差的逻辑计算(一般情况下 0.033(即 1 秒 30 逻辑帧) 足够)</li>
 </ul>
-<h3 id="主题"><a href="#主题" class="headerlink" title="主题"></a>主题</h3><ul>
-<li><a href="https://github.com/xinzhuzi/hexo-theme-3-hexo" target="_blank" rel="noopener">https://github.com/xinzhuzi/hexo-theme-3-hexo</a></li>
+<h2 id="插件选择与使用方式"><a href="#插件选择与使用方式" class="headerlink" title="插件选择与使用方式"></a>插件选择与使用方式</h2><ul>
+<li>1:定点数和浮点数，是指在计算机中一个数的小数点的位置是固定的还是浮动的,如果一个数中小数点的位置是固定的，则为定点数；如果一个数中小数点的位置是浮动的，则为浮点数。定点数由于小数点的位置固定,因此其精度可控,相反浮点数的精度不可控.</li>
+<li>2:unity 自带的 float/Vector2/Vector3/Vector4都不要使用,要使用框架Fix定点数来替换使用</li>
+<li>3:关于需要使用核心动画的,都不能使用Dotween插件做动画,因为Dotween插件使用的是Time.deltaTime做插值的,不是使用逻辑时长做插值的,因为在不重要的地方做动画是可以的.</li>
+<li>随机数,随机数种子最好由服务器发送,然后随机数选择一个库来使用,保证每个客户端的随机数相同</li>
 </ul>
-<h3 id="HEXO插入图片（详细版）"><a href="#HEXO插入图片（详细版）" class="headerlink" title="HEXO插入图片（详细版）"></a>HEXO插入图片（详细版）</h3><p><a href="https://www.jianshu.com/p/f72aaad7b852" target="_blank" rel="noopener">https://www.jianshu.com/p/f72aaad7b852</a></p>
-<ul>
-<li>第一步：安装插件，在hexo根目录打开Git Bash,执行   </li>
+<h2 id="数据计算"><a href="#数据计算" class="headerlink" title="数据计算"></a>数据计算</h2><ul>
+<li>1:需要计算的顺序必须保持一致,unity的update不可控,需要自己开线程定时 0.033s/f (即 1 秒 30 逻辑帧)计算,保证顺序一致,</li>
+<li>2:需要明确各个客户端计算结果都必须一致才正确,如果计算不正确就是bug.凡是遇到计算全部转成定点数进行计算,并且由服务器发送随机数种子.</li>
+<li>3:帧时间:当前帧序列数*服务器帧更新时间/(填充帧数 + 1),每帧随机数计算都由服务器下发种子来控制.</li>
+<li>4:帧同步伤害算法.</li>
 </ul>
-<pre><code>    npm install hexo-asset-image --save</code></pre><ul>
-<li>第二步：打开hexo的配置文件_config.yml<br>找到 post_asset_folder，把这个选项从false改成true</li>
-<li>第三步：打开<br>/node_modules/hexo-asset-image/index.js<br>将内容更换为下面的代码<br>（在此感谢Ericam_ 大神：<a href="https://blog.csdn.net/xjm850552586）" target="_blank" rel="noopener">https://blog.csdn.net/xjm850552586）</a>    </li>
+<h2 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h2><ul>
+<li>1:大多数情况下网络是波动的,接收/发送的数据频率是不稳定的.客户端需要等到逻辑帧返回才可以进行下一步.</li>
+<li>2:做一个逻辑帧缓冲区,设置上限,当存入缓存区的帧数据满足上限之后,按照固定频率播放.出现延迟,则填入逻辑帧缓冲区,然后平均分布到固定的频率中去,平滑处理网络波动造成的卡顿</li>
+<li>3:丢帧,采用 UDP(KCP) 进行传输.关键帧里面携带前 2 帧的数据,大大降低帧数据丢失率,同时需要削减包的大小.每个包不要超过 576 byte(一个MTU以下).</li>
+<li>4:实测情况下,最坏可能要 24kb/s 的速度,这个速度很难稳定达到</li>
 </ul>
-<pre><code>        &#39;use strict&#39;;
-        var cheerio = require(&#39;cheerio&#39;);
-
-        // http://stackoverflow.com/questions/14480345/how-to-get-the-nth-occurrence-in-a-string        
-        function getPosition(str, m, i) {
-        return str.split(m, i).join(m).length;
-        }
-
-        var version = String(hexo.version).split(&#39;.&#39;);
-        hexo.extend.filter.register(&#39;after_post_render&#39;, function(data){
-        var config = hexo.config;
-        if(config.post_asset_folder){
-                var link = data.permalink;
-            if(version.length &gt; 0 &amp;&amp; Number(version[0]) == 3)
-            var beginPos = getPosition(link, &#39;/&#39;, 1) + 1;
-            else
-            var beginPos = getPosition(link, &#39;/&#39;, 3) + 1;
-            // In hexo 3.1.1, the permalink of &quot;about&quot; page is like &quot;.../about/index.html&quot;.     
-            var endPos = link.lastIndexOf(&#39;/&#39;) + 1;
-            link = link.substring(beginPos, endPos);
-
-            var toprocess = [&#39;excerpt&#39;, &#39;more&#39;, &#39;content&#39;];
-            for(var i = 0; i &lt; toprocess.length; i++){
-            var key = toprocess[i];
-
-            var $ = cheerio.load(data[key], {
-                ignoreWhitespace: false,
-                xmlMode: false,
-                lowerCaseTags: false,
-                decodeEntities: false
-            });
-
-            $(&#39;img&#39;).each(function(){
-                if ($(this).attr(&#39;src&#39;)){
-                    // For windows style path, we replace &#39;\&#39; to &#39;/&#39;.
-                    var src = $(this).attr(&#39;src&#39;).replace(&#39;\\&#39;, &#39;/&#39;);
-                    if(!/http[s]*.*|\/\/.*/.test(src) &amp;&amp;
-                    !/^\s*\//.test(src)) {
-                    // For &quot;about&quot; page, the first part of &quot;src&quot; can&#39;t be removed.
-                    // In addition, to support multi-level local directory.
-                    var linkArray = link.split(&#39;/&#39;).filter(function(elem){
-                        return elem != &#39;&#39;;
-                    });
-                    var srcArray = src.split(&#39;/&#39;).filter(function(elem){
-                        return elem != &#39;&#39; &amp;&amp; elem != &#39;.&#39;;
-                    });
-                    if(srcArray.length &gt; 1)
-                        srcArray.shift();
-                    src = srcArray.join(&#39;/&#39;);
-                    $(this).attr(&#39;src&#39;, config.root + link + src);
-                    console.info&amp;&amp;console.info(&quot;update link as:--&gt;&quot;+config.root + link + src);
-                    }
-                }else{
-                    console.info&amp;&amp;console.info(&quot;no src attr, skipped...&quot;);
-                    console.info&amp;&amp;console.info($(this));
-                }
-            });
-            data[key] = $.html();
-            }
-        }
-        });         
-
-</code></pre><ul>
-<li>第四步：现在就可以插入图片了，比如hexo new post photo之后<br>就在source/_posts生成photo.md文件和photo文件夹，我们把要插入的图片复制到photo文件夹内，<br>在photo.md文件里面按markdown的标准写,（我的文件名是head.jpeg）比如</li>
+<h2 id="渲染层"><a href="#渲染层" class="headerlink" title="渲染层"></a>渲染层</h2><ul>
+<li>1:加速功能,Time.timeScale = 2/1.5/1/0.5;等.计算时需要根据机子性能进行加速调整,因为CPU就是那压力过大,会出现卡顿和跳帧</li>
+<li>2:战斗回放功能,因为关键帧记录,以及关键帧计算的结果都是一致的,所以最后将关键帧数据回放并计算就是正确的回放</li>
 </ul>
-<pre><code>    ![这是代替图片的文字，随便写](head.jpeg)</code></pre><p>然后就……完事了。<br>参考链接：<br><a href="https://blog.csdn.net/xjm850552586/article/details/84101345" target="_blank" rel="noopener">https://blog.csdn.net/xjm850552586/article/details/84101345</a><br><a href="https://blog.csdn.net/qq_38148394/article/details/79997971" target="_blank" rel="noopener">https://blog.csdn.net/qq_38148394/article/details/79997971</a></p>
+<h2 id="服务器"><a href="#服务器" class="headerlink" title="服务器"></a>服务器</h2><ul>
+<li>1:服务器只处理逻辑,这就要客户端需要将逻辑与渲染分开,客户端采用线程处理逻辑部分,主线程处理渲染部分.</li>
+<li>2:同一份代码如果都是用 C#写的话,需要区分客户端还是服务器代码使用宏定义可以很好的区别</li>
+<li>3:c#核心代码的编写需要另开一个库进行,版本容易管理,需要将 Log/Time/存储 等类进行重写以适配客户端和服务器</li>
+<li>4:</li>
+</ul>
 
       
        <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 1487842110@qq.com </span>
@@ -749,12 +703,12 @@ hexo g</code></pre></li>
 
 
 <div class="article_copyright">
-    <p><span class="copy-title">Title:</span>博客搭建以及编写</p>
-    <p><span class="copy-title">文章字数:</span><span class="post-count">626</span></p>
+    <p><span class="copy-title">Title:</span>帧同步</p>
+    <p><span class="copy-title">文章字数:</span><span class="post-count">1.5k</span></p>
     <p><span class="copy-title">Author:</span><a  title="诸子百家-谁的天下?">诸子百家-谁的天下?</a></p>
-    <p><span class="copy-title">Created At:</span>2020-05-08, 11:41:32</p>
-    <p><span class="copy-title">Updated At:</span>2020-05-12, 10:42:42</p>
-    <span class="copy-title">Url:</span><a class="post-url" href="/2020/05/08/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA%E4%BB%A5%E5%8F%8A%E7%BC%96%E5%86%99/" title="博客搭建以及编写">http://yoursite.com/2020/05/08/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA%E4%BB%A5%E5%8F%8A%E7%BC%96%E5%86%99/</a>
+    <p><span class="copy-title">Created At:</span>2020-05-11, 11:41:32</p>
+    <p><span class="copy-title">Updated At:</span>2020-05-15, 10:57:43</p>
+    <span class="copy-title">Url:</span><a class="post-url" href="/2020/05/11/Unity/FrameSynchronization/FrameSync/" title="帧同步">http://yoursite.com/2020/05/11/Unity/FrameSynchronization/FrameSync/</a>
     <p>
         <span class="copy-title">Copyright:</span><i class="fa fa-creative-commons"></i> <a rel="license noopener" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
     </p>
