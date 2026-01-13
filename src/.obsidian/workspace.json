@@ -1,0 +1,247 @@
+{
+  "main": {
+    "id": "3de4253caba8e75b",
+    "type": "split",
+    "children": [
+      {
+        "id": "93a25799c56a058d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "8a5aedb7e0b17faf",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "新标签页"
+            }
+          }
+        ]
+      },
+      {
+        "id": "910f7529ca358f9c",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "01072690ebb14f80",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "关系图谱"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "7a382a131a29c3f1",
+    "type": "split",
+    "children": [
+      {
+        "id": "0db8eeff654dee7a",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "822a8c796e35b0bf",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "71968cd8716512bc",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "554ce5c7a3e9ac08",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "b82a63c879f89700",
+    "type": "split",
+    "children": [
+      {
+        "id": "d5920aee55f4a04a",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "12358398ae6b5aad",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "欢迎.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "欢迎 的反向链接列表"
+            }
+          },
+          {
+            "id": "d0b8c34c62022881",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "欢迎.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "欢迎 的出链列表"
+            }
+          },
+          {
+            "id": "83ebc2e3f08af047",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "58561ecbc20031bb",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "添加笔记属性"
+            }
+          },
+          {
+            "id": "0ba953e80082e020",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "欢迎.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "欢迎 的大纲"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "bases:新建数据库": false,
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false
+    }
+  },
+  "active": "822a8c796e35b0bf",
+  "lastOpenFiles": [
+    "hexo-source/source/_posts/小说/2025-01-13-道劫.md",
+    "hexo-source/source/_posts/小说",
+    "hexo-source/source/_posts/未命名文件夹",
+    "hexo-source/source/_posts/游戏/2025-01-13-游戏即将发售.md",
+    "hexo-source/source/_posts/游戏",
+    "hexo-source/source/_posts/其他/2020-05-08-MD 格式.md",
+    "hexo-source/source/_posts/Lua热更新/2020-05-08-Lua 源码阅读.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-在 Unity 下使用 VSCode 配置.md",
+    "hexo-source/source/_posts/其他/2020-05-08-共产党宣言.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-Unity UI优化.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-10 Screenshot.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十章.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十二章.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-Unity  浮点数精度.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-7 CustomEditor_PropertyDrawer.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-Unity GC.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-Unity CPU优化.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第五章.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-2 UnityEditor常用属性.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第三章.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第四章.md",
+    "hexo-source/source/_posts/工具使用/2020-05-08-Hexo 的简单操作.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-5 EditorWindow.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-8 EditorGUILayout.md",
+    "hexo-source/source/_posts/Lua热更新/2020-05-08-Tolua C-C++ Lua 交互.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-Unity GPU优化.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-Unity NGUI.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-Unity 优化 1.md",
+    "hexo-source/source/_posts/Unity/2020-05-08-Unity 网络优化.md",
+    "hexo-source/source/_posts/其他",
+    "hexo-source/source/_posts/AI游戏设计",
+    "hexo-source/source/_posts/Lua热更新",
+    "hexo-source/source/_posts/工具使用",
+    "hexo-source/source/_posts/编程基础",
+    "hexo-source/source/_posts/网络编程",
+    "hexo-source/source/_posts/Unity",
+    "hexo-source/source/images/brown-papersq.png",
+    "hexo-source/source/images/avatar.jpg",
+    "hexo-source/source/images/article-list-background.jpg",
+    "hexo-source/source/images/alipay.png",
+    "hexo-source/source/images/school-book.png",
+    "hexo-source/public/img/flower.gif",
+    "hexo-source/public/img/pwa/favicon.png",
+    "hexo-source/public/img/pwa/favicon_16.png",
+    "hexo-source/public/img/404.avif",
+    "hexo-source/public/img/default.avif"
+  ]
+}

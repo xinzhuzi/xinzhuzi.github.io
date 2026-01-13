@@ -1,0 +1,779 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Unity 编辑器扩展完全指南：从入门到大师的效率革命 | 新诸子</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/img/pwa/favicon.png"><link rel="stylesheet" href="/css/index.css?v=3.0.21"><link rel="canonical" href="https://xinzhuzi.github.io/2020/05/08/Unity/2020-05-08-1%20%E4%BB%8B%E7%BB%8DUnityEditor/index.html"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><!-- Feature-specific CSS--><!-- aplayer--><!-- swiper--><!-- fancybox ui--><!-- katex--><!-- Open Graph--><meta name="description" content="🛠️ Unity 编辑器扩展完全指南：从入门到大师的效率革命 💡 你是否有过这样的经历？ 配置一个关卡需要手动点击 100 次？ 每次打包都要重复 10 道繁琐步骤？ 策划想要快速调整参数，却只能每次都来找你？ 看着同事用自己写的工具 3 秒搞定，你还在手动操作 30 分钟？ 别担心！ 这个"><!-- pwa--><meta name="apple-mobile-web-app-capable" content="新诸子"><meta name="theme-color" content="var(--efu-main)"><meta name="apple-mobile-web-app-status-bar-style" content="var(--efu-main)"><link rel="bookmark" href="/img/pwa/favicon.png"><link rel="apple-touch-icon" href="/img/pwa/favicon.png" sizes="180x180"><script>console.log(' %c Solitude %c ' + '3.0.21' + ' %c https://github.com/everfu/hexo-theme-solitude',
+    'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+    'background:#ff9a9a ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff',
+    'background:unset ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff')
+</script><script>(()=>{
+        const saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        };
+        window.utils = {
+            saveToLocal: saveToLocal,
+            getCSS: (url, id = false) => new Promise((resolve, reject) => {
+              const link = document.createElement('link')
+              link.rel = 'stylesheet'
+              link.href = url
+              if (id) link.id = id
+              link.onerror = reject
+              link.onload = link.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+              }
+              document.head.appendChild(link)
+            }),
+            getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+              const script = document.createElement('script')
+              script.src = url
+              script.async = true
+              script.onerror = reject
+              script.onload = script.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+              }
+
+              Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+              })
+
+              document.head.appendChild(script)
+            }),
+            addGlobalFn: (key, fn, name = false, parent = window) => {
+                const globalFn = parent.globalFn || {}
+                const keyObj = globalFn[key] || {}
+
+                if (name && keyObj[name]) return
+
+                name = name || Object.keys(keyObj).length
+                keyObj[name] = fn
+                globalFn[key] = keyObj
+                parent.globalFn = globalFn
+            },
+            addEventListenerPjax: (ele, event, fn, option = false) => {
+              ele.addEventListener(event, fn, option)
+              utils.addGlobalFn('pjax', () => {
+                  ele.removeEventListener(event, fn, option)
+              })
+            },
+            diffDateFormat: (selector) => {
+                selector.forEach(item => {
+                    const date = new Date(item.getAttribute('datetime') || item.textContent);
+                    item.textContent = (date.getMonth() + 1).toString()+'/'+date.getDate().toString();
+                });
+            },
+        }
+    })()</script><!-- theme--><script>initTheme = () => {
+    let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const cachedMode = utils.saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+    typeof rm === 'object' && rm.mode(cachedMode === 'dark' && isDarkMode)
+}
+initTheme()</script><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2023-04-20 00:00:00',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.avif'
+    },
+    copyright: false,
+    highlight: {"limit":200,"expand":true,"copy":true,"syntax":"highlight.js"},
+    randomlink: false,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"day":" 天","f12":"开发者模式已打开，请遵循GPL协议。","totalk":"无需删除空行，直接输入评论即可"},
+    aside: {
+        state: {
+            morning: "✨ 早上好，新的一天开始了",
+            noon: "🍲 午餐时间",
+            afternoon: "🌞 下午好",
+            night: "早点休息",
+            goodnight: "晚安 😴",
+        },
+        witty_words: [],
+        witty_comment: {
+            prefix: '好久不见，',
+            back: '欢迎再次回来，',
+        },
+    },
+    covercolor: {
+        enable: false
+    },
+    comment: false,
+    lightbox: 'null',
+    right_menu: false,
+    translate: {"translateDelay":0,"defaultEncoding":2},
+    lure: false,
+    expire: false,
+};</script><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: '',
+    toc: true,
+    comment: false,
+    ai_text: false,
+    color: false,
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body id="body"><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude fas fa-xmark"></i></div><div class="console-card-group"><div class="console-card-group-right"><div class="console-card tags" onclick="sco.hideConsole()"><div class="card-content"><div class="author-content-item-tips">标签</div><div class="author-content-item-title">寻找感兴趣的领域</div></div><div class="card-tag-cloud"><a href="/tags/Unity/">Unity<sup>66</sup></a><a href="/tags/AI/">AI<sup>1</sup></a><a href="/tags/%E8%A1%8C%E4%B8%BA%E6%A0%91/">行为树<sup>1</sup></a><a href="/tags/%E7%8A%B6%E6%80%81%E6%9C%BA/">状态机<sup>1</sup></a><a href="/tags/FSM/">FSM<sup>1</sup></a><a href="/tags/BT/">BT<sup>1</sup></a><a href="/tags/GOAP/">GOAP<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/">游戏设计<sup>1</sup></a><a href="/tags/Lua/">Lua<sup>5</sup></a><a href="/tags/LuaJIT/">LuaJIT<sup>2</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/">虚拟机<sup>2</sup></a><a href="/tags/GC/">GC<sup>4</sup></a><a href="/tags/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">源码阅读<sup>1</sup></a><a href="/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80/">脚本语言<sup>1</sup></a><a href="/tags/ToLua/">ToLua<sup>4</sup></a><a href="/tags/C/">C#<sup>3</sup></a><a href="/tags/%E4%BA%A4%E4%BA%92/">交互<sup>3</sup></a><a href="/tags/CLR/">CLR<sup>1</sup></a><a href="/tags/IL2CPP/">IL2CPP<sup>3</sup></a><a href="/tags/C/">C++<sup>3</sup></a><a href="/tags/P-Invoke/">P/Invoke<sup>1</sup></a><a href="/tags/%E4%BA%92%E6%93%8D%E4%BD%9C/">互操作<sup>1</sup></a><a href="/tags/DllImport/">DllImport<sup>1</sup></a><a href="/tags/Marshal/">Marshal<sup>1</sup></a><a href="/tags/%E7%83%AD%E6%9B%B4%E6%96%B0/">热更新<sup>3</sup></a><a href="/tags/%E8%B7%A8%E8%AF%AD%E8%A8%80%E4%BA%A4%E4%BA%92/">跨语言交互<sup>1</sup></a><a href="/tags/C/">C<sup>3</sup></a><a href="/tags/API/">API<sup>1</sup></a><a href="/tags/%E6%A0%88/">栈<sup>1</sup></a><a href="/tags/tolua/">tolua<sup>1</sup></a><a href="/tags/%E4%B8%96%E7%95%8C%E8%A7%82/">世界观<sup>1</sup></a><a href="/tags/Hexo/">Hexo<sup>2</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/">博客<sup>2</sup></a><a href="/tags/%E9%9D%99%E6%80%81%E7%AB%99%E7%82%B9%E7%94%9F%E6%88%90%E5%99%A8/">静态站点生成器<sup>1</sup></a><a href="/tags/Node-js/">Node.js<sup>1</sup></a><a href="/tags/Git/">Git<sup>1</sup></a><a href="/tags/GitHub-Pages/">GitHub Pages<sup>1</sup></a><a href="/tags/Markdown/">Markdown<sup>1</sup></a><a href="/tags/%E5%86%99%E4%BD%9C/">写作<sup>1</sup></a><a href="/tags/VSCode/">VSCode<sup>2</sup></a><a href="/tags/Mac/">Mac<sup>2</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具<sup>1</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E8%BD%AF%E4%BB%B6/">效率软件<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/">游戏开发<sup>1</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E9%93%BE/">工具链<sup>1</sup></a><a href="/tags/VPN/">VPN<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%B7%A5%E5%85%B7/">网络工具<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E8%B5%84%E6%BA%90/">开发资源<sup>1</sup></a><a href="/tags/Google/">Google<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0/">技术学习<sup>1</sup></a><a href="/tags/GitHub%E5%8A%A0%E9%80%9F/">GitHub加速<sup>1</sup></a><a href="/tags/CMD/">CMD<sup>1</sup></a><a href="/tags/Windows/">Windows<sup>1</sup></a><a href="/tags/%E5%91%BD%E4%BB%A4%E8%A1%8C/">命令行<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%91%BD%E4%BB%A4/">网络命令<sup>1</sup></a><a href="/tags/%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86/">系统管理<sup>1</sup></a><a href="/tags/%E5%85%AC%E5%91%8A/">公告<sup>1</sup></a><a href="/tags/UGUI/">UGUI<sup>15</sup></a><a href="/tags/Canvas/">Canvas<sup>4</sup></a><a href="/tags/UI%E4%BC%98%E5%8C%96/">UI优化<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化<sup>16</sup></a><a href="/tags/RectTransform/">RectTransform<sup>2</sup></a><a href="/tags/UnityEditor/">UnityEditor<sup>12</sup></a><a href="/tags/%E7%BC%96%E8%BE%91%E5%99%A8%E6%89%A9%E5%B1%95/">编辑器扩展<sup>11</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91/">工具开发<sup>3</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E6%8F%90%E5%8D%87/">效率提升<sup>1</sup></a><a href="/tags/EditorWindow/">EditorWindow<sup>4</sup></a><a href="/tags/RenderTexture/">RenderTexture<sup>1</sup></a><a href="/tags/%E6%88%AA%E5%9B%BE%E5%B7%A5%E5%85%B7/">截图工具<sup>1</sup></a><a href="/tags/Handles/">Handles<sup>1</sup></a><a href="/tags/OnSceneGUI/">OnSceneGUI<sup>1</sup></a><a href="/tags/%E5%9C%BA%E6%99%AF%E8%A7%86%E5%9B%BE/">场景视图<sup>2</sup></a><a href="/tags/Gizmos/">Gizmos<sup>1</sup></a><a href="/tags/OnDrawGizmos/">OnDrawGizmos<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95%E5%B7%A5%E5%85%B7/">调试工具<sup>1</sup></a><a href="/tags/%E8%8A%82%E7%82%B9%E7%BC%96%E8%BE%91%E5%99%A8/">节点编辑器<sup>1</sup></a><a href="/tags/GraphView/">GraphView<sup>1</sup></a><a href="/tags/%E5%8F%AF%E8%A7%86%E5%8C%96%E7%BC%96%E7%A8%8B/">可视化编程<sup>1</sup></a><a href="/tags/%E6%8A%80%E8%83%BD%E7%BC%96%E8%BE%91%E5%99%A8/">技能编辑器<sup>1</sup></a><a href="/tags/FlatBuffers/">FlatBuffers<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BC%93%E5%AD%98/">数据缓存<sup>1</sup></a><a href="/tags/GamePlay/">GamePlay<sup>1</sup></a><a href="/tags/PropertyAttribute/">PropertyAttribute<sup>1</sup></a><a href="/tags/%E6%A3%80%E8%A7%86%E9%9D%A2%E6%9D%BF/">检视面板<sup>1</sup></a><a href="/tags/ScriptableObject/">ScriptableObject<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/">数据存储<sup>1</sup></a><a href="/tags/JSON/">JSON<sup>1</sup></a><a href="/tags/%E7%AA%97%E5%8F%A3%E5%BC%80%E5%8F%91/">窗口开发<sup>1</sup></a><a href="/tags/EditorGUI/">EditorGUI<sup>1</sup></a><a href="/tags/GUI%E6%8E%A7%E4%BB%B6/">GUI控件<sup>1</sup></a><a href="/tags/%E7%95%8C%E9%9D%A2%E8%AE%BE%E8%AE%A1/">界面设计<sup>2</sup></a><a href="/tags/MenuItem/">MenuItem<sup>1</sup></a><a href="/tags/%E8%8F%9C%E5%8D%95%E5%BC%80%E5%8F%91/">菜单开发<sup>1</sup></a><a href="/tags/%E5%BF%AB%E6%8D%B7%E9%94%AE/">快捷键<sup>1</sup></a><a href="/tags/CustomEditor/">CustomEditor<sup>1</sup></a><a href="/tags/PropertyDrawer/">PropertyDrawer<sup>1</sup></a><a href="/tags/Inspector/">Inspector<sup>1</sup></a><a href="/tags/EditorGUILayout/">EditorGUILayout<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E6%8E%A7%E4%BB%B6/">布局控件<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%88%98%E6%A1%88%E4%BE%8B/">实战案例<sup>2</sup></a><a href="/tags/AssetBundle/">AssetBundle<sup>5</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/">资源管理<sup>3</sup></a><a href="/tags/%E6%89%93%E5%8C%85%E7%AD%96%E7%95%A5/">打包策略<sup>3</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">内存管理<sup>4</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E5%88%86%E6%9E%90/">依赖分析<sup>1</sup></a><a href="/tags/%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96/">加载优化<sup>2</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E7%AE%A1%E7%90%86/">依赖管理<sup>1</sup></a><a href="/tags/%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">最佳实践<sup>2</sup></a><a href="/tags/Android/">Android<sup>2</sup></a><a href="/tags/%E4%BC%98%E5%8C%96/">优化<sup>3</sup></a><a href="/tags/Android-Studio/">Android Studio<sup>2</sup></a><a href="/tags/Profiler/">Profiler<sup>7</sup></a><a href="/tags/ADB/">ADB<sup>2</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90/">性能分析<sup>4</sup></a><a href="/tags/%E6%B5%AE%E7%82%B9%E6%95%B0/">浮点数<sup>1</sup></a><a href="/tags/%E7%B2%BE%E5%BA%A6/">精度<sup>1</sup></a><a href="/tags/Transform/">Transform<sup>1</sup></a><a href="/tags/%E5%9D%90%E6%A0%87%E7%B3%BB%E7%BB%9F/">坐标系统<sup>1</sup></a><a href="/tags/%E7%9B%B8%E6%9C%BA/">相机<sup>1</sup></a><a href="/tags/Z-Buffer/">Z-Buffer<sup>1</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/">内存优化<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD/">性能<sup>4</sup></a><a href="/tags/Boehm/">Boehm<sup>2</sup></a><a href="/tags/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">对象池<sup>2</sup></a><a href="/tags/Unsafe/">Unsafe<sup>1</sup></a><a href="/tags/CPU%E4%BC%98%E5%8C%96/">CPU优化<sup>2</sup></a><a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程<sup>1</sup></a><a href="/tags/Job-System/">Job System<sup>1</sup></a><a href="/tags/Burst/">Burst<sup>1</sup></a><a href="/tags/%E5%8D%8F%E7%A8%8B/">协程<sup>1</sup></a><a href="/tags/GPU%E4%BC%98%E5%8C%96/">GPU优化<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93/">渲染<sup>1</sup></a><a href="/tags/Shader/">Shader<sup>3</sup></a><a href="/tags/DrawCall/">DrawCall<sup>9</sup></a><a href="/tags/Batch/">Batch<sup>1</sup></a><a href="/tags/OverDraw/">OverDraw<sup>5</sup></a><a href="/tags/LOD/">LOD<sup>2</sup></a><a href="/tags/Mobile/">Mobile<sup>1</sup></a><a href="/tags/NGUI/">NGUI<sup>3</sup></a><a href="/tags/UI%E6%A1%86%E6%9E%B6/">UI框架<sup>1</sup></a><a href="/tags/UIPanel/">UIPanel<sup>1</sup></a><a href="/tags/UIWidget/">UIWidget<sup>1</sup></a><a href="/tags/%E7%A7%BB%E5%8A%A8%E7%AB%AF/">移动端<sup>1</sup></a><a href="/tags/TBR/">TBR<sup>1</sup></a><a href="/tags/%E5%B8%A6%E5%AE%BD%E4%BC%98%E5%8C%96/">带宽优化<sup>2</sup></a><a href="/tags/GPU/">GPU<sup>2</sup></a><a href="/tags/HUD%E4%BC%98%E5%8C%96/">HUD优化<sup>1</sup></a><a href="/tags/%E5%90%88%E6%89%B9/">合批<sup>1</sup></a><a href="/tags/%E7%BD%91%E6%A0%BC%E9%87%8D%E5%BB%BA/">网格重建<sup>1</sup></a><a href="/tags/UWA/">UWA<sup>3</sup></a><a href="/tags/%E6%80%BB%E7%BA%B2/">总纲<sup>1</sup></a><a href="/tags/UPR/">UPR<sup>4</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB/">优化体系<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E8%A7%84%E8%8C%83/">代码规范<sup>1</sup></a><a href="/tags/GC%E4%BC%98%E5%8C%96/">GC优化<sup>1</sup></a><a href="/tags/FPS%E6%A0%87%E5%87%86/">FPS标准<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96/">代码优化<sup>1</sup></a><a href="/tags/MonoBehaviour/">MonoBehaviour<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E4%BC%98%E5%8C%96/">渲染优化<sup>4</sup></a><a href="/tags/OverShading/">OverShading<sup>1</sup></a><a href="/tags/Shader%E4%BC%98%E5%8C%96/">Shader优化<sup>1</sup></a><a href="/tags/%E9%81%AE%E6%8C%A1%E5%89%94%E9%99%A4/">遮挡剔除<sup>2</sup></a><a href="/tags/OcclusionCulling/">OcclusionCulling<sup>1</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E4%BC%98%E5%8C%96/">资源优化<sup>2</sup></a><a href="/tags/%E7%BA%B9%E7%90%86%E4%BC%98%E5%8C%96/">纹理优化<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB/">代码阅读<sup>1</sup></a><a href="/tags/%E9%A1%B9%E7%9B%AE%E5%88%86%E6%9E%90/">项目分析<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E7%90%86%E8%A7%A3/">架构理解<sup>1</sup></a><a href="/tags/%E5%B7%A5%E7%A8%8B%E5%85%A5%E9%97%A8/">工程入门<sup>1</sup></a><a href="/tags/TextMeshPro/">TextMeshPro<sup>2</sup></a><a href="/tags/UI%E7%B3%BB%E7%BB%9F/">UI系统<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/">架构设计<sup>1</sup></a><a href="/tags/ScrollRect/">ScrollRect<sup>1</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%BB%9A%E5%8A%A8/">虚拟滚动<sup>1</sup></a><a href="/tags/%E5%88%97%E8%A1%A8%E4%BC%98%E5%8C%96/">列表优化<sup>1</sup></a><a href="/tags/%E9%94%9A%E7%82%B9/">锚点<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E7%B3%BB%E7%BB%9F/">布局系统<sup>1</sup></a><a href="/tags/UI%E9%80%82%E9%85%8D/">UI适配<sup>1</sup></a><a href="/tags/UI%E7%89%B9%E6%95%88/">UI特效<sup>1</sup></a><a href="/tags/%E7%B2%92%E5%AD%90%E7%B3%BB%E7%BB%9F/">粒子系统<sup>1</sup></a><a href="/tags/%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/">视觉效果<sup>1</sup></a><a href="/tags/TMP/">TMP<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E6%B8%B2%E6%9F%93/">文本渲染<sup>1</sup></a><a href="/tags/%E5%AD%97%E4%BD%93/">字体<sup>1</sup></a><a href="/tags/%E5%AF%8C%E6%96%87%E6%9C%AC/">富文本<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E6%A8%A1%E5%BC%8F/">渲染模式<sup>1</sup></a><a href="/tags/Sprite-Atlas/">Sprite Atlas<sup>1</sup></a><a href="/tags/%E5%9B%BE%E9%9B%86/">图集<sup>1</sup></a><a href="/tags/DoTween/">DoTween<sup>1</sup></a><a href="/tags/%E5%8A%A8%E7%94%BB/">动画<sup>1</sup></a><a href="/tags/%E8%BF%87%E6%B8%A1%E6%95%88%E6%9E%9C/">过渡效果<sup>1</sup></a><a href="/tags/UI%E5%8A%A8%E6%95%88/">UI动效<sup>1</sup></a><a href="/tags/UI%E6%9E%B6%E6%9E%84/">UI架构<sup>1</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E5%B7%A5%E5%85%B7/">优化工具<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95/">调试<sup>1</sup></a><a href="/tags/EventSystem/">EventSystem<sup>1</sup></a><a href="/tags/%E4%BA%8B%E4%BB%B6/">事件<sup>1</sup></a><a href="/tags/UI%E4%BA%8B%E4%BB%B6/">UI事件<sup>1</sup></a><a href="/tags/%E5%B1%8F%E5%B9%95%E9%80%82%E9%85%8D/">屏幕适配<sup>1</sup></a><a href="/tags/%E5%A4%9A%E5%88%86%E8%BE%A8%E7%8E%87/">多分辨率<sup>1</sup></a><a href="/tags/Canvas-Scaler/">Canvas Scaler<sup>1</sup></a><a href="/tags/%E9%80%82%E9%85%8D%E7%AD%96%E7%95%A5/">适配策略<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96/">自动化<sup>1</sup></a><a href="/tags/Jenkins/">Jenkins<sup>3</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/">性能测试<sup>1</sup></a><a href="/tags/Airtest/">Airtest<sup>2</sup></a><a href="/tags/CI-CD/">CI/CD<sup>2</sup></a><a href="/tags/%E5%B7%A5%E4%B8%9A%E5%8C%96%E6%B5%81%E7%A8%8B/">工业化流程<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%89%93%E5%8C%85/">自动化打包<sup>1</sup></a><a href="/tags/iOS/">iOS<sup>1</sup></a><a href="/tags/%E6%9E%84%E5%BB%BA/">构建<sup>1</sup></a><a href="/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/">持续集成<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/">自动化测试<sup>1</sup></a><a href="/tags/Python/">Python<sup>2</sup></a><a href="/tags/ARM/">ARM<sup>1</sup></a><a href="/tags/Xcode/">Xcode<sup>1</sup></a><a href="/tags/RenderDoc/">RenderDoc<sup>1</sup></a><a href="/tags/Stats/">Stats<sup>1</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/">性能监控<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%BB%9F%E8%AE%A1/">渲染统计<sup>1</sup></a><a href="/tags/FPS/">FPS<sup>1</sup></a><a href="/tags/Occlusion-Culling/">Occlusion Culling<sup>1</sup></a><a href="/tags/Overdraw/">Overdraw<sup>1</sup></a><a href="/tags/Base64/">Base64<sup>1</sup></a><a href="/tags/%E5%9B%BE%E7%89%87%E7%BC%96%E7%A0%81/">图片编码<sup>1</sup></a><a href="/tags/Texture2D/">Texture2D<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/">开发环境<sup>1</sup></a><a href="/tags/%E9%85%8D%E7%BD%AE/">配置<sup>1</sup></a><a href="/tags/Mono/">Mono<sup>1</sup></a><a href="/tags/NET-Core/">.NET Core<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF/">渲染管线<sup>1</sup></a><a href="/tags/%E6%89%B9%E5%A4%84%E7%90%86/">批处理<sup>1</sup></a><a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/">图形学<sup>1</sup></a><a href="/tags/%E7%AE%97%E6%B3%95/">算法<sup>2</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<sup>1</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">学习路线<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/">编程基础<sup>2</sup></a><a href="/tags/%E9%9D%A2%E8%AF%95%E5%87%86%E5%A4%87/">面试准备<sup>2</sup></a><a href="/tags/%E6%8C%87%E9%92%88/">指针<sup>1</sup></a><a href="/tags/%E6%95%B0%E7%BB%84/">数组<sup>1</sup></a><a href="/tags/%E6%8E%92%E5%BA%8F/">排序<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/">编程入门<sup>1</sup></a><a href="/tags/%E8%8B%B1%E8%AF%AD/">英语<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E8%AF%8D%E6%B1%87/">技术词汇<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E6%9C%AF%E8%AF%AD/">编程术语<sup>1</sup></a><a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<sup>1</sup></a><a href="/tags/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式<sup>1</sup></a><a href="/tags/Regex/">Regex<sup>1</sup></a><a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%A4%84%E7%90%86/">字符串处理<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E9%AA%8C%E8%AF%81/">数据验证<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86/">文本处理<sup>1</sup></a><a href="/tags/BestHTTP/">BestHTTP<sup>2</sup></a><a href="/tags/WebSocket/">WebSocket<sup>1</sup></a><a href="/tags/Socket-IO/">Socket.IO<sup>1</sup></a><a href="/tags/SignalR/">SignalR<sup>1</sup></a><a href="/tags/SSE/">SSE<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%97%B6%E9%80%9A%E4%BF%A1/">实时通信<sup>1</sup></a><a href="/tags/HTTP/">HTTP<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82/">网络请求<sup>1</sup></a><a href="/tags/%E6%8F%92%E4%BB%B6/">插件<sup>1</sup></a><a href="/tags/Protobuf/">Protobuf<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/">网络通信<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%8F%E5%88%97%E5%8C%96/">数据序列化<sup>1</sup></a><a href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0/">跨平台<sup>1</sup></a><a href="/tags/%E5%B8%A7%E5%90%8C%E6%AD%A5/">帧同步<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%90%8C%E6%AD%A5/">网络同步<sup>1</sup></a><a href="/tags/%E5%A4%9A%E4%BA%BA%E6%B8%B8%E6%88%8F/">多人游戏<sup>1</sup></a><a href="/tags/%E5%AE%9A%E7%82%B9%E6%95%B0/">定点数<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%90%8C%E6%AD%A5/">游戏同步<sup>1</sup></a><a href="/tags/%E5%BC%B1%E7%BD%91%E4%BC%98%E5%8C%96/">弱网优化<sup>1</sup></a></div></div><div class="console-card history" onclick="sco.hideConsole()"><ul class="card-archive-list"><li class="item"><a href="/archives/2025/01/"><span class="date">2025/01</span><div class="count-group"><span class="count">2</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/2020/05/"><span class="date">2020/05</span><div class="count-group"><span class="count">89</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/"><span class="date">全部文章</span><div class="count-group"><span class="count">91</span><span class="unit">篇</span></div></a></li></ul></div></div></div><div class="button-group"><div class="console-btn-item"><span class="darkmode_switchbutton" onclick="sco.switchDarkMode()" title="昼夜切换"><i class="solitude fas fa-circle-half-stroke"></i></span></div><div class="console-btn-item" id="consoleHideAside"><span class="asideSwitch" onclick="sco.switchHideAside()" title="边栏显示控制"><i class="solitude fas fa-arrows-left-right-to-line"></i></span></div></div><div class="console-mask" onclick="sco.hideConsole()"></div></div><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">91</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">270</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude fas fa-circle-half-stroke"></i><span>显示模式</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/categories/%E5%8D%83%E5%B9%B4%E5%BF%97-%E9%81%93%E5%8A%AB/"><span>千年志*道劫</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/"><span>技术博客</span></a></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-tags"><div class="card-tag-cloud"><a href="/tags/Unity/">Unity<sup>66</sup></a><a href="/tags/AI/">AI<sup>1</sup></a><a href="/tags/%E8%A1%8C%E4%B8%BA%E6%A0%91/">行为树<sup>1</sup></a><a href="/tags/%E7%8A%B6%E6%80%81%E6%9C%BA/">状态机<sup>1</sup></a><a href="/tags/FSM/">FSM<sup>1</sup></a><a href="/tags/BT/">BT<sup>1</sup></a><a href="/tags/GOAP/">GOAP<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/">游戏设计<sup>1</sup></a><a href="/tags/Lua/">Lua<sup>5</sup></a><a href="/tags/LuaJIT/">LuaJIT<sup>2</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/">虚拟机<sup>2</sup></a><a href="/tags/GC/">GC<sup>4</sup></a><a href="/tags/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">源码阅读<sup>1</sup></a><a href="/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80/">脚本语言<sup>1</sup></a><a href="/tags/ToLua/">ToLua<sup>4</sup></a><a href="/tags/C/">C#<sup>3</sup></a><a href="/tags/%E4%BA%A4%E4%BA%92/">交互<sup>3</sup></a><a href="/tags/CLR/">CLR<sup>1</sup></a><a href="/tags/IL2CPP/">IL2CPP<sup>3</sup></a><a href="/tags/C/">C++<sup>3</sup></a><a href="/tags/P-Invoke/">P/Invoke<sup>1</sup></a><a href="/tags/%E4%BA%92%E6%93%8D%E4%BD%9C/">互操作<sup>1</sup></a><a href="/tags/DllImport/">DllImport<sup>1</sup></a><a href="/tags/Marshal/">Marshal<sup>1</sup></a><a href="/tags/%E7%83%AD%E6%9B%B4%E6%96%B0/">热更新<sup>3</sup></a><a href="/tags/%E8%B7%A8%E8%AF%AD%E8%A8%80%E4%BA%A4%E4%BA%92/">跨语言交互<sup>1</sup></a><a href="/tags/C/">C<sup>3</sup></a><a href="/tags/API/">API<sup>1</sup></a><a href="/tags/%E6%A0%88/">栈<sup>1</sup></a><a href="/tags/tolua/">tolua<sup>1</sup></a><a href="/tags/%E4%B8%96%E7%95%8C%E8%A7%82/">世界观<sup>1</sup></a><a href="/tags/Hexo/">Hexo<sup>2</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/">博客<sup>2</sup></a><a href="/tags/%E9%9D%99%E6%80%81%E7%AB%99%E7%82%B9%E7%94%9F%E6%88%90%E5%99%A8/">静态站点生成器<sup>1</sup></a><a href="/tags/Node-js/">Node.js<sup>1</sup></a><a href="/tags/Git/">Git<sup>1</sup></a><a href="/tags/GitHub-Pages/">GitHub Pages<sup>1</sup></a><a href="/tags/Markdown/">Markdown<sup>1</sup></a><a href="/tags/%E5%86%99%E4%BD%9C/">写作<sup>1</sup></a><a href="/tags/VSCode/">VSCode<sup>2</sup></a><a href="/tags/Mac/">Mac<sup>2</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具<sup>1</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E8%BD%AF%E4%BB%B6/">效率软件<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/">游戏开发<sup>1</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E9%93%BE/">工具链<sup>1</sup></a><a href="/tags/VPN/">VPN<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%B7%A5%E5%85%B7/">网络工具<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E8%B5%84%E6%BA%90/">开发资源<sup>1</sup></a><a href="/tags/Google/">Google<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0/">技术学习<sup>1</sup></a><a href="/tags/GitHub%E5%8A%A0%E9%80%9F/">GitHub加速<sup>1</sup></a><a href="/tags/CMD/">CMD<sup>1</sup></a><a href="/tags/Windows/">Windows<sup>1</sup></a><a href="/tags/%E5%91%BD%E4%BB%A4%E8%A1%8C/">命令行<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%91%BD%E4%BB%A4/">网络命令<sup>1</sup></a><a href="/tags/%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86/">系统管理<sup>1</sup></a><a href="/tags/%E5%85%AC%E5%91%8A/">公告<sup>1</sup></a><a href="/tags/UGUI/">UGUI<sup>15</sup></a><a href="/tags/Canvas/">Canvas<sup>4</sup></a><a href="/tags/UI%E4%BC%98%E5%8C%96/">UI优化<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化<sup>16</sup></a><a href="/tags/RectTransform/">RectTransform<sup>2</sup></a><a href="/tags/UnityEditor/">UnityEditor<sup>12</sup></a><a href="/tags/%E7%BC%96%E8%BE%91%E5%99%A8%E6%89%A9%E5%B1%95/">编辑器扩展<sup>11</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91/">工具开发<sup>3</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E6%8F%90%E5%8D%87/">效率提升<sup>1</sup></a><a href="/tags/EditorWindow/">EditorWindow<sup>4</sup></a><a href="/tags/RenderTexture/">RenderTexture<sup>1</sup></a><a href="/tags/%E6%88%AA%E5%9B%BE%E5%B7%A5%E5%85%B7/">截图工具<sup>1</sup></a><a href="/tags/Handles/">Handles<sup>1</sup></a><a href="/tags/OnSceneGUI/">OnSceneGUI<sup>1</sup></a><a href="/tags/%E5%9C%BA%E6%99%AF%E8%A7%86%E5%9B%BE/">场景视图<sup>2</sup></a><a href="/tags/Gizmos/">Gizmos<sup>1</sup></a><a href="/tags/OnDrawGizmos/">OnDrawGizmos<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95%E5%B7%A5%E5%85%B7/">调试工具<sup>1</sup></a><a href="/tags/%E8%8A%82%E7%82%B9%E7%BC%96%E8%BE%91%E5%99%A8/">节点编辑器<sup>1</sup></a><a href="/tags/GraphView/">GraphView<sup>1</sup></a><a href="/tags/%E5%8F%AF%E8%A7%86%E5%8C%96%E7%BC%96%E7%A8%8B/">可视化编程<sup>1</sup></a><a href="/tags/%E6%8A%80%E8%83%BD%E7%BC%96%E8%BE%91%E5%99%A8/">技能编辑器<sup>1</sup></a><a href="/tags/FlatBuffers/">FlatBuffers<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BC%93%E5%AD%98/">数据缓存<sup>1</sup></a><a href="/tags/GamePlay/">GamePlay<sup>1</sup></a><a href="/tags/PropertyAttribute/">PropertyAttribute<sup>1</sup></a><a href="/tags/%E6%A3%80%E8%A7%86%E9%9D%A2%E6%9D%BF/">检视面板<sup>1</sup></a><a href="/tags/ScriptableObject/">ScriptableObject<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/">数据存储<sup>1</sup></a><a href="/tags/JSON/">JSON<sup>1</sup></a><a href="/tags/%E7%AA%97%E5%8F%A3%E5%BC%80%E5%8F%91/">窗口开发<sup>1</sup></a><a href="/tags/EditorGUI/">EditorGUI<sup>1</sup></a><a href="/tags/GUI%E6%8E%A7%E4%BB%B6/">GUI控件<sup>1</sup></a><a href="/tags/%E7%95%8C%E9%9D%A2%E8%AE%BE%E8%AE%A1/">界面设计<sup>2</sup></a><a href="/tags/MenuItem/">MenuItem<sup>1</sup></a><a href="/tags/%E8%8F%9C%E5%8D%95%E5%BC%80%E5%8F%91/">菜单开发<sup>1</sup></a><a href="/tags/%E5%BF%AB%E6%8D%B7%E9%94%AE/">快捷键<sup>1</sup></a><a href="/tags/CustomEditor/">CustomEditor<sup>1</sup></a><a href="/tags/PropertyDrawer/">PropertyDrawer<sup>1</sup></a><a href="/tags/Inspector/">Inspector<sup>1</sup></a><a href="/tags/EditorGUILayout/">EditorGUILayout<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E6%8E%A7%E4%BB%B6/">布局控件<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%88%98%E6%A1%88%E4%BE%8B/">实战案例<sup>2</sup></a><a href="/tags/AssetBundle/">AssetBundle<sup>5</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/">资源管理<sup>3</sup></a><a href="/tags/%E6%89%93%E5%8C%85%E7%AD%96%E7%95%A5/">打包策略<sup>3</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">内存管理<sup>4</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E5%88%86%E6%9E%90/">依赖分析<sup>1</sup></a><a href="/tags/%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96/">加载优化<sup>2</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E7%AE%A1%E7%90%86/">依赖管理<sup>1</sup></a><a href="/tags/%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">最佳实践<sup>2</sup></a><a href="/tags/Android/">Android<sup>2</sup></a><a href="/tags/%E4%BC%98%E5%8C%96/">优化<sup>3</sup></a><a href="/tags/Android-Studio/">Android Studio<sup>2</sup></a><a href="/tags/Profiler/">Profiler<sup>7</sup></a><a href="/tags/ADB/">ADB<sup>2</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90/">性能分析<sup>4</sup></a><a href="/tags/%E6%B5%AE%E7%82%B9%E6%95%B0/">浮点数<sup>1</sup></a><a href="/tags/%E7%B2%BE%E5%BA%A6/">精度<sup>1</sup></a><a href="/tags/Transform/">Transform<sup>1</sup></a><a href="/tags/%E5%9D%90%E6%A0%87%E7%B3%BB%E7%BB%9F/">坐标系统<sup>1</sup></a><a href="/tags/%E7%9B%B8%E6%9C%BA/">相机<sup>1</sup></a><a href="/tags/Z-Buffer/">Z-Buffer<sup>1</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/">内存优化<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD/">性能<sup>4</sup></a><a href="/tags/Boehm/">Boehm<sup>2</sup></a><a href="/tags/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">对象池<sup>2</sup></a><a href="/tags/Unsafe/">Unsafe<sup>1</sup></a><a href="/tags/CPU%E4%BC%98%E5%8C%96/">CPU优化<sup>2</sup></a><a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程<sup>1</sup></a><a href="/tags/Job-System/">Job System<sup>1</sup></a><a href="/tags/Burst/">Burst<sup>1</sup></a><a href="/tags/%E5%8D%8F%E7%A8%8B/">协程<sup>1</sup></a><a href="/tags/GPU%E4%BC%98%E5%8C%96/">GPU优化<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93/">渲染<sup>1</sup></a><a href="/tags/Shader/">Shader<sup>3</sup></a><a href="/tags/DrawCall/">DrawCall<sup>9</sup></a><a href="/tags/Batch/">Batch<sup>1</sup></a><a href="/tags/OverDraw/">OverDraw<sup>5</sup></a><a href="/tags/LOD/">LOD<sup>2</sup></a><a href="/tags/Mobile/">Mobile<sup>1</sup></a><a href="/tags/NGUI/">NGUI<sup>3</sup></a><a href="/tags/UI%E6%A1%86%E6%9E%B6/">UI框架<sup>1</sup></a><a href="/tags/UIPanel/">UIPanel<sup>1</sup></a><a href="/tags/UIWidget/">UIWidget<sup>1</sup></a><a href="/tags/%E7%A7%BB%E5%8A%A8%E7%AB%AF/">移动端<sup>1</sup></a><a href="/tags/TBR/">TBR<sup>1</sup></a><a href="/tags/%E5%B8%A6%E5%AE%BD%E4%BC%98%E5%8C%96/">带宽优化<sup>2</sup></a><a href="/tags/GPU/">GPU<sup>2</sup></a><a href="/tags/HUD%E4%BC%98%E5%8C%96/">HUD优化<sup>1</sup></a><a href="/tags/%E5%90%88%E6%89%B9/">合批<sup>1</sup></a><a href="/tags/%E7%BD%91%E6%A0%BC%E9%87%8D%E5%BB%BA/">网格重建<sup>1</sup></a><a href="/tags/UWA/">UWA<sup>3</sup></a><a href="/tags/%E6%80%BB%E7%BA%B2/">总纲<sup>1</sup></a><a href="/tags/UPR/">UPR<sup>4</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB/">优化体系<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E8%A7%84%E8%8C%83/">代码规范<sup>1</sup></a><a href="/tags/GC%E4%BC%98%E5%8C%96/">GC优化<sup>1</sup></a><a href="/tags/FPS%E6%A0%87%E5%87%86/">FPS标准<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96/">代码优化<sup>1</sup></a><a href="/tags/MonoBehaviour/">MonoBehaviour<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E4%BC%98%E5%8C%96/">渲染优化<sup>4</sup></a><a href="/tags/OverShading/">OverShading<sup>1</sup></a><a href="/tags/Shader%E4%BC%98%E5%8C%96/">Shader优化<sup>1</sup></a><a href="/tags/%E9%81%AE%E6%8C%A1%E5%89%94%E9%99%A4/">遮挡剔除<sup>2</sup></a><a href="/tags/OcclusionCulling/">OcclusionCulling<sup>1</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E4%BC%98%E5%8C%96/">资源优化<sup>2</sup></a><a href="/tags/%E7%BA%B9%E7%90%86%E4%BC%98%E5%8C%96/">纹理优化<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB/">代码阅读<sup>1</sup></a><a href="/tags/%E9%A1%B9%E7%9B%AE%E5%88%86%E6%9E%90/">项目分析<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E7%90%86%E8%A7%A3/">架构理解<sup>1</sup></a><a href="/tags/%E5%B7%A5%E7%A8%8B%E5%85%A5%E9%97%A8/">工程入门<sup>1</sup></a><a href="/tags/TextMeshPro/">TextMeshPro<sup>2</sup></a><a href="/tags/UI%E7%B3%BB%E7%BB%9F/">UI系统<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/">架构设计<sup>1</sup></a><a href="/tags/ScrollRect/">ScrollRect<sup>1</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%BB%9A%E5%8A%A8/">虚拟滚动<sup>1</sup></a><a href="/tags/%E5%88%97%E8%A1%A8%E4%BC%98%E5%8C%96/">列表优化<sup>1</sup></a><a href="/tags/%E9%94%9A%E7%82%B9/">锚点<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E7%B3%BB%E7%BB%9F/">布局系统<sup>1</sup></a><a href="/tags/UI%E9%80%82%E9%85%8D/">UI适配<sup>1</sup></a><a href="/tags/UI%E7%89%B9%E6%95%88/">UI特效<sup>1</sup></a><a href="/tags/%E7%B2%92%E5%AD%90%E7%B3%BB%E7%BB%9F/">粒子系统<sup>1</sup></a><a href="/tags/%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/">视觉效果<sup>1</sup></a><a href="/tags/TMP/">TMP<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E6%B8%B2%E6%9F%93/">文本渲染<sup>1</sup></a><a href="/tags/%E5%AD%97%E4%BD%93/">字体<sup>1</sup></a><a href="/tags/%E5%AF%8C%E6%96%87%E6%9C%AC/">富文本<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E6%A8%A1%E5%BC%8F/">渲染模式<sup>1</sup></a><a href="/tags/Sprite-Atlas/">Sprite Atlas<sup>1</sup></a><a href="/tags/%E5%9B%BE%E9%9B%86/">图集<sup>1</sup></a><a href="/tags/DoTween/">DoTween<sup>1</sup></a><a href="/tags/%E5%8A%A8%E7%94%BB/">动画<sup>1</sup></a><a href="/tags/%E8%BF%87%E6%B8%A1%E6%95%88%E6%9E%9C/">过渡效果<sup>1</sup></a><a href="/tags/UI%E5%8A%A8%E6%95%88/">UI动效<sup>1</sup></a><a href="/tags/UI%E6%9E%B6%E6%9E%84/">UI架构<sup>1</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E5%B7%A5%E5%85%B7/">优化工具<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95/">调试<sup>1</sup></a><a href="/tags/EventSystem/">EventSystem<sup>1</sup></a><a href="/tags/%E4%BA%8B%E4%BB%B6/">事件<sup>1</sup></a><a href="/tags/UI%E4%BA%8B%E4%BB%B6/">UI事件<sup>1</sup></a><a href="/tags/%E5%B1%8F%E5%B9%95%E9%80%82%E9%85%8D/">屏幕适配<sup>1</sup></a><a href="/tags/%E5%A4%9A%E5%88%86%E8%BE%A8%E7%8E%87/">多分辨率<sup>1</sup></a><a href="/tags/Canvas-Scaler/">Canvas Scaler<sup>1</sup></a><a href="/tags/%E9%80%82%E9%85%8D%E7%AD%96%E7%95%A5/">适配策略<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96/">自动化<sup>1</sup></a><a href="/tags/Jenkins/">Jenkins<sup>3</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/">性能测试<sup>1</sup></a><a href="/tags/Airtest/">Airtest<sup>2</sup></a><a href="/tags/CI-CD/">CI/CD<sup>2</sup></a><a href="/tags/%E5%B7%A5%E4%B8%9A%E5%8C%96%E6%B5%81%E7%A8%8B/">工业化流程<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%89%93%E5%8C%85/">自动化打包<sup>1</sup></a><a href="/tags/iOS/">iOS<sup>1</sup></a><a href="/tags/%E6%9E%84%E5%BB%BA/">构建<sup>1</sup></a><a href="/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/">持续集成<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/">自动化测试<sup>1</sup></a><a href="/tags/Python/">Python<sup>2</sup></a><a href="/tags/ARM/">ARM<sup>1</sup></a><a href="/tags/Xcode/">Xcode<sup>1</sup></a><a href="/tags/RenderDoc/">RenderDoc<sup>1</sup></a><a href="/tags/Stats/">Stats<sup>1</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/">性能监控<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%BB%9F%E8%AE%A1/">渲染统计<sup>1</sup></a><a href="/tags/FPS/">FPS<sup>1</sup></a><a href="/tags/Occlusion-Culling/">Occlusion Culling<sup>1</sup></a><a href="/tags/Overdraw/">Overdraw<sup>1</sup></a><a href="/tags/Base64/">Base64<sup>1</sup></a><a href="/tags/%E5%9B%BE%E7%89%87%E7%BC%96%E7%A0%81/">图片编码<sup>1</sup></a><a href="/tags/Texture2D/">Texture2D<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/">开发环境<sup>1</sup></a><a href="/tags/%E9%85%8D%E7%BD%AE/">配置<sup>1</sup></a><a href="/tags/Mono/">Mono<sup>1</sup></a><a href="/tags/NET-Core/">.NET Core<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF/">渲染管线<sup>1</sup></a><a href="/tags/%E6%89%B9%E5%A4%84%E7%90%86/">批处理<sup>1</sup></a><a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/">图形学<sup>1</sup></a><a href="/tags/%E7%AE%97%E6%B3%95/">算法<sup>2</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<sup>1</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">学习路线<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/">编程基础<sup>2</sup></a><a href="/tags/%E9%9D%A2%E8%AF%95%E5%87%86%E5%A4%87/">面试准备<sup>2</sup></a><a href="/tags/%E6%8C%87%E9%92%88/">指针<sup>1</sup></a><a href="/tags/%E6%95%B0%E7%BB%84/">数组<sup>1</sup></a><a href="/tags/%E6%8E%92%E5%BA%8F/">排序<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/">编程入门<sup>1</sup></a><a href="/tags/%E8%8B%B1%E8%AF%AD/">英语<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E8%AF%8D%E6%B1%87/">技术词汇<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E6%9C%AF%E8%AF%AD/">编程术语<sup>1</sup></a><a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<sup>1</sup></a><a href="/tags/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式<sup>1</sup></a><a href="/tags/Regex/">Regex<sup>1</sup></a><a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%A4%84%E7%90%86/">字符串处理<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E9%AA%8C%E8%AF%81/">数据验证<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86/">文本处理<sup>1</sup></a><a href="/tags/BestHTTP/">BestHTTP<sup>2</sup></a><a href="/tags/WebSocket/">WebSocket<sup>1</sup></a><a href="/tags/Socket-IO/">Socket.IO<sup>1</sup></a><a href="/tags/SignalR/">SignalR<sup>1</sup></a><a href="/tags/SSE/">SSE<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%97%B6%E9%80%9A%E4%BF%A1/">实时通信<sup>1</sup></a><a href="/tags/HTTP/">HTTP<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82/">网络请求<sup>1</sup></a><a href="/tags/%E6%8F%92%E4%BB%B6/">插件<sup>1</sup></a><a href="/tags/Protobuf/">Protobuf<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/">网络通信<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%8F%E5%88%97%E5%8C%96/">数据序列化<sup>1</sup></a><a href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0/">跨平台<sup>1</sup></a><a href="/tags/%E5%B8%A7%E5%90%8C%E6%AD%A5/">帧同步<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%90%8C%E6%AD%A5/">网络同步<sup>1</sup></a><a href="/tags/%E5%A4%9A%E4%BA%BA%E6%B8%B8%E6%88%8F/">多人游戏<sup>1</sup></a><a href="/tags/%E5%AE%9A%E7%82%B9%E6%95%B0/">定点数<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%90%8C%E6%AD%A5/">游戏同步<sup>1</sup></a><a href="/tags/%E5%BC%B1%E7%BD%91%E4%BC%98%E5%8C%96/">弱网优化<sup>1</sup></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><a href="/" title="返回博客主页" id="site-name"><span class="title">主页</span><i class="solitude fas fa-home"></i></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">Unity 编辑器扩展完全指南：从入门到大师的效率革命</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/categories/%E5%8D%83%E5%B9%B4%E5%BF%97-%E9%81%93%E5%8A%AB/"><span>千年志*道劫</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/"><span>技术博客</span></a></div></div></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="nav-totop" onclick="sco.toTop()"><a class="totopbtn"><i class="solitude fas fa-arrow-up"></i><span id="percent">0</span></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude fas fa-bars"></i></a></div></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><span class="post-meta-categories"><a class="post-meta-categories" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/">技术文章</a></span><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Unity/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>Unity</span></a><a class="post-meta__tags" href="/tags/UnityEditor/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>UnityEditor</span></a><a class="post-meta__tags" href="/tags/%E7%BC%96%E8%BE%91%E5%99%A8%E6%89%A9%E5%B1%95/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>编辑器扩展</span></a><a class="post-meta__tags" href="/tags/%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>工具开发</span></a><a class="post-meta__tags" href="/tags/%E6%95%88%E7%8E%87%E6%8F%90%E5%8D%87/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>效率提升</span></a></div></div></div></div><h1 class="post-title">Unity 编辑器扩展完全指南：从入门到大师的效率革命</h1><div id="post-meta"><div class="meta-secondline"></div></div></div><div class="post-radius-bottom"></div><article class="post-content article-container"><h1 id="🛠️-Unity-编辑器扩展完全指南：从入门到大师的效率革命"><a href="#🛠️-Unity-编辑器扩展完全指南：从入门到大师的效率革命" class="headerlink" title="🛠️ Unity 编辑器扩展完全指南：从入门到大师的效率革命"></a>🛠️ Unity 编辑器扩展完全指南：从入门到大师的效率革命</h1><blockquote>
+<p>💡 <strong>你是否有过这样的经历</strong>？</p>
+<ul>
+<li>配置一个关卡需要手动点击 100 次？</li>
+<li>每次打包都要重复 10 道繁琐步骤？</li>
+<li>策划想要快速调整参数，却只能每次都来找你？</li>
+<li>看着同事用自己写的工具 3 秒搞定，你还在手动操作 30 分钟？</li>
+</ul>
+<p><strong>别担心！</strong> 这个系列将教你如何开发 Unity 编辑器工具，让你的开发效率<strong>提升 10 倍</strong>！</p>
+</blockquote>
+<hr>
+<h2 id="📖-开篇故事：工具的力量"><a href="#📖-开篇故事：工具的力量" class="headerlink" title="📖 开篇故事：工具的力量"></a>📖 开篇故事：工具的力量</h2><h3 id="从-3-小时到-3-秒的蜕变"><a href="#从-3-小时到-3-秒的蜕变" class="headerlink" title="从 3 小时到 3 秒的蜕变"></a>从 3 小时到 3 秒的蜕变</h3><p>小张是一名 Unity 开发者，每天的工作包括：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────────┐</span><br><span class="line">│  ❌ 没有工具的小张：                                        │</span><br><span class="line">│                                                             │</span><br><span class="line">│  09:00  手动配置 50 个 NPC 的属性（2小时）                  │</span><br><span class="line">│  11:00  调整 UI 预制体（30分钟）                             │</span><br><span class="line">│  14:00  打包测试版本（1小时）                                │</span><br><span class="line">│  16:00  修复配置错误（1小时）                                │</span><br><span class="line">│                                                             │</span><br><span class="line">│  结果：累成狗，还经常出错                                    │</span><br><span class="line">└─────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>学习了编辑器扩展后：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────────┐</span><br><span class="line">│  ✅ 会写工具的小张：                                        │</span><br><span class="line">│                                                             │</span><br><span class="line">│  09:00  使用可视化配置工具（5分钟）                          │</span><br><span class="line">│  09:05  一键调整 UI 预制体（3分钟）                          │</span><br><span class="line">│  09:10  一键打包多版本（3分钟）                              │</span><br><span class="line">│  09:15  工具自动检测错误（0错误）                            │</span><br><span class="line">│                                                             │</span><br><span class="line">│  结果：轻松愉快，有时间摸鱼...啊不，学习新技术！              │</span><br><span class="line">└─────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>效率提升：3600%！</strong> 🚀</p>
+<blockquote>
+<p>💡 <strong>核心真相</strong>：<strong>好的工具不是偷懒，而是让机器做它擅长的事，让你专注于创意！</strong></p>
+</blockquote>
+<h2 id="📚-目录"><a href="#📚-目录" class="headerlink" title="📚 目录"></a>📚 目录</h2><ul>
+<li><a href="#%E4%B8%80%E4%B8%BA%E4%BB%80%E4%B9%88%E5%AD%A6%E4%B9%A0%E7%BC%96%E8%BE%91%E5%99%A8%E6%89%A9%E5%B1%95">一、为什么学习编辑器扩展？</a></li>
+<li><a href="#%E4%BA%8C%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3">二、官方文档</a></li>
+<li><a href="#%E4%B8%89%E7%BC%96%E8%BE%91%E5%99%A8-ui-%E7%9A%84%E5%9B%9B%E7%A7%8D%E7%BC%96%E5%86%99%E6%96%B9%E5%BC%8F">三、编辑器 UI 的四种编写方式</a></li>
+<li><a href="#%E5%9B%9BeditorGUILayout-%E4%B8%8E-GUILayout-%E7%9A%84%E5%8C%BA%E5%88%AB">四、EditorGUILayout 与 GUILayout 的区别</a></li>
+<li><a href="#%E4%BA%94editor-%E7%89%B9%E6%AE%8A%E6%96%87%E4%BB%B6%E5%A4%B9">五、Editor 特殊文件夹</a></li>
+<li><a href="#%E5%85%ADeditor-default-resources-%E6%96%87%E4%BB%B6%E5%A4%B9">六、Editor Default Resources 文件夹</a></li>
+<li><a href="#%E4%B8%83%E6%80%BB%E7%BB%93">七、总结</a></li>
+</ul>
+<hr>
+<h2 id="🎯-一、为什么学习编辑器扩展？——从重复劳动到创意解放"><a href="#🎯-一、为什么学习编辑器扩展？——从重复劳动到创意解放" class="headerlink" title="🎯 一、为什么学习编辑器扩展？——从重复劳动到创意解放"></a>🎯 一、为什么学习编辑器扩展？——从重复劳动到创意解放</h2><p>编写游戏快捷工具可以显著提升开发效率，从以下五个维度来看：</p>
+<table>
+<thead>
+<tr>
+<th>🎨 工具类型</th>
+<th>💡 解决什么痛点</th>
+<th>📈 效率提升</th>
+<th>🎯 适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>📊 可视化蓝图</strong></td>
+<td>手动配置参数易出错，策划看不懂代码</td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>技能系统、任务配置</td>
+</tr>
+<tr>
+<td><strong>📦 打包流程自动化</strong></td>
+<td>每次打包重复操作，容易遗漏步骤</td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>多版本测试、正式发布</td>
+</tr>
+<tr>
+<td><strong>🛠️ 服务器辅助工具</strong></td>
+<td>数据管理混乱，Excel 到游戏手动转换</td>
+<td>⭐⭐⭐⭐</td>
+<td>游戏数据、配置表</td>
+</tr>
+<tr>
+<td><strong>🎵 音视频工具</strong></td>
+<td>资源处理复杂，格式转换繁琐</td>
+<td>⭐⭐⭐</td>
+<td>音效管理、动画片段</td>
+</tr>
+<tr>
+<td><strong>⚡ 性能优化工具</strong></td>
+<td>性能问题难定位，需要逐个排查</td>
+<td>⭐⭐⭐⭐</td>
+<td>Draw Call分析、内存检测</td>
+</tr>
+</tbody></table>
+<h3 id="🎮-真实案例展示"><a href="#🎮-真实案例展示" class="headerlink" title="🎮 真实案例展示"></a>🎮 真实案例展示</h3><p><strong>案例 1：技能配置工具</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">❌ 传统方式：</span><br><span class="line">- 打开代码 → 修改数值 → 保存 → 等待编译 → 进入游戏 → 测试</span><br><span class="line">- 耗时：3分钟/次</span><br><span class="line"></span><br><span class="line">✅ 可视化工具：</span><br><span class="line">- 打开工具 → 拖动滑块 → 实时预览 → 保存</span><br><span class="line">- 耗时：10秒/次</span><br><span class="line"></span><br><span class="line">效率提升：18倍！</span><br></pre></td></tr></table></figure>
+
+<p><strong>案例 2：批量打包工具</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">❌ 传统方式：</span><br><span class="line">- 切换平台 → 等待 → 修改配置 → 构建 → 等待 → 打包 → 等待</span><br><span class="line">- 耗时：30分钟/版本 × 5个版本 = 2.5小时</span><br><span class="line"></span><br><span class="line">✅ 自动化工具：</span><br><span class="line">- 点击&quot;一键打包&quot; → 喝杯咖啡 → 完成</span><br><span class="line">- 耗时：30分钟（并行处理）</span><br><span class="line"></span><br><span class="line">效率提升：5倍，节省2小时！</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>💡 <strong>核心价值</strong>：</p>
+<ul>
+<li><strong>团队协作</strong>：策划也能用，减少沟通成本</li>
+<li><strong>减少错误</strong>：工具自动校验，避免手误</li>
+<li><strong>解放时间</strong>：把重复劳动交给机器，你专注于创意</li>
+<li><strong>提升士气</strong>：从”搬砖工”变成”工具达人”</li>
+</ul>
+</blockquote>
+<h3 id="📊-效率提升路径图"><a href="#📊-效率提升路径图" class="headerlink" title="📊 效率提升路径图"></a>📊 效率提升路径图</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">graph LR</span><br><span class="line">    A[原始开发] --&gt; B[手动配置]</span><br><span class="line">    B --&gt; C[重复操作]</span><br><span class="line">    C --&gt; D[效率低下]</span><br><span class="line"></span><br><span class="line">    A --&gt; E[编辑器扩展]</span><br><span class="line">    E --&gt; F[可视化工具]</span><br><span class="line">    F --&gt; G[自动化流程]</span><br><span class="line">    G --&gt; H[效率倍增]</span><br><span class="line"></span><br><span class="line">    style E fill:#e1f5e1</span><br><span class="line">    style F fill:#e1f5e1</span><br><span class="line">    style G fill:#e1f5e1</span><br><span class="line">    style H fill:#e1f5e1</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="二、官方文档"><a href="#二、官方文档" class="headerlink" title="二、官方文档"></a>二、官方文档</h2><p><a target="_blank" rel="noopener" href="https://docs.unity3d.com/Manual">Unity Editor 官方文档</a></p>
+<p><strong>搜索关键词</strong>：<code>UnityEditor</code></p>
+<hr>
+<h2 id="三、编辑器-UI-的四种编写方式"><a href="#三、编辑器-UI-的四种编写方式" class="headerlink" title="三、编辑器 UI 的四种编写方式"></a>三、编辑器 UI 的四种编写方式</h2><p>Unity 提供了四种编辑器 UI 编写方式，复杂度递增：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">graph TD</span><br><span class="line">    A[编辑器UI编写方式] --&gt; B[方式一: 运行时UI]</span><br><span class="line">    A --&gt; C[方式二: Attribute特性]</span><br><span class="line">    A --&gt; D[方式三: CustomEditor]</span><br><span class="line">    A --&gt; E[方式四: EditorWindow]</span><br><span class="line"></span><br><span class="line">    C --&gt; C1[复杂度: ⭐]</span><br><span class="line">    D --&gt; D1[复杂度: ⭐⭐⭐]</span><br><span class="line">    E --&gt; E1[复杂度: ⭐⭐⭐⭐⭐]</span><br><span class="line"></span><br><span class="line">    style C fill:#fff4e6</span><br><span class="line">    style D fill:#ffe6e6</span><br><span class="line">    style E fill:#e6f3ff</span><br></pre></td></tr></table></figure>
+
+<h3 id="方式一：运行时-UI"><a href="#方式一：运行时-UI" class="headerlink" title="方式一：运行时 UI"></a>方式一：运行时 UI</h3><p>不在本文讨论范围，指游戏运行时的用户界面。</p>
+<hr>
+<h3 id="方式二：特性-Attribute-编辑"><a href="#方式二：特性-Attribute-编辑" class="headerlink" title="方式二：特性 Attribute 编辑"></a>方式二：特性 Attribute 编辑</h3><p>使用 <code>UnityEngine</code> 特性属性，在检视面板中简单展示。</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> UnityEngine;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">Player</span> : <span class="title">MonoBehaviour</span></span><br><span class="line">&#123;</span><br><span class="line">    [<span class="meta">Header(<span class="string">&quot;角色属性&quot;</span>)</span>]</span><br><span class="line">    [<span class="meta">SerializeField</span>] <span class="keyword">private</span> <span class="built_in">int</span> level = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    [<span class="meta">Range(0, 100)</span>]</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">float</span> health = <span class="number">100f</span>;</span><br><span class="line"></span><br><span class="line">    [<span class="meta">TextArea(3, 10)</span>]</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span> description;</span><br><span class="line"></span><br><span class="line">    [<span class="meta">Tooltip(<span class="string">&quot;攻击力&quot;</span>)</span>]</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">int</span> attack = <span class="number">10</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>作用</th>
+<th>使用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>[Header]</code></td>
+<td>添加标题分隔</td>
+<td>相关属性分组</td>
+</tr>
+<tr>
+<td><code>[SerializeField]</code></td>
+<td>在检视面板显示私有字段</td>
+<td>封装公开属性</td>
+</tr>
+<tr>
+<td><code>[Range]</code></td>
+<td>滑动条限制数值范围</td>
+<td>数值范围控制</td>
+</tr>
+<tr>
+<td><code>[TextArea]</code></td>
+<td>多行文本输入框</td>
+<td>长文本输入</td>
+</tr>
+<tr>
+<td><code>[Tooltip]</code></td>
+<td>鼠标悬停提示</td>
+<td>属性说明</td>
+</tr>
+<tr>
+<td><code>[Space]</code></td>
+<td>添加垂直间距</td>
+<td>视觉分隔</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>⚠️ <strong>注意</strong>：Attribute 特性适合简单场景，复杂的自定义 UI 需要使用后两种方式。</p>
+</blockquote>
+<hr>
+<h3 id="方式三：CustomEditor-自定义检视面板"><a href="#方式三：CustomEditor-自定义检视面板" class="headerlink" title="方式三：CustomEditor 自定义检视面板"></a>方式三：CustomEditor 自定义检视面板</h3><p>当特性属性无法满足需求时，使用 <code>CustomEditor</code> 自定义检视面板。</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> UnityEngine;</span><br><span class="line"><span class="keyword">using</span> UnityEditor;</span><br><span class="line"></span><br><span class="line">[<span class="meta">CustomEditor(typeof(Player))</span>]</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">PlayerInspector</span> : <span class="title">Editor</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">private</span> SerializedObject serializedObj;</span><br><span class="line">    <span class="keyword">private</span> SerializedProperty levelProp;</span><br><span class="line">    <span class="keyword">private</span> SerializedProperty healthProp;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">OnEnable</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        serializedObj = <span class="keyword">new</span> SerializedObject(target);</span><br><span class="line">        levelProp = serializedObj.FindProperty(<span class="string">&quot;level&quot;</span>);</span><br><span class="line">        healthProp = serializedObj.FindProperty(<span class="string">&quot;health&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OnInspectorGUI</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 更新序列化对象</span></span><br><span class="line">        serializedObj.Update();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 自定义绘制</span></span><br><span class="line">        EditorGUILayout.LabelField(<span class="string">&quot;角色信息&quot;</span>, EditorStyles.boldLabel);</span><br><span class="line"></span><br><span class="line">        EditorGUI.indentLevel++;</span><br><span class="line">        EditorGUILayout.PropertyField(levelProp, <span class="keyword">new</span> GUIContent(<span class="string">&quot;等级&quot;</span>));</span><br><span class="line">        EditorGUILayout.PropertyField(healthProp, <span class="keyword">new</span> GUIContent(<span class="string">&quot;生命值&quot;</span>));</span><br><span class="line">        EditorGUI.indentLevel--;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 应用修改</span></span><br><span class="line">        serializedObj.ApplyModifiedProperties();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>CustomEditor 工作流程</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">graph TD</span><br><span class="line">    A[OnEnable] --&gt; B[创建 SerializedObject]</span><br><span class="line">    B --&gt; C[获取 SerializedProperty]</span><br><span class="line">    C --&gt; D[OnInspectorGUI 绘制]</span><br><span class="line">    D --&gt; E[serializedObj.Update]</span><br><span class="line">    E --&gt; F[PropertyField 绘制属性]</span><br><span class="line">    F --&gt; G[ApplyModifiedProperties]</span><br><span class="line">    G --&gt; D</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="方式四：EditorWindow-窗口面板"><a href="#方式四：EditorWindow-窗口面板" class="headerlink" title="方式四：EditorWindow 窗口面板"></a>方式四：EditorWindow 窗口面板</h3><p>开发复杂的独立工具窗口，如动画状态机、行为树编辑器等。</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> UnityEngine;</span><br><span class="line"><span class="keyword">using</span> UnityEditor;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">BugReporterWindow</span> : <span class="title">EditorWindow</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="built_in">string</span> bugTitle = <span class="string">&quot;&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="built_in">string</span> bugDescription = <span class="string">&quot;&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="built_in">int</span> severity = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    [<span class="meta">MenuItem(<span class="string">&quot;Tools/Bug Reporter %#B&quot;</span>)</span>]</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">ShowWindow</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">var</span> window = GetWindow&lt;BugReporterWindow&gt;(<span class="string">&quot;Bug Reporter&quot;</span>);</span><br><span class="line">        window.minSize = <span class="keyword">new</span> Vector2(<span class="number">400</span>, <span class="number">300</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">OnGUI</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        GUILayout.Label(<span class="string">&quot;Bug 报告系统&quot;</span>, EditorStyles.boldLabel);</span><br><span class="line"></span><br><span class="line">        GUILayout.Space(<span class="number">10</span>);</span><br><span class="line"></span><br><span class="line">        bugTitle = EditorGUILayout.TextField(<span class="string">&quot;Bug 标题&quot;</span>, bugTitle);</span><br><span class="line">        bugDescription = EditorGUILayout.TextArea(bugDescription, GUILayout.Height(<span class="number">100</span>));</span><br><span class="line"></span><br><span class="line">        severity = EditorGUILayout.IntSlider(<span class="string">&quot;严重程度&quot;</span>, severity, <span class="number">0</span>, <span class="number">5</span>);</span><br><span class="line"></span><br><span class="line">        GUILayout.FlexibleSpace();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">using</span> (<span class="keyword">new</span> EditorGUI.DisabledScope(<span class="built_in">string</span>.IsNullOrEmpty(bugTitle)))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (GUILayout.Button(<span class="string">&quot;提交 Bug&quot;</span>, GUILayout.Height(<span class="number">30</span>)))</span><br><span class="line">            &#123;</span><br><span class="line">                SubmitBug();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">SubmitBug</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        Debug.Log(<span class="string">$&quot;Bug 已提交: <span class="subst">&#123;bugTitle&#125;</span>&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>EditorWindow 快捷键说明</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>快捷键格式</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>%#B</code></td>
+<td>Ctrl+Shift+B (Win) &#x2F; Cmd+Shift+B (Mac)</td>
+<td><code>&quot;Tools/Bug Reporter %#B&quot;</code></td>
+</tr>
+<tr>
+<td><code>%B</code></td>
+<td>Ctrl+B (Win) &#x2F; Cmd+B (Mac)</td>
+<td><code>&quot;Tools/Open %#O&quot;</code></td>
+</tr>
+<tr>
+<td><code>_B</code></td>
+<td>Shift+B</td>
+<td><code>&quot;Tools/Save _S&quot;</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="四、EditorGUILayout-与-GUILayout-的区别"><a href="#四、EditorGUILayout-与-GUILayout-的区别" class="headerlink" title="四、EditorGUILayout 与 GUILayout 的区别"></a>四、EditorGUILayout 与 GUILayout 的区别</h2><table>
+<thead>
+<tr>
+<th>区别</th>
+<th>EditorGUILayout</th>
+<th>GUILayout</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>标签</strong></td>
+<td>每个控件有前置标签</td>
+<td>无前置标签</td>
+</tr>
+<tr>
+<td><strong>提示信息</strong></td>
+<td>更丰富完整</td>
+<td>较简洁</td>
+</tr>
+<tr>
+<td><strong>推荐用途</strong></td>
+<td>编辑器工具开发</td>
+<td>运行时简单 UI</td>
+</tr>
+</tbody></table>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// GUILayout - 无标签</span></span><br><span class="line"><span class="built_in">string</span> bugName = GUILayout.TextField(<span class="string">&quot;bug name&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// EditorGUILayout - 有标签</span></span><br><span class="line"><span class="built_in">string</span> bugName2 = EditorGUILayout.TextField(<span class="string">&quot;Bug 名称&quot;</span>, bugName2);</span><br></pre></td></tr></table></figure>
+
+<p><strong>选择建议</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">graph LR</span><br><span class="line">    A[需要UI控件] --&gt; B&#123;编辑器环境?&#125;</span><br><span class="line">    B --&gt;|是| C[EditorGUILayout]</span><br><span class="line">    B --&gt;|否| D[GUILayout]</span><br><span class="line"></span><br><span class="line">    C --&gt; E[自动标签 + 丰富提示]</span><br><span class="line">    D --&gt; F[简洁 + 手动标签]</span><br><span class="line"></span><br><span class="line">    style C fill:#e6f3ff</span><br><span class="line">    style D fill:#fff4e6</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="五、Editor-特殊文件夹"><a href="#五、Editor-特殊文件夹" class="headerlink" title="五、Editor 特殊文件夹"></a>五、Editor 特殊文件夹</h2><h3 id="5-1-Editor-文件夹"><a href="#5-1-Editor-文件夹" class="headerlink" title="5.1 Editor 文件夹"></a>5.1 Editor 文件夹</h3><table>
+<thead>
+<tr>
+<th>路径</th>
+<th>说明</th>
+<th>优先级</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Assets/Editor</code></td>
+<td>标准位置</td>
+<td>⭐⭐⭐</td>
+</tr>
+<tr>
+<td><code>Assets/xxx/Editor/</code></td>
+<td>嵌套在任意文件夹下</td>
+<td>⭐⭐</td>
+</tr>
+</tbody></table>
+<p>Editor 文件夹中的脚本使用 <code>UnityEditor</code> 命名空间，<strong>不会被打包到游戏中</strong>。</p>
+<blockquote>
+<p>⚠️ <strong>重要</strong>：Editor 文件夹中的所有代码在最终构建时会被完全排除。</p>
+</blockquote>
+<hr>
+<h3 id="5-2-程序集编译规则"><a href="#5-2-程序集编译规则" class="headerlink" title="5.2 程序集编译规则"></a>5.2 程序集编译规则</h3><table>
+<thead>
+<tr>
+<th>文件夹位置</th>
+<th>编译目标</th>
+<th>编译顺序</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Assets/Editor</code></td>
+<td>Assembly-CSharp-Editor.dll</td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>Standard Assets/Editor</code></td>
+<td>Assembly-CSharp-Editor-firstpass.dll</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>Pro Standard Assets/Editor</code></td>
+<td>Assembly-CSharp-Editor-firstpass.dll</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>Plugins/Editor</code></td>
+<td>Assembly-CSharp-Editor-firstpass.dll</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<p><strong>编译顺序示意图</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">graph TD</span><br><span class="line">    A[Standard Assets/Editor] --&gt; B[Assembly-CSharp-Editor-firstpass]</span><br><span class="line">    C[Plugins/Editor] --&gt; B</span><br><span class="line">    B --&gt; D[运行时代码]</span><br><span class="line">    D --&gt; E[Assembly-CSharp-Editor]</span><br><span class="line">    F[Assets/Editor] --&gt; E</span><br><span class="line"></span><br><span class="line">    style B fill:#e6f3ff</span><br><span class="line">    style E fill:#ffe6e6</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>⚠️ <strong>注意</strong>：Assembly-CSharp.dll 中<strong>不能</strong>使用 UnityEditor.dll</p>
+</blockquote>
+<hr>
+<h3 id="5-3-模块引用原则"><a href="#5-3-模块引用原则" class="headerlink" title="5.3 模块引用原则"></a>5.3 模块引用原则</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────┐</span><br><span class="line">│   运行时模块      │  Assembly-CSharp.dll</span><br><span class="line">│   (游戏代码)     │</span><br><span class="line">└─────────────────┘</span><br><span class="line">         ↑ 引用</span><br><span class="line">┌─────────────────┐</span><br><span class="line">│   编辑器模块      │  Assembly-CSharp-Editor.dll</span><br><span class="line">│   (工具代码)     │</span><br><span class="line">└─────────────────┘</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>引用方向</th>
+<th>状态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Editor → Runtime</strong></td>
+<td>✅ 允许</td>
+<td>编辑器模块可以引用运行时模块代码</td>
+</tr>
+<tr>
+<td><strong>Runtime → Editor</strong></td>
+<td>❌ 禁止</td>
+<td>运行时模块不能引用编辑器模块代码</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>正确做法</strong>：Editor 模块引用运行时模块代码<br>🚫 <strong>错误做法</strong>：运行时模块引用 Editor 模块代码</p>
+</blockquote>
+<hr>
+<h3 id="5-4-条件编译"><a href="#5-4-条件编译" class="headerlink" title="5.4 条件编译"></a>5.4 条件编译</h3><p>如果不在 Editor 文件夹中的脚本需要使用 Editor API，需要使用条件编译：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> UnityEngine;</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> UNITY_EDITOR</span></span><br><span class="line"><span class="keyword">using</span> UnityEditor;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">NewBehaviourScript</span> : <span class="title">MonoBehaviour</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">OnEnable</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> UNITY_EDITOR</span></span><br><span class="line">        EditorWindow.GetWindow&lt;ExampleWindow&gt;();</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>宏定义</th>
+<th>说明</th>
+<th>平台</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>UNITY_EDITOR</code></td>
+<td>编辑器环境中</td>
+<td>所有编辑器</td>
+</tr>
+<tr>
+<td><code>UNITY_EDITOR_WIN</code></td>
+<td>Windows 编辑器</td>
+<td>Windows</td>
+</tr>
+<tr>
+<td><code>UNITY_EDITOR_OSX</code></td>
+<td>macOS 编辑器</td>
+<td>macOS</td>
+</tr>
+<tr>
+<td><code>UNITY_EDITOR_64</code></td>
+<td>64 位编辑器</td>
+<td>64位系统</td>
+</tr>
+<tr>
+<td><code>UNITY_STANDALONE</code></td>
+<td>独立构建平台</td>
+<td>PC&#x2F;Mac&#x2F;Linux</td>
+</tr>
+</tbody></table>
+<p><strong>条件编译决策图</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">graph TD</span><br><span class="line">    A[需要使用Editor API] --&gt; B&#123;代码位置&#125;</span><br><span class="line">    B --&gt;|Editor文件夹| C[直接使用]</span><br><span class="line">    B --&gt;|Runtime文件夹| D[使用条件编译]</span><br><span class="line"></span><br><span class="line">    D --&gt; E[#if UNITY_EDITOR]</span><br><span class="line">    E --&gt; F[Editor代码]</span><br><span class="line">    F --&gt; G[#endif]</span><br><span class="line">    G --&gt; H[运行时代码]</span><br><span class="line"></span><br><span class="line">    style C fill:#e1f5e1</span><br><span class="line">    style E fill:#fff4e6</span><br><span class="line">    style H fill:#e6f3ff</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、Editor-Default-Resources-文件夹"><a href="#六、Editor-Default-Resources-文件夹" class="headerlink" title="六、Editor Default Resources 文件夹"></a>六、Editor Default Resources 文件夹</h2><p>用于存放仅 Editor 模块可使用的资源，类似于 <code>Resources</code> 文件夹，但<strong>不会被打包到游戏中</strong>。</p>
+<h3 id="6-1-加载资源"><a href="#6-1-加载资源" class="headerlink" title="6.1 加载资源"></a>6.1 加载资源</h3><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 加载 Editor Default Resources 中的资源</span></span><br><span class="line">Texture tex = EditorGUIUtility.Load(<span class="string">&quot;logo.png&quot;</span>) <span class="keyword">as</span> Texture;</span><br><span class="line">Material mat = EditorGUIUtility.Load(<span class="string">&quot;Materials/UI.mat&quot;</span>) <span class="keyword">as</span> Material;</span><br></pre></td></tr></table></figure>
+
+<p><strong>资源加载路径对照</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>资源路径</th>
+<th>加载代码</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Assets/Editor Default Resources/logo.png</code></td>
+<td><code>&quot;logo.png&quot;</code></td>
+<td>根目录直接访问</td>
+</tr>
+<tr>
+<td><code>Assets/Editor Default Resources/Materials/UI.mat</code></td>
+<td><code>&quot;Materials/UI.mat&quot;</code></td>
+<td>子目录路径访问</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="6-2-查看所有内置资源"><a href="#6-2-查看所有内置资源" class="headerlink" title="6.2 查看所有内置资源"></a>6.2 查看所有内置资源</h3><p>Unity 内置了大量编辑器资源，以下代码可查看所有内置资源名称：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">MenuItem(<span class="string">&quot;Tools/查看内置资源 %#I&quot;</span>)</span>]</span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">GetBuiltinAssetNames</span>()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">var</span> flags = BindingFlags.Static | BindingFlags.NonPublic;</span><br><span class="line">    <span class="keyword">var</span> info = <span class="keyword">typeof</span>(EditorGUIUtility).GetMethod(<span class="string">&quot;GetEditorAssetBundle&quot;</span>, flags);</span><br><span class="line">    <span class="keyword">var</span> bundle = info.Invoke(<span class="literal">null</span>, <span class="keyword">new</span> <span class="built_in">object</span>[<span class="number">0</span>]) <span class="keyword">as</span> AssetBundle;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">foreach</span> (<span class="keyword">var</span> name <span class="keyword">in</span> bundle.GetAllAssetNames())</span><br><span class="line">    &#123;</span><br><span class="line">        Debug.Log(name);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>常见内置资源类型</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>资源类型</th>
+<th>说明</th>
+<th>路径前缀</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>图标（Icons）</td>
+<td>编辑器图标</td>
+<td><code>Icons/</code></td>
+</tr>
+<tr>
+<td>脚本图标（Script Icons）</td>
+<td>脚本类型图标</td>
+<td><code>ScriptableObject/</code></td>
+</tr>
+<tr>
+<td>样式（Styles）</td>
+<td>GUI样式</td>
+<td><code>Styles/</code></td>
+</tr>
+<tr>
+<td>皮肤（Skins）</td>
+<td>GUISkin</td>
+<td><code>Skin/</code></td>
+</tr>
+</tbody></table>
+<p><strong>Editor Default Resources 与 Resources 对比</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>Editor Default Resources</th>
+<th>Resources</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>打包到游戏</strong></td>
+<td>❌ 否</td>
+<td>✅ 是</td>
+</tr>
+<tr>
+<td><strong>仅编辑器可用</strong></td>
+<td>✅ 是</td>
+<td>❌ 否</td>
+</tr>
+<tr>
+<td><strong>加载方式</strong></td>
+<td><code>EditorGUIUtility.Load()</code></td>
+<td><code>Resources.Load()</code></td>
+</tr>
+<tr>
+<td><strong>目录要求</strong></td>
+<td><code>Assets/Editor Default Resources/</code></td>
+<td><code>Assets/Resources/</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🎓-七、总结与实战建议"><a href="#🎓-七、总结与实战建议" class="headerlink" title="🎓 七、总结与实战建议"></a>🎓 七、总结与实战建议</h2><h3 id="📝-核心知识点回顾"><a href="#📝-核心知识点回顾" class="headerlink" title="📝 核心知识点回顾"></a>📝 核心知识点回顾</h3><table>
+<thead>
+<tr>
+<th>主题</th>
+<th>🎯 要点</th>
+<th>💎 复杂度</th>
+<th>⏱️ 学习时间</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>四种 UI 方式</strong></td>
+<td>Attribute → CustomEditor → EditorWindow → 复杂工具</td>
+<td>⭐ ~ ⭐⭐⭐⭐⭐</td>
+<td>2-4周</td>
+</tr>
+<tr>
+<td><strong>Editor 文件夹</strong></td>
+<td>代码不会被编译到游戏中，安全隔离</td>
+<td>⭐</td>
+<td>10分钟</td>
+</tr>
+<tr>
+<td><strong>条件编译</strong></td>
+<td>运行时代码中使用 Editor API 的正确方式</td>
+<td>⭐⭐</td>
+<td>30分钟</td>
+</tr>
+<tr>
+<td><strong>Editor Default Resources</strong></td>
+<td>仅编辑器使用的资源文件夹，不会打包</td>
+<td>⭐⭐</td>
+<td>20分钟</td>
+</tr>
+</tbody></table>
+<h3 id="🛤️-学习路径建议"><a href="#🛤️-学习路径建议" class="headerlink" title="🛤️ 学习路径建议"></a>🛤️ 学习路径建议</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────────────────────┐</span><br><span class="line">│                    Unity 编辑器扩展学习路线图                           │</span><br><span class="line">├─────────────────────────────────────────────────────────────────────────┤</span><br><span class="line">│                                                                         │</span><br><span class="line">│  📍 第一周：基础入门                                                    │</span><br><span class="line">│  ┌─────────────────────────────────────────────────────────────────┐   │</span><br><span class="line">│  │ Day 1-2: 学习 Attribute 特性                                    │   │</span><br><span class="line">│  │         → [Header]、[Range]、[Tooltip] 等                      │   │</span><br><span class="line">│  │ Day 3-4: 掌握 Editor 文件夹规则                                 │   │</span><br><span class="line">│  │ Day 5-7: 简单实践：为现有类添加自定义 Inspector                  │   │</span><br><span class="line">│  └─────────────────────────────────────────────────────────────────┘   │</span><br><span class="line">│                                                                         │</span><br><span class="line">│  📍 第二周：进阶技能                                                    │</span><br><span class="line">│  ┌─────────────────────────────────────────────────────────────────┐   │</span><br><span class="line">│  │ Day 8-10: 学习 CustomEditor 和 SerializedObject                 │   │</span><br><span class="line">│  │ Day 11-12: 掌握 EditorGUI 基础控件                              │   │</span><br><span class="line">│  │ Day 13-14: 实战：重写项目核心类的 Inspector                     │   │</span><br><span class="line">│  └─────────────────────────────────────────────────────────────────┘   │</span><br><span class="line">│                                                                         │</span><br><span class="line">│  📍 第三周：窗口开发                                                    │</span><br><span class="line">│  ┌─────────────────────────────────────────────────────────────────┐   │</span><br><span class="line">│  │ Day 15-17: EditorWindow 基础                                    │   │</span><br><span class="line">│  │ Day 18-19: EditorGUILayout 布局系统                              │   │</span><br><span class="line">│  │ Day 20-21: 实战：开发一个简单工具窗口                            │   │</span><br><span class="line">│  └─────────────────────────────────────────────────────────────────┘   │</span><br><span class="line">│                                                                         │</span><br><span class="line">│  📍 第四周：综合实战                                                    │</span><br><span class="line">│  ┌─────────────────────────────────────────────────────────────────┐   │</span><br><span class="line">│  │ Day 22-24: 开发完整的编辑器工具                                  │   │</span><br><span class="line">│  │ Day 25-26: 优化工具性能和用户体验                                │   │</span><br><span class="line">│  │ Day 27-28: 总结和分享                                            │   │</span><br><span class="line">│  └─────────────────────────────────────────────────────────────────┘   │</span><br><span class="line">│                                                                         │</span><br><span class="line">└─────────────────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="⚡-快速上手指南"><a href="#⚡-快速上手指南" class="headerlink" title="⚡ 快速上手指南"></a>⚡ 快速上手指南</h3><blockquote>
+<p>🎯 <strong>30秒快速测试</strong>：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> UnityEngine;</span><br><span class="line"><span class="keyword">using</span> UnityEditor;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">QuickTest</span> : <span class="title">EditorWindow</span></span><br><span class="line">&#123;</span><br><span class="line">    [<span class="meta">MenuItem(<span class="string">&quot;Tools/我的第一个工具 %_T&quot;</span>)</span>]  <span class="comment">// Ctrl+Shift+T</span></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">ShowWindow</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        GetWindow&lt;QuickTest&gt;(<span class="string">&quot;我的工具&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">OnGUI</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (GUILayout.Button(<span class="string">&quot;点击我&quot;</span>))</span><br><span class="line">            Debug.Log(<span class="string">&quot;Hello Editor!&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>复制这段代码到 <code>Assets/Editor</code> 文件夹，按 <code>Ctrl+Shift+T</code>，你的第一个工具就诞生了！✨</p>
+</blockquote>
+<h3 id="💎-实战技巧"><a href="#💎-实战技巧" class="headerlink" title="💎 实战技巧"></a>💎 实战技巧</h3><table>
+<thead>
+<tr>
+<th>技巧</th>
+<th>说明</th>
+<th>效果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>从小工具开始</strong></td>
+<td>先做简单的工具，逐步增加复杂度</td>
+<td>快速建立信心</td>
+</tr>
+<tr>
+<td><strong>参考官方代码</strong></td>
+<td>Unity GitHub 上有大量编辑器工具源码</td>
+<td>学习最佳实践</td>
+</tr>
+<tr>
+<td><strong>多用快捷键</strong></td>
+<td><code>[MenuItem(&quot;Tools/XXX %#K&quot;)]</code></td>
+<td>提升使用频率</td>
+</tr>
+<tr>
+<td><strong>实时预览</strong></td>
+<td>使用 <code>EditorUtility.SetDirty()</code> 标记修改</td>
+<td>即时反馈</td>
+</tr>
+<tr>
+<td><strong>错误处理</strong></td>
+<td>用 <code>try-catch</code> 包裹关键代码</td>
+<td>避免工具崩溃</td>
+</tr>
+</tbody></table>
+<h3 id="🚨-常见误区"><a href="#🚨-常见误区" class="headerlink" title="🚨 常见误区"></a>🚨 常见误区</h3><blockquote>
+<p>❌ <strong>误区 1</strong>：”编辑器扩展很难”</p>
+<ul>
+<li>✅ 真相：从简单的 Attribute 开始，难度逐级递增</li>
+</ul>
+<p>❌ <strong>误区 2</strong>：”只有程序员能用编辑器工具”</p>
+<ul>
+<li>✅ 真相：好的工具策划、美术也能用</li>
+</ul>
+<p>❌ <strong>误区 3</strong>：”写工具浪费时间”</p>
+<ul>
+<li>✅ 真相：写工具花1小时，能节省100小时</li>
+</ul>
+<p>❌ <strong>误区 4</strong>：”必须学完所有 API 才能开始”</p>
+<ul>
+<li>✅ 真相：边做边学，实践中进步最快</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="🔮-下一步：系列预告"><a href="#🔮-下一步：系列预告" class="headerlink" title="🔮 下一步：系列预告"></a>🔮 下一步：系列预告</h2><p>本系列将涵盖以下主题：</p>
+<ol>
+<li><strong>EditorGUILayout 常用控件和方法</strong> ← 下一篇</li>
+<li><strong>EditorGUILayout</strong></li>
+<li><strong>EditorWindow 案例</strong></li>
+<li><strong>Custom Editor &amp; Property Drawer</strong></li>
+<li><strong>MenuItem 高级用法</strong></li>
+<li><strong>Handles &amp; Gizmos 可视化</strong></li>
+<li><strong>节点编辑器开发</strong></li>
+<li><strong>自动化打包工具</strong></li>
+<li><strong>性能分析工具</strong></li>
+</ol>
+<hr>
+<h2 id="📚-延伸阅读"><a href="#📚-延伸阅读" class="headerlink" title="📚 延伸阅读"></a>📚 延伸阅读</h2><p><strong>🔗 官方资源</strong>：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.unity3d.com/Manual">Unity Editor 官方文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.unity3d.com/ScriptReference/UnityEditor.Editor.html">Unity Editor Scripting API</a></li>
+</ul>
+<p><strong>💡 推荐文章</strong>：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.unity.com/technology/unity-editor-tools-demystified">Unity Editor Tools Demystified</a></li>
+<li><a target="_blank" rel="noopener" href="https://learn.unity.com/tutorial/customizing-the-inspector">Customizing the Inspector</a></li>
+</ul>
+<p><strong>🎮 优秀案例</strong>：</p>
+<ul>
+<li>Unity GitHub：<a target="_blank" rel="noopener" href="https://github.com/Unity-Technologies/UnityCsReference">UnityCsReference</a></li>
+<li>社区工具：<a target="_blank" rel="noopener" href="https://odininspector.com/">Odin Inspector</a>（商业插件）</li>
+</ul>
+<hr>
+<h2 id="💌-反馈与交流"><a href="#💌-反馈与交流" class="headerlink" title="💌 反馈与交流"></a>💌 反馈与交流</h2><p>如果你在学习过程中遇到问题，或者有更好的实践经验，欢迎交流！</p>
+<ul>
+<li>📧 邮箱：<a href="mailto:&#x31;&#x34;&#56;&#x37;&#56;&#x34;&#x32;&#x31;&#49;&#x30;&#64;&#113;&#113;&#46;&#x63;&#x6f;&#109;">&#x31;&#x34;&#56;&#x37;&#56;&#x34;&#x32;&#x31;&#49;&#x30;&#64;&#113;&#113;&#46;&#x63;&#x6f;&#109;</a></li>
+<li>💬 评论区：欢迎留言讨论</li>
+<li>🔗 转载请注明出处</li>
+</ul>
+<hr>
+<p><strong>🎊 感谢阅读！</strong></p>
+<p>希望这个系列能帮助你掌握 Unity 编辑器扩展的开发。记住：<strong>工具是杠杆，能让你撬动更大的创意！</strong></p>
+<blockquote>
+<p>🌟 <strong>最后一句忠告</strong>：<br><strong>“最好的工具是你自己写的工具。”</strong><br>—— 某位从重复劳动中解放的开发者</p>
+</blockquote>
+<hr>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">┌────────────────────────────────────────┐</span><br><span class="line">│                                        │</span><br><span class="line">│   🛠️✨ Happy Tool Building! ✨🛠️     │</span><br><span class="line">│                                        │</span><br><span class="line">│   愿你的工具越来越强大！                │</span><br><span class="line">│                                        │</span><br><span class="line">└────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><div class="post-copyright__author_img"><img class="post-copyright__author_img_front" src="/img/logo.png"></div><div class="post-copyright__author_name">xinzhuzi</div><div class="post-copyright__author_desc">记录技术与生活</div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">新诸子</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Unity/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>Unity<span class="tagsPageCount">66</span></span></a><a class="post-meta__tags" href="/tags/UnityEditor/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>UnityEditor<span class="tagsPageCount">12</span></span></a><a class="post-meta__tags" href="/tags/%E7%BC%96%E8%BE%91%E5%99%A8%E6%89%A9%E5%B1%95/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>编辑器扩展<span class="tagsPageCount">11</span></span></a><a class="post-meta__tags" href="/tags/%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>工具开发<span class="tagsPageCount">3</span></span></a><a class="post-meta__tags" href="/tags/%E6%95%88%E7%8E%87%E6%8F%90%E5%8D%87/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>效率提升<span class="tagsPageCount">1</span></span></a></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/05/08/Unity/2020-05-08-1%20Canvas/"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Unity UGUI Canvas 深度解析：从原理到优化的完全指南</div></div></a></div><div class="next-post pull-right"><a href="/2020/05/08/Unity/2020-05-08-10%20Screenshot/"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Unity 截图工具开发实战</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><div class="top-group"><div class="sayhi" id="sayhi" onclick="sco.changeWittyWord()"></div></div></div><div class="avatar"><img alt="头像" src="/img/logo.png"></div><div class="description"></div><div class="bottom-group"><span class="left"><div class="name">xinzhuzi</div><div class="desc">只有迎风，风筝才能飞得更高。</div></span><div class="social-icons is-center"></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude fas fa-bars"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%F0%9F%9B%A0%EF%B8%8F-Unity-%E7%BC%96%E8%BE%91%E5%99%A8%E6%89%A9%E5%B1%95%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97%EF%BC%9A%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%A4%A7%E5%B8%88%E7%9A%84%E6%95%88%E7%8E%87%E9%9D%A9%E5%91%BD"><span class="toc-text">🛠️ Unity 编辑器扩展完全指南：从入门到大师的效率革命</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%96-%E5%BC%80%E7%AF%87%E6%95%85%E4%BA%8B%EF%BC%9A%E5%B7%A5%E5%85%B7%E7%9A%84%E5%8A%9B%E9%87%8F"><span class="toc-text">📖 开篇故事：工具的力量</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E-3-%E5%B0%8F%E6%97%B6%E5%88%B0-3-%E7%A7%92%E7%9A%84%E8%9C%95%E5%8F%98"><span class="toc-text">从 3 小时到 3 秒的蜕变</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%9A-%E7%9B%AE%E5%BD%95"><span class="toc-text">📚 目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8E%AF-%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E5%AD%A6%E4%B9%A0%E7%BC%96%E8%BE%91%E5%99%A8%E6%89%A9%E5%B1%95%EF%BC%9F%E2%80%94%E2%80%94%E4%BB%8E%E9%87%8D%E5%A4%8D%E5%8A%B3%E5%8A%A8%E5%88%B0%E5%88%9B%E6%84%8F%E8%A7%A3%E6%94%BE"><span class="toc-text">🎯 一、为什么学习编辑器扩展？——从重复劳动到创意解放</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%8E%AE-%E7%9C%9F%E5%AE%9E%E6%A1%88%E4%BE%8B%E5%B1%95%E7%A4%BA"><span class="toc-text">🎮 真实案例展示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8A-%E6%95%88%E7%8E%87%E6%8F%90%E5%8D%87%E8%B7%AF%E5%BE%84%E5%9B%BE"><span class="toc-text">📊 效率提升路径图</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3"><span class="toc-text">二、官方文档</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BC%96%E8%BE%91%E5%99%A8-UI-%E7%9A%84%E5%9B%9B%E7%A7%8D%E7%BC%96%E5%86%99%E6%96%B9%E5%BC%8F"><span class="toc-text">三、编辑器 UI 的四种编写方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%B8%80%EF%BC%9A%E8%BF%90%E8%A1%8C%E6%97%B6-UI"><span class="toc-text">方式一：运行时 UI</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%BA%8C%EF%BC%9A%E7%89%B9%E6%80%A7-Attribute-%E7%BC%96%E8%BE%91"><span class="toc-text">方式二：特性 Attribute 编辑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%B8%89%EF%BC%9ACustomEditor-%E8%87%AA%E5%AE%9A%E4%B9%89%E6%A3%80%E8%A7%86%E9%9D%A2%E6%9D%BF"><span class="toc-text">方式三：CustomEditor 自定义检视面板</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E5%9B%9B%EF%BC%9AEditorWindow-%E7%AA%97%E5%8F%A3%E9%9D%A2%E6%9D%BF"><span class="toc-text">方式四：EditorWindow 窗口面板</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81EditorGUILayout-%E4%B8%8E-GUILayout-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">四、EditorGUILayout 与 GUILayout 的区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Editor-%E7%89%B9%E6%AE%8A%E6%96%87%E4%BB%B6%E5%A4%B9"><span class="toc-text">五、Editor 特殊文件夹</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Editor-%E6%96%87%E4%BB%B6%E5%A4%B9"><span class="toc-text">5.1 Editor 文件夹</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%A8%8B%E5%BA%8F%E9%9B%86%E7%BC%96%E8%AF%91%E8%A7%84%E5%88%99"><span class="toc-text">5.2 程序集编译规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%A8%A1%E5%9D%97%E5%BC%95%E7%94%A8%E5%8E%9F%E5%88%99"><span class="toc-text">5.3 模块引用原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E6%9D%A1%E4%BB%B6%E7%BC%96%E8%AF%91"><span class="toc-text">5.4 条件编译</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81Editor-Default-Resources-%E6%96%87%E4%BB%B6%E5%A4%B9"><span class="toc-text">六、Editor Default Resources 文件夹</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%8A%A0%E8%BD%BD%E8%B5%84%E6%BA%90"><span class="toc-text">6.1 加载资源</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E6%9F%A5%E7%9C%8B%E6%89%80%E6%9C%89%E5%86%85%E7%BD%AE%E8%B5%84%E6%BA%90"><span class="toc-text">6.2 查看所有内置资源</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8E%93-%E4%B8%83%E3%80%81%E6%80%BB%E7%BB%93%E4%B8%8E%E5%AE%9E%E6%88%98%E5%BB%BA%E8%AE%AE"><span class="toc-text">🎓 七、总结与实战建议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%9D-%E6%A0%B8%E5%BF%83%E7%9F%A5%E8%AF%86%E7%82%B9%E5%9B%9E%E9%A1%BE"><span class="toc-text">📝 核心知识点回顾</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%9B%A4%EF%B8%8F-%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E5%BB%BA%E8%AE%AE"><span class="toc-text">🛤️ 学习路径建议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9A%A1-%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B%E6%8C%87%E5%8D%97"><span class="toc-text">⚡ 快速上手指南</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%8E-%E5%AE%9E%E6%88%98%E6%8A%80%E5%B7%A7"><span class="toc-text">💎 实战技巧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%9A%A8-%E5%B8%B8%E8%A7%81%E8%AF%AF%E5%8C%BA"><span class="toc-text">🚨 常见误区</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%AE-%E4%B8%8B%E4%B8%80%E6%AD%A5%EF%BC%9A%E7%B3%BB%E5%88%97%E9%A2%84%E5%91%8A"><span class="toc-text">🔮 下一步：系列预告</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%9A-%E5%BB%B6%E4%BC%B8%E9%98%85%E8%AF%BB"><span class="toc-text">📚 延伸阅读</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%92%8C-%E5%8F%8D%E9%A6%88%E4%B8%8E%E4%BA%A4%E6%B5%81"><span class="toc-text">💌 反馈与交流</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude fas fa-map"></i><span>最近发布</span></div><div class="aside-list"><a class="aside-list-item" href="/2025/01/13/%E5%B0%8F%E8%AF%B4/2025-01-13-%E9%81%93%E5%8A%AB/" title="道劫"><div class="content"><span class="title" href="/2025/01/13/%E5%B0%8F%E8%AF%B4/2025-01-13-%E9%81%93%E5%8A%AB/" title="道劫">道劫</span><span class="categories" href="/2025/01/13/%E5%B0%8F%E8%AF%B4/2025-01-13-%E9%81%93%E5%8A%AB/">千年志*道劫</span></div></a><a class="aside-list-item" href="/2025/01/13/%E6%B8%B8%E6%88%8F/2025-01-13-%E6%B8%B8%E6%88%8F%E5%8D%B3%E5%B0%86%E5%8F%91%E5%94%AE/" title="游戏即将发售"><div class="content"><span class="title" href="/2025/01/13/%E6%B8%B8%E6%88%8F/2025-01-13-%E6%B8%B8%E6%88%8F%E5%8D%B3%E5%B0%86%E5%8F%91%E5%94%AE/" title="游戏即将发售">游戏即将发售</span><span class="categories" href="/2025/01/13/%E6%B8%B8%E6%88%8F/2025-01-13-%E6%B8%B8%E6%88%8F%E5%8D%B3%E5%B0%86%E5%8F%91%E5%94%AE/">千年志*道劫</span></div></a><a class="aside-list-item" href="/2020/05/08/AI%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/2020-05-08-AI,%E8%A1%8C%E4%B8%BA%E6%A0%91,FSM/" title="Unity 游戏 AI 核心术语详解 - 行为树与状态机"><div class="content"><span class="title" href="/2020/05/08/AI%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/2020-05-08-AI,%E8%A1%8C%E4%B8%BA%E6%A0%91,FSM/" title="Unity 游戏 AI 核心术语详解 - 行为树与状态机">Unity 游戏 AI 核心术语详解 - 行为树与状态机</span><span class="categories" href="/2020/05/08/AI%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/2020-05-08-AI,%E8%A1%8C%E4%B8%BA%E6%A0%91,FSM/">技术文章</span></div></a><a class="aside-list-item" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Lua%20%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" title="Lua 源码阅读完全指南 - 从虚拟机到垃圾回收"><div class="content"><span class="title" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Lua%20%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" title="Lua 源码阅读完全指南 - 从虚拟机到垃圾回收">Lua 源码阅读完全指南 - 从虚拟机到垃圾回收</span><span class="categories" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Lua%20%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">技术文章</span></div></a><a class="aside-list-item" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Tolua%20C#%20Lua%20%E4%BA%A4%E4%BA%92/" title="ToLua C# 与 Lua 交互详解 - 虚拟机架构与调用链路"><div class="content"><span class="title" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Tolua%20C#%20Lua%20%E4%BA%A4%E4%BA%92/" title="ToLua C# 与 Lua 交互详解 - 虚拟机架构与调用链路">ToLua C# 与 Lua 交互详解 - 虚拟机架构与调用链路</span><span class="categories" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Tolua%20C#%20Lua%20%E4%BA%A4%E4%BA%92/">技术文章</span></div></a></div></div></div></div></main><footer id="footer"><!-- +footerDeals()  // 社交图标已移至footerBar中--><div id="st-footer"></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2023 - 2026 By<a class="footer-bar-link" href="/" title="xinzhuzi">xinzhuzi</a></div><div class="beian-group"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://hexo.io/" title="框架：Hexo">框架：Hexo</a><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com/everfu/hexo-theme-solitude" title="主题：Solitude">主题：Solitude</a></div></div><div class="footer-bar-right"><div id="footer_social_icons"><a class="social_icon social-QQ群" target="_blank" rel="noopener" href="https://qm.qq.com/cgi-bin/qm/qr?k=xxx&amp;jump_from=webapi" title="QQ群"><i class="solitude  fab fa-qq"></i></a><a class="social_icon social-QQ" href="tencent://message/?uin=1487842110&amp;Site=&amp;Menu=yes" title="QQ"><i class="solitude  fab fa-qq"></i></a><div class="wechat-wrapper"><a class="social_icon social-WeChat" href="javascript:void(0);" title="WeChat"><i class="solitude  fab fa-weixin"></i></a><img class="wechat-qr-code" src="/images/wechat-qr.jpg" alt="微信二维码"></div><a class="social_icon social-Bilibili" target="_blank" rel="noopener" href="https://space.bilibili.com/451180511" title="Bilibili"><i class="solitude  fab fa-bilibili"></i></a><a class="social_icon social-Douyin" target="_blank" rel="noopener" href="https://v.douyin.com/yN7I0458nxU/" title="Douyin"><i class="solitude  fab fa-tiktok"></i></a></div></div></div></div><div class="comment-barrage needEndHide"></div></footer></div><div><!-- Critical scripts loaded synchronously--><script src="/js/utils.js?v=3.0.21"></script><script src="/js/main.js?v=3.0.21"></script><!-- Non-critical scripts loaded asynchronously--><script async src="/js/third_party/waterfall.min.js?v=3.0.21"></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><!-- Feature-specific scripts loaded asynchronously--><script defer src="/js/tw_cn.js?v=3.0.21"></script><!-- UI enhancement scripts--><script defer src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><!-- Music player scripts--><!-- Cover color processing scripts--><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+utils.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+</script><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!-- Search functionality--><!-- Right menu functionality--><script src="/js/custom_category.js"></script><div class="js-pjax"></div></div><!-- pjax--><script>let pjax = null;
+
+function initPjax() {
+    if (typeof Pjax === 'undefined') {
+        console.warn('Pjax is not loaded yet, retrying...');
+        setTimeout(initPjax, 100);
+        return;
+    }
+
+    pjax = new Pjax({
+        elements: 'a:not([target="_blank"])',
+        selectors: ["title","#body-wrap","#site-config","meta[name=\"description\"]",".js-pjax","meta[property^=\"og:\"]","#config-diff",".rs_show",".rs_hide"],
+        cacheBust: false,
+        analytics: false,
+        scrollRestoration: false
+    })
+
+    // 将 pjax 实例挂载到全局
+    window.pjax = pjax;
+
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+        const newScript = document.createElement('script')
+        const content = item.text || item.textContent || item.innerHTML || ""
+        Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+        newScript.appendChild(document.createTextNode(content))
+        item.parentNode.replaceChild(newScript, item)
+    })
+
+    document.addEventListener('pjax:complete', () => {
+        window.refreshFn()
+
+        document.querySelectorAll('script[data-pjax]').forEach(item => {
+            const newScript = document.createElement('script')
+            const content = item.text || item.textContent || item.innerHTML || ""
+            Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+            newScript.appendChild(document.createTextNode(content))
+            item.parentNode.replaceChild(newScript, item)
+        })
+
+        GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+    })
+
+    document.addEventListener('pjax:error', (e) => {
+        if (e.request.status === 404) {
+            pjax.loadUrl('/404.html')
+        }
+    })
+}
+
+// 初始化 Pjax
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPjax);
+} else {
+    initPjax();
+}</script><!-- google adsense--></body></html>
+        <script>
+            const posts = ["2025/01/13/小说/2025-01-13-道劫/","2025/01/13/游戏/2025-01-13-游戏即将发售/","2020/05/08/AI游戏设计/2020-05-08-AI,行为树,FSM/","2020/05/08/Lua热更新/2020-05-08-Lua 源码阅读/","2020/05/08/Lua热更新/2020-05-08-Tolua C# Lua 交互/","2020/05/08/Lua热更新/2020-05-08-ToLua C-C++ C# 交互/","2020/05/08/Lua热更新/2020-05-08-Tolua 介绍/","2020/05/08/Lua热更新/2020-05-08-Tolua C-C++ Lua 交互/","2020/05/08/工具使用/2020-05-08-Hexo 的简单操作/","2020/05/08/工具使用/2020-05-08-博客搭建以及编写/","2020/05/08/工具使用/2020-05-08-好用的插件软件/","2020/05/08/工具使用/2020-05-08-破解 TeamViewer/","2020/05/08/工具使用/2020-05-08-科学上网/","2020/05/08/其他/2020-05-08-MD 格式/","2020/05/08/其他/2020-05-08-诗词随笔/","2020/05/08/其他/2020-05-08-共产党宣言/","2020/05/08/Unity/2020-05-08-1 Canvas/","2020/05/08/Unity/2020-05-08-1 介绍UnityEditor/","2020/05/08/Unity/2020-05-08-10 Screenshot/","2020/05/08/Unity/2020-05-08-11 Handles/","2020/05/08/Unity/2020-05-08-12 Gizmos/","2020/05/08/Unity/2020-05-08-13 简单Node/","2020/05/08/Unity/2020-05-08-14 NodeEditor/","2020/05/08/Unity/2020-05-08-14 FlatNode/","2020/05/08/Unity/2020-05-08-2 UnityEditor常用属性/","2020/05/08/Unity/2020-05-08-3 数据交互/","2020/05/08/Unity/2020-05-08-5 EditorWindow/","2020/05/08/Unity/2020-05-08-4 EditorGUI/","2020/05/08/Unity/2020-05-08-6 MenuItem/","2020/05/08/Unity/2020-05-08-7 CustomEditor_PropertyDrawer/","2020/05/08/Unity/2020-05-08-8 EditorGUILayout/","2020/05/08/Unity/2020-05-08-9 EditorWindow案例1/","2020/05/08/Unity/2020-05-08-AssetBundle 全解析/","2020/05/08/Unity/2020-05-08-AssetBundle 打包策略/","2020/05/08/Unity/2020-05-08-Unity AndroidStudio工具检测优化/","2020/05/08/Unity/2020-05-08-Unity  浮点数精度/","2020/05/08/Unity/2020-05-08-Unity GC/","2020/05/08/Unity/2020-05-08-Unity CPU优化/","2020/05/08/Unity/2020-05-08-Unity GPU优化/","2020/05/08/Unity/2020-05-08-Unity NGUI-UGUI优化/","2020/05/08/Unity/2020-05-08-Unity NGUI/","2020/05/08/Unity/2020-05-08-Unity OverDraw优化/","2020/05/08/Unity/2020-05-08-Unity UI优化/","2020/05/08/Unity/2020-05-08-Unity UGUI优化/","2020/05/08/Unity/2020-05-08-Unity UWA工具检测优化/","2020/05/08/Unity/2020-05-08-Unity Xcode工具检测优化/","2020/05/08/Unity/2020-05-08-Unity 优化总纲/","2020/05/08/Unity/2020-05-08-Unity 代码编写规范/","2020/05/08/Unity/2020-05-08-Unity 优化 1/","2020/05/08/Unity/2020-05-08-Unity 内存优化/","2020/05/08/Unity/2020-05-08-Unity 渲染优化/","2020/05/08/Unity/2020-05-08-Unity 网络优化/","2020/05/08/Unity/2020-05-08-Unity-OcclusionCulling-Occlusion Culling/","2020/05/08/Unity/2020-05-08-Unity-Optimize-XCode/","2020/05/08/Unity/2020-05-08-Unity 资源优化/","2020/05/08/Unity/2020-05-08-Unity3D工程阅读方法,直捣黄龙篇/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第一章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第七章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第三章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第九章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第五章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第二章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第八章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第六章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十一章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十二章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第四章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十章/","2020/05/08/Unity/2020-05-08-Unity后工业化流程/","2020/05/08/Unity/2020-05-08-Unity后工业化流程1/","2020/05/08/Unity/2020-05-08-Unity后工业化流程2/","2020/05/08/Unity/2020-05-08-Unity工具UPR/","2020/05/08/Unity/2020-05-08-Unity工具UWA/","2020/05/08/Unity/2020-05-08-Unity工具使用/","2020/05/08/Unity/2020-05-08-Unity编辑器中Stats窗口详解/","2020/05/08/Unity/2020-05-08-各个平台的路径/","2020/05/08/Unity/2020-05-08-图片与字符串互转/","2020/05/08/Unity/2020-05-08-在 Unity 下使用 VSCode 配置/","2020/05/08/Unity/2020-05-08-渲染基本流程/","2020/05/08/编程基础/2020-05-08-C#与C-C++的交互/","2020/05/08/编程基础/2020-05-08-学习算法大纲/","2020/05/08/编程基础/2020-05-08-C-C++指针详解/","2020/05/08/编程基础/2020-05-08-C基础案例/","2020/05/08/编程基础/2020-05-08-程序员需要掌握的英文单词/","2020/05/08/编程基础/2020-05-08-正则表达式/","2020/05/08/网络编程/2020-05-08-BestHttp介绍2/","2020/05/08/网络编程/2020-05-08-BestHttp介绍1/","2020/05/08/网络编程/2020-05-08-Net-net/","2020/05/08/网络编程/2020-05-08-Protobuf-Lua-Python/","2020/05/08/网络编程/2020-05-08-帧同步/","2020/05/08/网络编程/2020-05-08-网络部分/"];
+            function toRandomPost() {
+                const randomPost = posts[Math.floor(Math.random() * posts.length)];
+                pjax.loadUrl(GLOBAL_CONFIG.root + randomPost);
+            }
+        </script>

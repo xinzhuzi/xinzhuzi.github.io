@@ -1,0 +1,755 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Windows 命令行完全参考手册 | 新诸子</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/img/pwa/favicon.png"><link rel="stylesheet" href="/css/index.css?v=3.0.21"><link rel="canonical" href="https://xinzhuzi.github.io/2020/05/08/%E5%85%B6%E4%BB%96/2020-05-08-MD%20%E6%A0%BC%E5%BC%8F/index.html"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><!-- Feature-specific CSS--><!-- aplayer--><!-- swiper--><!-- fancybox ui--><!-- katex--><!-- Open Graph--><meta name="description" content="Windows 命令行完全参考手册 本文整理了 Windows 系统常用的 CMD 命令，包括系统管理、网络操作、文件处理等各类命令的快速参考。 一、打开 CMD1.1 打开方式 方式 操作 运行对话框 Win + R → 输入 cmd → 回车 开始菜单 Windows 系统 →"><!-- pwa--><meta name="apple-mobile-web-app-capable" content="新诸子"><meta name="theme-color" content="var(--efu-main)"><meta name="apple-mobile-web-app-status-bar-style" content="var(--efu-main)"><link rel="bookmark" href="/img/pwa/favicon.png"><link rel="apple-touch-icon" href="/img/pwa/favicon.png" sizes="180x180"><script>console.log(' %c Solitude %c ' + '3.0.21' + ' %c https://github.com/everfu/hexo-theme-solitude',
+    'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+    'background:#ff9a9a ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff',
+    'background:unset ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff')
+</script><script>(()=>{
+        const saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        };
+        window.utils = {
+            saveToLocal: saveToLocal,
+            getCSS: (url, id = false) => new Promise((resolve, reject) => {
+              const link = document.createElement('link')
+              link.rel = 'stylesheet'
+              link.href = url
+              if (id) link.id = id
+              link.onerror = reject
+              link.onload = link.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+              }
+              document.head.appendChild(link)
+            }),
+            getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+              const script = document.createElement('script')
+              script.src = url
+              script.async = true
+              script.onerror = reject
+              script.onload = script.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+              }
+
+              Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+              })
+
+              document.head.appendChild(script)
+            }),
+            addGlobalFn: (key, fn, name = false, parent = window) => {
+                const globalFn = parent.globalFn || {}
+                const keyObj = globalFn[key] || {}
+
+                if (name && keyObj[name]) return
+
+                name = name || Object.keys(keyObj).length
+                keyObj[name] = fn
+                globalFn[key] = keyObj
+                parent.globalFn = globalFn
+            },
+            addEventListenerPjax: (ele, event, fn, option = false) => {
+              ele.addEventListener(event, fn, option)
+              utils.addGlobalFn('pjax', () => {
+                  ele.removeEventListener(event, fn, option)
+              })
+            },
+            diffDateFormat: (selector) => {
+                selector.forEach(item => {
+                    const date = new Date(item.getAttribute('datetime') || item.textContent);
+                    item.textContent = (date.getMonth() + 1).toString()+'/'+date.getDate().toString();
+                });
+            },
+        }
+    })()</script><!-- theme--><script>initTheme = () => {
+    let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const cachedMode = utils.saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+    typeof rm === 'object' && rm.mode(cachedMode === 'dark' && isDarkMode)
+}
+initTheme()</script><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2023-04-20 00:00:00',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.avif'
+    },
+    copyright: false,
+    highlight: {"limit":200,"expand":true,"copy":true,"syntax":"highlight.js"},
+    randomlink: false,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"day":" 天","f12":"开发者模式已打开，请遵循GPL协议。","totalk":"无需删除空行，直接输入评论即可"},
+    aside: {
+        state: {
+            morning: "✨ 早上好，新的一天开始了",
+            noon: "🍲 午餐时间",
+            afternoon: "🌞 下午好",
+            night: "早点休息",
+            goodnight: "晚安 😴",
+        },
+        witty_words: [],
+        witty_comment: {
+            prefix: '好久不见，',
+            back: '欢迎再次回来，',
+        },
+    },
+    covercolor: {
+        enable: false
+    },
+    comment: false,
+    lightbox: 'null',
+    right_menu: false,
+    translate: {"translateDelay":0,"defaultEncoding":2},
+    lure: false,
+    expire: false,
+};</script><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: '',
+    toc: true,
+    comment: false,
+    ai_text: false,
+    color: false,
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body id="body"><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude fas fa-xmark"></i></div><div class="console-card-group"><div class="console-card-group-right"><div class="console-card tags" onclick="sco.hideConsole()"><div class="card-content"><div class="author-content-item-tips">标签</div><div class="author-content-item-title">寻找感兴趣的领域</div></div><div class="card-tag-cloud"><a href="/tags/Unity/">Unity<sup>66</sup></a><a href="/tags/AI/">AI<sup>1</sup></a><a href="/tags/%E8%A1%8C%E4%B8%BA%E6%A0%91/">行为树<sup>1</sup></a><a href="/tags/%E7%8A%B6%E6%80%81%E6%9C%BA/">状态机<sup>1</sup></a><a href="/tags/FSM/">FSM<sup>1</sup></a><a href="/tags/BT/">BT<sup>1</sup></a><a href="/tags/GOAP/">GOAP<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/">游戏设计<sup>1</sup></a><a href="/tags/Lua/">Lua<sup>5</sup></a><a href="/tags/LuaJIT/">LuaJIT<sup>2</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/">虚拟机<sup>2</sup></a><a href="/tags/GC/">GC<sup>4</sup></a><a href="/tags/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">源码阅读<sup>1</sup></a><a href="/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80/">脚本语言<sup>1</sup></a><a href="/tags/ToLua/">ToLua<sup>4</sup></a><a href="/tags/C/">C#<sup>3</sup></a><a href="/tags/%E4%BA%A4%E4%BA%92/">交互<sup>3</sup></a><a href="/tags/CLR/">CLR<sup>1</sup></a><a href="/tags/IL2CPP/">IL2CPP<sup>3</sup></a><a href="/tags/C/">C++<sup>3</sup></a><a href="/tags/P-Invoke/">P/Invoke<sup>1</sup></a><a href="/tags/%E4%BA%92%E6%93%8D%E4%BD%9C/">互操作<sup>1</sup></a><a href="/tags/DllImport/">DllImport<sup>1</sup></a><a href="/tags/Marshal/">Marshal<sup>1</sup></a><a href="/tags/%E7%83%AD%E6%9B%B4%E6%96%B0/">热更新<sup>3</sup></a><a href="/tags/%E8%B7%A8%E8%AF%AD%E8%A8%80%E4%BA%A4%E4%BA%92/">跨语言交互<sup>1</sup></a><a href="/tags/C/">C<sup>3</sup></a><a href="/tags/API/">API<sup>1</sup></a><a href="/tags/%E6%A0%88/">栈<sup>1</sup></a><a href="/tags/tolua/">tolua<sup>1</sup></a><a href="/tags/%E4%B8%96%E7%95%8C%E8%A7%82/">世界观<sup>1</sup></a><a href="/tags/Hexo/">Hexo<sup>2</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/">博客<sup>2</sup></a><a href="/tags/%E9%9D%99%E6%80%81%E7%AB%99%E7%82%B9%E7%94%9F%E6%88%90%E5%99%A8/">静态站点生成器<sup>1</sup></a><a href="/tags/Node-js/">Node.js<sup>1</sup></a><a href="/tags/Git/">Git<sup>1</sup></a><a href="/tags/GitHub-Pages/">GitHub Pages<sup>1</sup></a><a href="/tags/Markdown/">Markdown<sup>1</sup></a><a href="/tags/%E5%86%99%E4%BD%9C/">写作<sup>1</sup></a><a href="/tags/VSCode/">VSCode<sup>2</sup></a><a href="/tags/Mac/">Mac<sup>2</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具<sup>1</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E8%BD%AF%E4%BB%B6/">效率软件<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/">游戏开发<sup>1</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E9%93%BE/">工具链<sup>1</sup></a><a href="/tags/VPN/">VPN<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%B7%A5%E5%85%B7/">网络工具<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E8%B5%84%E6%BA%90/">开发资源<sup>1</sup></a><a href="/tags/Google/">Google<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0/">技术学习<sup>1</sup></a><a href="/tags/GitHub%E5%8A%A0%E9%80%9F/">GitHub加速<sup>1</sup></a><a href="/tags/CMD/">CMD<sup>1</sup></a><a href="/tags/Windows/">Windows<sup>1</sup></a><a href="/tags/%E5%91%BD%E4%BB%A4%E8%A1%8C/">命令行<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%91%BD%E4%BB%A4/">网络命令<sup>1</sup></a><a href="/tags/%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86/">系统管理<sup>1</sup></a><a href="/tags/%E5%85%AC%E5%91%8A/">公告<sup>1</sup></a><a href="/tags/UGUI/">UGUI<sup>15</sup></a><a href="/tags/Canvas/">Canvas<sup>4</sup></a><a href="/tags/UI%E4%BC%98%E5%8C%96/">UI优化<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化<sup>16</sup></a><a href="/tags/RectTransform/">RectTransform<sup>2</sup></a><a href="/tags/UnityEditor/">UnityEditor<sup>12</sup></a><a href="/tags/%E7%BC%96%E8%BE%91%E5%99%A8%E6%89%A9%E5%B1%95/">编辑器扩展<sup>11</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91/">工具开发<sup>3</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E6%8F%90%E5%8D%87/">效率提升<sup>1</sup></a><a href="/tags/EditorWindow/">EditorWindow<sup>4</sup></a><a href="/tags/RenderTexture/">RenderTexture<sup>1</sup></a><a href="/tags/%E6%88%AA%E5%9B%BE%E5%B7%A5%E5%85%B7/">截图工具<sup>1</sup></a><a href="/tags/Handles/">Handles<sup>1</sup></a><a href="/tags/OnSceneGUI/">OnSceneGUI<sup>1</sup></a><a href="/tags/%E5%9C%BA%E6%99%AF%E8%A7%86%E5%9B%BE/">场景视图<sup>2</sup></a><a href="/tags/Gizmos/">Gizmos<sup>1</sup></a><a href="/tags/OnDrawGizmos/">OnDrawGizmos<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95%E5%B7%A5%E5%85%B7/">调试工具<sup>1</sup></a><a href="/tags/%E8%8A%82%E7%82%B9%E7%BC%96%E8%BE%91%E5%99%A8/">节点编辑器<sup>1</sup></a><a href="/tags/GraphView/">GraphView<sup>1</sup></a><a href="/tags/%E5%8F%AF%E8%A7%86%E5%8C%96%E7%BC%96%E7%A8%8B/">可视化编程<sup>1</sup></a><a href="/tags/%E6%8A%80%E8%83%BD%E7%BC%96%E8%BE%91%E5%99%A8/">技能编辑器<sup>1</sup></a><a href="/tags/FlatBuffers/">FlatBuffers<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BC%93%E5%AD%98/">数据缓存<sup>1</sup></a><a href="/tags/GamePlay/">GamePlay<sup>1</sup></a><a href="/tags/PropertyAttribute/">PropertyAttribute<sup>1</sup></a><a href="/tags/%E6%A3%80%E8%A7%86%E9%9D%A2%E6%9D%BF/">检视面板<sup>1</sup></a><a href="/tags/ScriptableObject/">ScriptableObject<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/">数据存储<sup>1</sup></a><a href="/tags/JSON/">JSON<sup>1</sup></a><a href="/tags/%E7%AA%97%E5%8F%A3%E5%BC%80%E5%8F%91/">窗口开发<sup>1</sup></a><a href="/tags/EditorGUI/">EditorGUI<sup>1</sup></a><a href="/tags/GUI%E6%8E%A7%E4%BB%B6/">GUI控件<sup>1</sup></a><a href="/tags/%E7%95%8C%E9%9D%A2%E8%AE%BE%E8%AE%A1/">界面设计<sup>2</sup></a><a href="/tags/MenuItem/">MenuItem<sup>1</sup></a><a href="/tags/%E8%8F%9C%E5%8D%95%E5%BC%80%E5%8F%91/">菜单开发<sup>1</sup></a><a href="/tags/%E5%BF%AB%E6%8D%B7%E9%94%AE/">快捷键<sup>1</sup></a><a href="/tags/CustomEditor/">CustomEditor<sup>1</sup></a><a href="/tags/PropertyDrawer/">PropertyDrawer<sup>1</sup></a><a href="/tags/Inspector/">Inspector<sup>1</sup></a><a href="/tags/EditorGUILayout/">EditorGUILayout<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E6%8E%A7%E4%BB%B6/">布局控件<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%88%98%E6%A1%88%E4%BE%8B/">实战案例<sup>2</sup></a><a href="/tags/AssetBundle/">AssetBundle<sup>5</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/">资源管理<sup>3</sup></a><a href="/tags/%E6%89%93%E5%8C%85%E7%AD%96%E7%95%A5/">打包策略<sup>3</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">内存管理<sup>4</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E5%88%86%E6%9E%90/">依赖分析<sup>1</sup></a><a href="/tags/%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96/">加载优化<sup>2</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E7%AE%A1%E7%90%86/">依赖管理<sup>1</sup></a><a href="/tags/%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">最佳实践<sup>2</sup></a><a href="/tags/Android/">Android<sup>2</sup></a><a href="/tags/%E4%BC%98%E5%8C%96/">优化<sup>3</sup></a><a href="/tags/Android-Studio/">Android Studio<sup>2</sup></a><a href="/tags/Profiler/">Profiler<sup>7</sup></a><a href="/tags/ADB/">ADB<sup>2</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90/">性能分析<sup>4</sup></a><a href="/tags/%E6%B5%AE%E7%82%B9%E6%95%B0/">浮点数<sup>1</sup></a><a href="/tags/%E7%B2%BE%E5%BA%A6/">精度<sup>1</sup></a><a href="/tags/Transform/">Transform<sup>1</sup></a><a href="/tags/%E5%9D%90%E6%A0%87%E7%B3%BB%E7%BB%9F/">坐标系统<sup>1</sup></a><a href="/tags/%E7%9B%B8%E6%9C%BA/">相机<sup>1</sup></a><a href="/tags/Z-Buffer/">Z-Buffer<sup>1</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/">内存优化<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD/">性能<sup>4</sup></a><a href="/tags/Boehm/">Boehm<sup>2</sup></a><a href="/tags/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">对象池<sup>2</sup></a><a href="/tags/Unsafe/">Unsafe<sup>1</sup></a><a href="/tags/CPU%E4%BC%98%E5%8C%96/">CPU优化<sup>2</sup></a><a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程<sup>1</sup></a><a href="/tags/Job-System/">Job System<sup>1</sup></a><a href="/tags/Burst/">Burst<sup>1</sup></a><a href="/tags/%E5%8D%8F%E7%A8%8B/">协程<sup>1</sup></a><a href="/tags/GPU%E4%BC%98%E5%8C%96/">GPU优化<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93/">渲染<sup>1</sup></a><a href="/tags/Shader/">Shader<sup>3</sup></a><a href="/tags/DrawCall/">DrawCall<sup>9</sup></a><a href="/tags/Batch/">Batch<sup>1</sup></a><a href="/tags/OverDraw/">OverDraw<sup>5</sup></a><a href="/tags/LOD/">LOD<sup>2</sup></a><a href="/tags/Mobile/">Mobile<sup>1</sup></a><a href="/tags/NGUI/">NGUI<sup>3</sup></a><a href="/tags/UI%E6%A1%86%E6%9E%B6/">UI框架<sup>1</sup></a><a href="/tags/UIPanel/">UIPanel<sup>1</sup></a><a href="/tags/UIWidget/">UIWidget<sup>1</sup></a><a href="/tags/%E7%A7%BB%E5%8A%A8%E7%AB%AF/">移动端<sup>1</sup></a><a href="/tags/TBR/">TBR<sup>1</sup></a><a href="/tags/%E5%B8%A6%E5%AE%BD%E4%BC%98%E5%8C%96/">带宽优化<sup>2</sup></a><a href="/tags/GPU/">GPU<sup>2</sup></a><a href="/tags/HUD%E4%BC%98%E5%8C%96/">HUD优化<sup>1</sup></a><a href="/tags/%E5%90%88%E6%89%B9/">合批<sup>1</sup></a><a href="/tags/%E7%BD%91%E6%A0%BC%E9%87%8D%E5%BB%BA/">网格重建<sup>1</sup></a><a href="/tags/UWA/">UWA<sup>3</sup></a><a href="/tags/%E6%80%BB%E7%BA%B2/">总纲<sup>1</sup></a><a href="/tags/UPR/">UPR<sup>4</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB/">优化体系<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E8%A7%84%E8%8C%83/">代码规范<sup>1</sup></a><a href="/tags/GC%E4%BC%98%E5%8C%96/">GC优化<sup>1</sup></a><a href="/tags/FPS%E6%A0%87%E5%87%86/">FPS标准<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96/">代码优化<sup>1</sup></a><a href="/tags/MonoBehaviour/">MonoBehaviour<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E4%BC%98%E5%8C%96/">渲染优化<sup>4</sup></a><a href="/tags/OverShading/">OverShading<sup>1</sup></a><a href="/tags/Shader%E4%BC%98%E5%8C%96/">Shader优化<sup>1</sup></a><a href="/tags/%E9%81%AE%E6%8C%A1%E5%89%94%E9%99%A4/">遮挡剔除<sup>2</sup></a><a href="/tags/OcclusionCulling/">OcclusionCulling<sup>1</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E4%BC%98%E5%8C%96/">资源优化<sup>2</sup></a><a href="/tags/%E7%BA%B9%E7%90%86%E4%BC%98%E5%8C%96/">纹理优化<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB/">代码阅读<sup>1</sup></a><a href="/tags/%E9%A1%B9%E7%9B%AE%E5%88%86%E6%9E%90/">项目分析<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E7%90%86%E8%A7%A3/">架构理解<sup>1</sup></a><a href="/tags/%E5%B7%A5%E7%A8%8B%E5%85%A5%E9%97%A8/">工程入门<sup>1</sup></a><a href="/tags/TextMeshPro/">TextMeshPro<sup>2</sup></a><a href="/tags/UI%E7%B3%BB%E7%BB%9F/">UI系统<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/">架构设计<sup>1</sup></a><a href="/tags/ScrollRect/">ScrollRect<sup>1</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%BB%9A%E5%8A%A8/">虚拟滚动<sup>1</sup></a><a href="/tags/%E5%88%97%E8%A1%A8%E4%BC%98%E5%8C%96/">列表优化<sup>1</sup></a><a href="/tags/%E9%94%9A%E7%82%B9/">锚点<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E7%B3%BB%E7%BB%9F/">布局系统<sup>1</sup></a><a href="/tags/UI%E9%80%82%E9%85%8D/">UI适配<sup>1</sup></a><a href="/tags/UI%E7%89%B9%E6%95%88/">UI特效<sup>1</sup></a><a href="/tags/%E7%B2%92%E5%AD%90%E7%B3%BB%E7%BB%9F/">粒子系统<sup>1</sup></a><a href="/tags/%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/">视觉效果<sup>1</sup></a><a href="/tags/TMP/">TMP<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E6%B8%B2%E6%9F%93/">文本渲染<sup>1</sup></a><a href="/tags/%E5%AD%97%E4%BD%93/">字体<sup>1</sup></a><a href="/tags/%E5%AF%8C%E6%96%87%E6%9C%AC/">富文本<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E6%A8%A1%E5%BC%8F/">渲染模式<sup>1</sup></a><a href="/tags/Sprite-Atlas/">Sprite Atlas<sup>1</sup></a><a href="/tags/%E5%9B%BE%E9%9B%86/">图集<sup>1</sup></a><a href="/tags/DoTween/">DoTween<sup>1</sup></a><a href="/tags/%E5%8A%A8%E7%94%BB/">动画<sup>1</sup></a><a href="/tags/%E8%BF%87%E6%B8%A1%E6%95%88%E6%9E%9C/">过渡效果<sup>1</sup></a><a href="/tags/UI%E5%8A%A8%E6%95%88/">UI动效<sup>1</sup></a><a href="/tags/UI%E6%9E%B6%E6%9E%84/">UI架构<sup>1</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E5%B7%A5%E5%85%B7/">优化工具<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95/">调试<sup>1</sup></a><a href="/tags/EventSystem/">EventSystem<sup>1</sup></a><a href="/tags/%E4%BA%8B%E4%BB%B6/">事件<sup>1</sup></a><a href="/tags/UI%E4%BA%8B%E4%BB%B6/">UI事件<sup>1</sup></a><a href="/tags/%E5%B1%8F%E5%B9%95%E9%80%82%E9%85%8D/">屏幕适配<sup>1</sup></a><a href="/tags/%E5%A4%9A%E5%88%86%E8%BE%A8%E7%8E%87/">多分辨率<sup>1</sup></a><a href="/tags/Canvas-Scaler/">Canvas Scaler<sup>1</sup></a><a href="/tags/%E9%80%82%E9%85%8D%E7%AD%96%E7%95%A5/">适配策略<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96/">自动化<sup>1</sup></a><a href="/tags/Jenkins/">Jenkins<sup>3</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/">性能测试<sup>1</sup></a><a href="/tags/Airtest/">Airtest<sup>2</sup></a><a href="/tags/CI-CD/">CI/CD<sup>2</sup></a><a href="/tags/%E5%B7%A5%E4%B8%9A%E5%8C%96%E6%B5%81%E7%A8%8B/">工业化流程<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%89%93%E5%8C%85/">自动化打包<sup>1</sup></a><a href="/tags/iOS/">iOS<sup>1</sup></a><a href="/tags/%E6%9E%84%E5%BB%BA/">构建<sup>1</sup></a><a href="/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/">持续集成<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/">自动化测试<sup>1</sup></a><a href="/tags/Python/">Python<sup>2</sup></a><a href="/tags/ARM/">ARM<sup>1</sup></a><a href="/tags/Xcode/">Xcode<sup>1</sup></a><a href="/tags/RenderDoc/">RenderDoc<sup>1</sup></a><a href="/tags/Stats/">Stats<sup>1</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/">性能监控<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%BB%9F%E8%AE%A1/">渲染统计<sup>1</sup></a><a href="/tags/FPS/">FPS<sup>1</sup></a><a href="/tags/Occlusion-Culling/">Occlusion Culling<sup>1</sup></a><a href="/tags/Overdraw/">Overdraw<sup>1</sup></a><a href="/tags/Base64/">Base64<sup>1</sup></a><a href="/tags/%E5%9B%BE%E7%89%87%E7%BC%96%E7%A0%81/">图片编码<sup>1</sup></a><a href="/tags/Texture2D/">Texture2D<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/">开发环境<sup>1</sup></a><a href="/tags/%E9%85%8D%E7%BD%AE/">配置<sup>1</sup></a><a href="/tags/Mono/">Mono<sup>1</sup></a><a href="/tags/NET-Core/">.NET Core<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF/">渲染管线<sup>1</sup></a><a href="/tags/%E6%89%B9%E5%A4%84%E7%90%86/">批处理<sup>1</sup></a><a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/">图形学<sup>1</sup></a><a href="/tags/%E7%AE%97%E6%B3%95/">算法<sup>2</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<sup>1</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">学习路线<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/">编程基础<sup>2</sup></a><a href="/tags/%E9%9D%A2%E8%AF%95%E5%87%86%E5%A4%87/">面试准备<sup>2</sup></a><a href="/tags/%E6%8C%87%E9%92%88/">指针<sup>1</sup></a><a href="/tags/%E6%95%B0%E7%BB%84/">数组<sup>1</sup></a><a href="/tags/%E6%8E%92%E5%BA%8F/">排序<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/">编程入门<sup>1</sup></a><a href="/tags/%E8%8B%B1%E8%AF%AD/">英语<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E8%AF%8D%E6%B1%87/">技术词汇<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E6%9C%AF%E8%AF%AD/">编程术语<sup>1</sup></a><a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<sup>1</sup></a><a href="/tags/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式<sup>1</sup></a><a href="/tags/Regex/">Regex<sup>1</sup></a><a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%A4%84%E7%90%86/">字符串处理<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E9%AA%8C%E8%AF%81/">数据验证<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86/">文本处理<sup>1</sup></a><a href="/tags/BestHTTP/">BestHTTP<sup>2</sup></a><a href="/tags/WebSocket/">WebSocket<sup>1</sup></a><a href="/tags/Socket-IO/">Socket.IO<sup>1</sup></a><a href="/tags/SignalR/">SignalR<sup>1</sup></a><a href="/tags/SSE/">SSE<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%97%B6%E9%80%9A%E4%BF%A1/">实时通信<sup>1</sup></a><a href="/tags/HTTP/">HTTP<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82/">网络请求<sup>1</sup></a><a href="/tags/%E6%8F%92%E4%BB%B6/">插件<sup>1</sup></a><a href="/tags/Protobuf/">Protobuf<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/">网络通信<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%8F%E5%88%97%E5%8C%96/">数据序列化<sup>1</sup></a><a href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0/">跨平台<sup>1</sup></a><a href="/tags/%E5%B8%A7%E5%90%8C%E6%AD%A5/">帧同步<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%90%8C%E6%AD%A5/">网络同步<sup>1</sup></a><a href="/tags/%E5%A4%9A%E4%BA%BA%E6%B8%B8%E6%88%8F/">多人游戏<sup>1</sup></a><a href="/tags/%E5%AE%9A%E7%82%B9%E6%95%B0/">定点数<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%90%8C%E6%AD%A5/">游戏同步<sup>1</sup></a><a href="/tags/%E5%BC%B1%E7%BD%91%E4%BC%98%E5%8C%96/">弱网优化<sup>1</sup></a></div></div><div class="console-card history" onclick="sco.hideConsole()"><ul class="card-archive-list"><li class="item"><a href="/archives/2025/01/"><span class="date">2025/01</span><div class="count-group"><span class="count">2</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/2020/05/"><span class="date">2020/05</span><div class="count-group"><span class="count">89</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/"><span class="date">全部文章</span><div class="count-group"><span class="count">91</span><span class="unit">篇</span></div></a></li></ul></div></div></div><div class="button-group"><div class="console-btn-item"><span class="darkmode_switchbutton" onclick="sco.switchDarkMode()" title="昼夜切换"><i class="solitude fas fa-circle-half-stroke"></i></span></div><div class="console-btn-item" id="consoleHideAside"><span class="asideSwitch" onclick="sco.switchHideAside()" title="边栏显示控制"><i class="solitude fas fa-arrows-left-right-to-line"></i></span></div></div><div class="console-mask" onclick="sco.hideConsole()"></div></div><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">91</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">270</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude fas fa-circle-half-stroke"></i><span>显示模式</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/categories/%E5%8D%83%E5%B9%B4%E5%BF%97-%E9%81%93%E5%8A%AB/"><span>千年志*道劫</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/"><span>技术博客</span></a></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-tags"><div class="card-tag-cloud"><a href="/tags/Unity/">Unity<sup>66</sup></a><a href="/tags/AI/">AI<sup>1</sup></a><a href="/tags/%E8%A1%8C%E4%B8%BA%E6%A0%91/">行为树<sup>1</sup></a><a href="/tags/%E7%8A%B6%E6%80%81%E6%9C%BA/">状态机<sup>1</sup></a><a href="/tags/FSM/">FSM<sup>1</sup></a><a href="/tags/BT/">BT<sup>1</sup></a><a href="/tags/GOAP/">GOAP<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/">游戏设计<sup>1</sup></a><a href="/tags/Lua/">Lua<sup>5</sup></a><a href="/tags/LuaJIT/">LuaJIT<sup>2</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/">虚拟机<sup>2</sup></a><a href="/tags/GC/">GC<sup>4</sup></a><a href="/tags/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">源码阅读<sup>1</sup></a><a href="/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80/">脚本语言<sup>1</sup></a><a href="/tags/ToLua/">ToLua<sup>4</sup></a><a href="/tags/C/">C#<sup>3</sup></a><a href="/tags/%E4%BA%A4%E4%BA%92/">交互<sup>3</sup></a><a href="/tags/CLR/">CLR<sup>1</sup></a><a href="/tags/IL2CPP/">IL2CPP<sup>3</sup></a><a href="/tags/C/">C++<sup>3</sup></a><a href="/tags/P-Invoke/">P/Invoke<sup>1</sup></a><a href="/tags/%E4%BA%92%E6%93%8D%E4%BD%9C/">互操作<sup>1</sup></a><a href="/tags/DllImport/">DllImport<sup>1</sup></a><a href="/tags/Marshal/">Marshal<sup>1</sup></a><a href="/tags/%E7%83%AD%E6%9B%B4%E6%96%B0/">热更新<sup>3</sup></a><a href="/tags/%E8%B7%A8%E8%AF%AD%E8%A8%80%E4%BA%A4%E4%BA%92/">跨语言交互<sup>1</sup></a><a href="/tags/C/">C<sup>3</sup></a><a href="/tags/API/">API<sup>1</sup></a><a href="/tags/%E6%A0%88/">栈<sup>1</sup></a><a href="/tags/tolua/">tolua<sup>1</sup></a><a href="/tags/%E4%B8%96%E7%95%8C%E8%A7%82/">世界观<sup>1</sup></a><a href="/tags/Hexo/">Hexo<sup>2</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/">博客<sup>2</sup></a><a href="/tags/%E9%9D%99%E6%80%81%E7%AB%99%E7%82%B9%E7%94%9F%E6%88%90%E5%99%A8/">静态站点生成器<sup>1</sup></a><a href="/tags/Node-js/">Node.js<sup>1</sup></a><a href="/tags/Git/">Git<sup>1</sup></a><a href="/tags/GitHub-Pages/">GitHub Pages<sup>1</sup></a><a href="/tags/Markdown/">Markdown<sup>1</sup></a><a href="/tags/%E5%86%99%E4%BD%9C/">写作<sup>1</sup></a><a href="/tags/VSCode/">VSCode<sup>2</sup></a><a href="/tags/Mac/">Mac<sup>2</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具<sup>1</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E8%BD%AF%E4%BB%B6/">效率软件<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/">游戏开发<sup>1</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E9%93%BE/">工具链<sup>1</sup></a><a href="/tags/VPN/">VPN<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%B7%A5%E5%85%B7/">网络工具<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E8%B5%84%E6%BA%90/">开发资源<sup>1</sup></a><a href="/tags/Google/">Google<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0/">技术学习<sup>1</sup></a><a href="/tags/GitHub%E5%8A%A0%E9%80%9F/">GitHub加速<sup>1</sup></a><a href="/tags/CMD/">CMD<sup>1</sup></a><a href="/tags/Windows/">Windows<sup>1</sup></a><a href="/tags/%E5%91%BD%E4%BB%A4%E8%A1%8C/">命令行<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%91%BD%E4%BB%A4/">网络命令<sup>1</sup></a><a href="/tags/%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86/">系统管理<sup>1</sup></a><a href="/tags/%E5%85%AC%E5%91%8A/">公告<sup>1</sup></a><a href="/tags/UGUI/">UGUI<sup>15</sup></a><a href="/tags/Canvas/">Canvas<sup>4</sup></a><a href="/tags/UI%E4%BC%98%E5%8C%96/">UI优化<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化<sup>16</sup></a><a href="/tags/RectTransform/">RectTransform<sup>2</sup></a><a href="/tags/UnityEditor/">UnityEditor<sup>12</sup></a><a href="/tags/%E7%BC%96%E8%BE%91%E5%99%A8%E6%89%A9%E5%B1%95/">编辑器扩展<sup>11</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91/">工具开发<sup>3</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E6%8F%90%E5%8D%87/">效率提升<sup>1</sup></a><a href="/tags/EditorWindow/">EditorWindow<sup>4</sup></a><a href="/tags/RenderTexture/">RenderTexture<sup>1</sup></a><a href="/tags/%E6%88%AA%E5%9B%BE%E5%B7%A5%E5%85%B7/">截图工具<sup>1</sup></a><a href="/tags/Handles/">Handles<sup>1</sup></a><a href="/tags/OnSceneGUI/">OnSceneGUI<sup>1</sup></a><a href="/tags/%E5%9C%BA%E6%99%AF%E8%A7%86%E5%9B%BE/">场景视图<sup>2</sup></a><a href="/tags/Gizmos/">Gizmos<sup>1</sup></a><a href="/tags/OnDrawGizmos/">OnDrawGizmos<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95%E5%B7%A5%E5%85%B7/">调试工具<sup>1</sup></a><a href="/tags/%E8%8A%82%E7%82%B9%E7%BC%96%E8%BE%91%E5%99%A8/">节点编辑器<sup>1</sup></a><a href="/tags/GraphView/">GraphView<sup>1</sup></a><a href="/tags/%E5%8F%AF%E8%A7%86%E5%8C%96%E7%BC%96%E7%A8%8B/">可视化编程<sup>1</sup></a><a href="/tags/%E6%8A%80%E8%83%BD%E7%BC%96%E8%BE%91%E5%99%A8/">技能编辑器<sup>1</sup></a><a href="/tags/FlatBuffers/">FlatBuffers<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BC%93%E5%AD%98/">数据缓存<sup>1</sup></a><a href="/tags/GamePlay/">GamePlay<sup>1</sup></a><a href="/tags/PropertyAttribute/">PropertyAttribute<sup>1</sup></a><a href="/tags/%E6%A3%80%E8%A7%86%E9%9D%A2%E6%9D%BF/">检视面板<sup>1</sup></a><a href="/tags/ScriptableObject/">ScriptableObject<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/">数据存储<sup>1</sup></a><a href="/tags/JSON/">JSON<sup>1</sup></a><a href="/tags/%E7%AA%97%E5%8F%A3%E5%BC%80%E5%8F%91/">窗口开发<sup>1</sup></a><a href="/tags/EditorGUI/">EditorGUI<sup>1</sup></a><a href="/tags/GUI%E6%8E%A7%E4%BB%B6/">GUI控件<sup>1</sup></a><a href="/tags/%E7%95%8C%E9%9D%A2%E8%AE%BE%E8%AE%A1/">界面设计<sup>2</sup></a><a href="/tags/MenuItem/">MenuItem<sup>1</sup></a><a href="/tags/%E8%8F%9C%E5%8D%95%E5%BC%80%E5%8F%91/">菜单开发<sup>1</sup></a><a href="/tags/%E5%BF%AB%E6%8D%B7%E9%94%AE/">快捷键<sup>1</sup></a><a href="/tags/CustomEditor/">CustomEditor<sup>1</sup></a><a href="/tags/PropertyDrawer/">PropertyDrawer<sup>1</sup></a><a href="/tags/Inspector/">Inspector<sup>1</sup></a><a href="/tags/EditorGUILayout/">EditorGUILayout<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E6%8E%A7%E4%BB%B6/">布局控件<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%88%98%E6%A1%88%E4%BE%8B/">实战案例<sup>2</sup></a><a href="/tags/AssetBundle/">AssetBundle<sup>5</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/">资源管理<sup>3</sup></a><a href="/tags/%E6%89%93%E5%8C%85%E7%AD%96%E7%95%A5/">打包策略<sup>3</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">内存管理<sup>4</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E5%88%86%E6%9E%90/">依赖分析<sup>1</sup></a><a href="/tags/%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96/">加载优化<sup>2</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E7%AE%A1%E7%90%86/">依赖管理<sup>1</sup></a><a href="/tags/%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">最佳实践<sup>2</sup></a><a href="/tags/Android/">Android<sup>2</sup></a><a href="/tags/%E4%BC%98%E5%8C%96/">优化<sup>3</sup></a><a href="/tags/Android-Studio/">Android Studio<sup>2</sup></a><a href="/tags/Profiler/">Profiler<sup>7</sup></a><a href="/tags/ADB/">ADB<sup>2</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90/">性能分析<sup>4</sup></a><a href="/tags/%E6%B5%AE%E7%82%B9%E6%95%B0/">浮点数<sup>1</sup></a><a href="/tags/%E7%B2%BE%E5%BA%A6/">精度<sup>1</sup></a><a href="/tags/Transform/">Transform<sup>1</sup></a><a href="/tags/%E5%9D%90%E6%A0%87%E7%B3%BB%E7%BB%9F/">坐标系统<sup>1</sup></a><a href="/tags/%E7%9B%B8%E6%9C%BA/">相机<sup>1</sup></a><a href="/tags/Z-Buffer/">Z-Buffer<sup>1</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/">内存优化<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD/">性能<sup>4</sup></a><a href="/tags/Boehm/">Boehm<sup>2</sup></a><a href="/tags/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">对象池<sup>2</sup></a><a href="/tags/Unsafe/">Unsafe<sup>1</sup></a><a href="/tags/CPU%E4%BC%98%E5%8C%96/">CPU优化<sup>2</sup></a><a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程<sup>1</sup></a><a href="/tags/Job-System/">Job System<sup>1</sup></a><a href="/tags/Burst/">Burst<sup>1</sup></a><a href="/tags/%E5%8D%8F%E7%A8%8B/">协程<sup>1</sup></a><a href="/tags/GPU%E4%BC%98%E5%8C%96/">GPU优化<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93/">渲染<sup>1</sup></a><a href="/tags/Shader/">Shader<sup>3</sup></a><a href="/tags/DrawCall/">DrawCall<sup>9</sup></a><a href="/tags/Batch/">Batch<sup>1</sup></a><a href="/tags/OverDraw/">OverDraw<sup>5</sup></a><a href="/tags/LOD/">LOD<sup>2</sup></a><a href="/tags/Mobile/">Mobile<sup>1</sup></a><a href="/tags/NGUI/">NGUI<sup>3</sup></a><a href="/tags/UI%E6%A1%86%E6%9E%B6/">UI框架<sup>1</sup></a><a href="/tags/UIPanel/">UIPanel<sup>1</sup></a><a href="/tags/UIWidget/">UIWidget<sup>1</sup></a><a href="/tags/%E7%A7%BB%E5%8A%A8%E7%AB%AF/">移动端<sup>1</sup></a><a href="/tags/TBR/">TBR<sup>1</sup></a><a href="/tags/%E5%B8%A6%E5%AE%BD%E4%BC%98%E5%8C%96/">带宽优化<sup>2</sup></a><a href="/tags/GPU/">GPU<sup>2</sup></a><a href="/tags/HUD%E4%BC%98%E5%8C%96/">HUD优化<sup>1</sup></a><a href="/tags/%E5%90%88%E6%89%B9/">合批<sup>1</sup></a><a href="/tags/%E7%BD%91%E6%A0%BC%E9%87%8D%E5%BB%BA/">网格重建<sup>1</sup></a><a href="/tags/UWA/">UWA<sup>3</sup></a><a href="/tags/%E6%80%BB%E7%BA%B2/">总纲<sup>1</sup></a><a href="/tags/UPR/">UPR<sup>4</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB/">优化体系<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E8%A7%84%E8%8C%83/">代码规范<sup>1</sup></a><a href="/tags/GC%E4%BC%98%E5%8C%96/">GC优化<sup>1</sup></a><a href="/tags/FPS%E6%A0%87%E5%87%86/">FPS标准<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96/">代码优化<sup>1</sup></a><a href="/tags/MonoBehaviour/">MonoBehaviour<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E4%BC%98%E5%8C%96/">渲染优化<sup>4</sup></a><a href="/tags/OverShading/">OverShading<sup>1</sup></a><a href="/tags/Shader%E4%BC%98%E5%8C%96/">Shader优化<sup>1</sup></a><a href="/tags/%E9%81%AE%E6%8C%A1%E5%89%94%E9%99%A4/">遮挡剔除<sup>2</sup></a><a href="/tags/OcclusionCulling/">OcclusionCulling<sup>1</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E4%BC%98%E5%8C%96/">资源优化<sup>2</sup></a><a href="/tags/%E7%BA%B9%E7%90%86%E4%BC%98%E5%8C%96/">纹理优化<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB/">代码阅读<sup>1</sup></a><a href="/tags/%E9%A1%B9%E7%9B%AE%E5%88%86%E6%9E%90/">项目分析<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E7%90%86%E8%A7%A3/">架构理解<sup>1</sup></a><a href="/tags/%E5%B7%A5%E7%A8%8B%E5%85%A5%E9%97%A8/">工程入门<sup>1</sup></a><a href="/tags/TextMeshPro/">TextMeshPro<sup>2</sup></a><a href="/tags/UI%E7%B3%BB%E7%BB%9F/">UI系统<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/">架构设计<sup>1</sup></a><a href="/tags/ScrollRect/">ScrollRect<sup>1</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%BB%9A%E5%8A%A8/">虚拟滚动<sup>1</sup></a><a href="/tags/%E5%88%97%E8%A1%A8%E4%BC%98%E5%8C%96/">列表优化<sup>1</sup></a><a href="/tags/%E9%94%9A%E7%82%B9/">锚点<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E7%B3%BB%E7%BB%9F/">布局系统<sup>1</sup></a><a href="/tags/UI%E9%80%82%E9%85%8D/">UI适配<sup>1</sup></a><a href="/tags/UI%E7%89%B9%E6%95%88/">UI特效<sup>1</sup></a><a href="/tags/%E7%B2%92%E5%AD%90%E7%B3%BB%E7%BB%9F/">粒子系统<sup>1</sup></a><a href="/tags/%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/">视觉效果<sup>1</sup></a><a href="/tags/TMP/">TMP<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E6%B8%B2%E6%9F%93/">文本渲染<sup>1</sup></a><a href="/tags/%E5%AD%97%E4%BD%93/">字体<sup>1</sup></a><a href="/tags/%E5%AF%8C%E6%96%87%E6%9C%AC/">富文本<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E6%A8%A1%E5%BC%8F/">渲染模式<sup>1</sup></a><a href="/tags/Sprite-Atlas/">Sprite Atlas<sup>1</sup></a><a href="/tags/%E5%9B%BE%E9%9B%86/">图集<sup>1</sup></a><a href="/tags/DoTween/">DoTween<sup>1</sup></a><a href="/tags/%E5%8A%A8%E7%94%BB/">动画<sup>1</sup></a><a href="/tags/%E8%BF%87%E6%B8%A1%E6%95%88%E6%9E%9C/">过渡效果<sup>1</sup></a><a href="/tags/UI%E5%8A%A8%E6%95%88/">UI动效<sup>1</sup></a><a href="/tags/UI%E6%9E%B6%E6%9E%84/">UI架构<sup>1</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E5%B7%A5%E5%85%B7/">优化工具<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95/">调试<sup>1</sup></a><a href="/tags/EventSystem/">EventSystem<sup>1</sup></a><a href="/tags/%E4%BA%8B%E4%BB%B6/">事件<sup>1</sup></a><a href="/tags/UI%E4%BA%8B%E4%BB%B6/">UI事件<sup>1</sup></a><a href="/tags/%E5%B1%8F%E5%B9%95%E9%80%82%E9%85%8D/">屏幕适配<sup>1</sup></a><a href="/tags/%E5%A4%9A%E5%88%86%E8%BE%A8%E7%8E%87/">多分辨率<sup>1</sup></a><a href="/tags/Canvas-Scaler/">Canvas Scaler<sup>1</sup></a><a href="/tags/%E9%80%82%E9%85%8D%E7%AD%96%E7%95%A5/">适配策略<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96/">自动化<sup>1</sup></a><a href="/tags/Jenkins/">Jenkins<sup>3</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/">性能测试<sup>1</sup></a><a href="/tags/Airtest/">Airtest<sup>2</sup></a><a href="/tags/CI-CD/">CI/CD<sup>2</sup></a><a href="/tags/%E5%B7%A5%E4%B8%9A%E5%8C%96%E6%B5%81%E7%A8%8B/">工业化流程<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%89%93%E5%8C%85/">自动化打包<sup>1</sup></a><a href="/tags/iOS/">iOS<sup>1</sup></a><a href="/tags/%E6%9E%84%E5%BB%BA/">构建<sup>1</sup></a><a href="/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/">持续集成<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/">自动化测试<sup>1</sup></a><a href="/tags/Python/">Python<sup>2</sup></a><a href="/tags/ARM/">ARM<sup>1</sup></a><a href="/tags/Xcode/">Xcode<sup>1</sup></a><a href="/tags/RenderDoc/">RenderDoc<sup>1</sup></a><a href="/tags/Stats/">Stats<sup>1</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/">性能监控<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%BB%9F%E8%AE%A1/">渲染统计<sup>1</sup></a><a href="/tags/FPS/">FPS<sup>1</sup></a><a href="/tags/Occlusion-Culling/">Occlusion Culling<sup>1</sup></a><a href="/tags/Overdraw/">Overdraw<sup>1</sup></a><a href="/tags/Base64/">Base64<sup>1</sup></a><a href="/tags/%E5%9B%BE%E7%89%87%E7%BC%96%E7%A0%81/">图片编码<sup>1</sup></a><a href="/tags/Texture2D/">Texture2D<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/">开发环境<sup>1</sup></a><a href="/tags/%E9%85%8D%E7%BD%AE/">配置<sup>1</sup></a><a href="/tags/Mono/">Mono<sup>1</sup></a><a href="/tags/NET-Core/">.NET Core<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF/">渲染管线<sup>1</sup></a><a href="/tags/%E6%89%B9%E5%A4%84%E7%90%86/">批处理<sup>1</sup></a><a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/">图形学<sup>1</sup></a><a href="/tags/%E7%AE%97%E6%B3%95/">算法<sup>2</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<sup>1</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">学习路线<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/">编程基础<sup>2</sup></a><a href="/tags/%E9%9D%A2%E8%AF%95%E5%87%86%E5%A4%87/">面试准备<sup>2</sup></a><a href="/tags/%E6%8C%87%E9%92%88/">指针<sup>1</sup></a><a href="/tags/%E6%95%B0%E7%BB%84/">数组<sup>1</sup></a><a href="/tags/%E6%8E%92%E5%BA%8F/">排序<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/">编程入门<sup>1</sup></a><a href="/tags/%E8%8B%B1%E8%AF%AD/">英语<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E8%AF%8D%E6%B1%87/">技术词汇<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E6%9C%AF%E8%AF%AD/">编程术语<sup>1</sup></a><a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<sup>1</sup></a><a href="/tags/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式<sup>1</sup></a><a href="/tags/Regex/">Regex<sup>1</sup></a><a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%A4%84%E7%90%86/">字符串处理<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E9%AA%8C%E8%AF%81/">数据验证<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86/">文本处理<sup>1</sup></a><a href="/tags/BestHTTP/">BestHTTP<sup>2</sup></a><a href="/tags/WebSocket/">WebSocket<sup>1</sup></a><a href="/tags/Socket-IO/">Socket.IO<sup>1</sup></a><a href="/tags/SignalR/">SignalR<sup>1</sup></a><a href="/tags/SSE/">SSE<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%97%B6%E9%80%9A%E4%BF%A1/">实时通信<sup>1</sup></a><a href="/tags/HTTP/">HTTP<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82/">网络请求<sup>1</sup></a><a href="/tags/%E6%8F%92%E4%BB%B6/">插件<sup>1</sup></a><a href="/tags/Protobuf/">Protobuf<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/">网络通信<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%8F%E5%88%97%E5%8C%96/">数据序列化<sup>1</sup></a><a href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0/">跨平台<sup>1</sup></a><a href="/tags/%E5%B8%A7%E5%90%8C%E6%AD%A5/">帧同步<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%90%8C%E6%AD%A5/">网络同步<sup>1</sup></a><a href="/tags/%E5%A4%9A%E4%BA%BA%E6%B8%B8%E6%88%8F/">多人游戏<sup>1</sup></a><a href="/tags/%E5%AE%9A%E7%82%B9%E6%95%B0/">定点数<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%90%8C%E6%AD%A5/">游戏同步<sup>1</sup></a><a href="/tags/%E5%BC%B1%E7%BD%91%E4%BC%98%E5%8C%96/">弱网优化<sup>1</sup></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><a href="/" title="返回博客主页" id="site-name"><span class="title">主页</span><i class="solitude fas fa-home"></i></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">Windows 命令行完全参考手册</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/categories/%E5%8D%83%E5%B9%B4%E5%BF%97-%E9%81%93%E5%8A%AB/"><span>千年志*道劫</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/"><span>技术博客</span></a></div></div></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="nav-totop" onclick="sco.toTop()"><a class="totopbtn"><i class="solitude fas fa-arrow-up"></i><span id="percent">0</span></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude fas fa-bars"></i></a></div></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><span class="post-meta-categories"><a class="post-meta-categories" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/">技术文章</a></span><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/CMD/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>CMD</span></a><a class="post-meta__tags" href="/tags/Windows/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>Windows</span></a><a class="post-meta__tags" href="/tags/%E5%91%BD%E4%BB%A4%E8%A1%8C/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>命令行</span></a><a class="post-meta__tags" href="/tags/%E7%BD%91%E7%BB%9C%E5%91%BD%E4%BB%A4/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>网络命令</span></a><a class="post-meta__tags" href="/tags/%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>系统管理</span></a></div></div></div></div><h1 class="post-title">Windows 命令行完全参考手册</h1><div id="post-meta"><div class="meta-secondline"></div></div></div><div class="post-radius-bottom"></div><article class="post-content article-container"><h1 id="Windows-命令行完全参考手册"><a href="#Windows-命令行完全参考手册" class="headerlink" title="Windows 命令行完全参考手册"></a>Windows 命令行完全参考手册</h1><blockquote>
+<p>本文整理了 Windows 系统常用的 CMD 命令，包括系统管理、网络操作、文件处理等各类命令的快速参考。</p>
+</blockquote>
+<hr>
+<h2 id="一、打开-CMD"><a href="#一、打开-CMD" class="headerlink" title="一、打开 CMD"></a>一、打开 CMD</h2><h3 id="1-1-打开方式"><a href="#1-1-打开方式" class="headerlink" title="1.1 打开方式"></a>1.1 打开方式</h3><table>
+<thead>
+<tr>
+<th>方式</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>运行对话框</strong></td>
+<td><code>Win + R</code> → 输入 <code>cmd</code> → 回车</td>
+</tr>
+<tr>
+<td><strong>开始菜单</strong></td>
+<td>Windows 系统 → 开始菜单 → Windows 系统 → 命令提示符</td>
+</tr>
+<tr>
+<td><strong>文件资源管理器</strong></td>
+<td>地址栏输入 <code>cmd</code> → 回车</td>
+</tr>
+</tbody></table>
+<h3 id="1-2-常用启动参数"><a href="#1-2-常用启动参数" class="headerlink" title="1.2 常用启动参数"></a>1.2 常用启动参数</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cmd                    <span class="comment"># 普通打开</span></span><br><span class="line">cmd /c <span class="built_in">command</span>         <span class="comment"># 执行命令后关闭窗口</span></span><br><span class="line">cmd /k <span class="built_in">command</span>         <span class="comment"># 执行命令后保持窗口</span></span><br><span class="line">cmd /?                 <span class="comment"># 查看帮助</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="二、系统管理命令"><a href="#二、系统管理命令" class="headerlink" title="二、系统管理命令"></a>二、系统管理命令</h2><h3 id="2-1-系统工具"><a href="#2-1-系统工具" class="headerlink" title="2.1 系统工具"></a>2.1 系统工具</h3><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>taskmgr</code></td>
+<td>任务管理器</td>
+</tr>
+<tr>
+<td><code>services.msc</code></td>
+<td>本地服务设置</td>
+</tr>
+<tr>
+<td><code>compmgmt.msc</code></td>
+<td>计算机管理</td>
+</tr>
+<tr>
+<td><code>devmgmt.msc</code></td>
+<td>设备管理器</td>
+</tr>
+<tr>
+<td><code>diskmgmt.msc</code></td>
+<td>磁盘管理</td>
+</tr>
+<tr>
+<td><code>dfrg.msc</code></td>
+<td>磁盘碎片整理</td>
+</tr>
+<tr>
+<td><code>eventvwr</code></td>
+<td>事件查看器</td>
+</tr>
+<tr>
+<td><code>gpedit.msc</code></td>
+<td>组策略</td>
+</tr>
+<tr>
+<td><code>perfmon.msc</code></td>
+<td>性能监测</td>
+</tr>
+<tr>
+<td><code>msconfig</code></td>
+<td>系统配置实用程序</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-系统信息"><a href="#2-2-系统信息" class="headerlink" title="2.2 系统信息"></a>2.2 系统信息</h3><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>winver</code></td>
+<td>显示 Windows 版本（窗口）</td>
+</tr>
+<tr>
+<td><code>ver</code></td>
+<td>显示 Windows 版本（CMD 内）</td>
+</tr>
+<tr>
+<td><code>systeminfo</code></td>
+<td>显示完整系统信息</td>
+</tr>
+<tr>
+<td><code>wmimgmt.msc</code></td>
+<td>WMI 管理体系</td>
+</tr>
+<tr>
+<td><code>dxdiag</code></td>
+<td>DirectX 诊断工具</td>
+</tr>
+</tbody></table>
+<h3 id="2-3-用户管理"><a href="#2-3-用户管理" class="headerlink" title="2.3 用户管理"></a>2.3 用户管理</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看用户</span></span><br><span class="line">net user</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看用户属性</span></span><br><span class="line">net user 用户名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建用户</span></span><br><span class="line">net user 用户名 密码 /add</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改密码</span></span><br><span class="line">net user 用户名 新密码</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除用户</span></span><br><span class="line">net user 用户名 /delete</span><br><span class="line"></span><br><span class="line"><span class="comment"># 激活/禁用用户</span></span><br><span class="line">net user guest /active:<span class="built_in">yes</span></span><br><span class="line">net user guest /active:no</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-关机重启"><a href="#2-4-关机重启" class="headerlink" title="2.4 关机重启"></a>2.4 关机重启</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 关机（60秒倒计时）</span></span><br><span class="line">shutdown</span><br><span class="line"></span><br><span class="line"><span class="comment"># 立即关机</span></span><br><span class="line">shutdown /s /t 0</span><br><span class="line"></span><br><span class="line"><span class="comment"># 立即重启</span></span><br><span class="line">shutdown /r /t 0</span><br><span class="line"></span><br><span class="line"><span class="comment"># 注销</span></span><br><span class="line">logoff</span><br><span class="line"></span><br><span class="line"><span class="comment"># 取消关机</span></span><br><span class="line">shutdown /a</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、网络命令"><a href="#三、网络命令" class="headerlink" title="三、网络命令"></a>三、网络命令</h2><h3 id="3-1-网络连接"><a href="#3-1-网络连接" class="headerlink" title="3.1 网络连接"></a>3.1 网络连接</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 建立 IPC 空链接</span></span><br><span class="line">net use \\ip\ipc$ <span class="string">&quot;&quot;</span> /user:<span class="string">&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 建立 IPC 非空链接</span></span><br><span class="line">net use \\ip\ipc$ <span class="string">&quot;密码&quot;</span> /user:<span class="string">&quot;用户名&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 映射网络驱动器</span></span><br><span class="line">net use h: \\ip\ipc$</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除 IPC 链接</span></span><br><span class="line">net use \\ip\ipc$ /del</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除映射</span></span><br><span class="line">net use h: /del</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看本地共享</span></span><br><span class="line">net share</span><br><span class="line"></span><br><span class="line"><span class="comment"># 开启 IPC$ 共享</span></span><br><span class="line">net share ipc$</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除 IPC$ 共享</span></span><br><span class="line">net share ipc$ /del</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-网络诊断"><a href="#3-2-网络诊断" class="headerlink" title="3.2 网络诊断"></a>3.2 网络诊断</h3><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ping ip</code></td>
+<td>测试网络连通性</td>
+</tr>
+<tr>
+<td><code>ping -t ip</code></td>
+<td>持续 ping</td>
+</tr>
+<tr>
+<td><code>tracert ip</code></td>
+<td>路由跟踪</td>
+</tr>
+<tr>
+<td><code>ipconfig</code></td>
+<td>查看 IP 配置</td>
+</tr>
+<tr>
+<td><code>ipconfig /all</code></td>
+<td>查看完整配置</td>
+</tr>
+<tr>
+<td><code>ipconfig /renew</code></td>
+<td>更新 IP 地址</td>
+</tr>
+<tr>
+<td><code>ipconfig /flushdns</code></td>
+<td>清除 DNS 缓存</td>
+</tr>
+<tr>
+<td><code>nslookup</code></td>
+<td>DNS 查询</td>
+</tr>
+<tr>
+<td><code>netstat -an</code></td>
+<td>查看所有端口</td>
+</tr>
+<tr>
+<td><code>netstat -a</code></td>
+<td>查看开启的端口</td>
+</tr>
+<tr>
+<td><code>arp -a</code></td>
+<td>查看 ARP 缓存</td>
+</tr>
+</tbody></table>
+<h3 id="3-3-网络服务"><a href="#3-3-网络服务" class="headerlink" title="3.3 网络服务"></a>3.3 网络服务</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 启动服务</span></span><br><span class="line">net start 服务名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 停止服务</span></span><br><span class="line">net stop 服务名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看开启的服务</span></span><br><span class="line">net start</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看网络类型</span></span><br><span class="line">net ver</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看局域网共享</span></span><br><span class="line">net view</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看指定 IP 共享</span></span><br><span class="line">net view \\ip</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看网络配置</span></span><br><span class="line">net config</span><br><span class="line"></span><br><span class="line"><span class="comment"># 发送消息</span></span><br><span class="line">net send ip <span class="string">&quot;消息内容&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 同步命令</span></span><br><span class="line">mobsync</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="四、文件操作命令"><a href="#四、文件操作命令" class="headerlink" title="四、文件操作命令"></a>四、文件操作命令</h2><h3 id="4-1-基本操作"><a href="#4-1-基本操作" class="headerlink" title="4.1 基本操作"></a>4.1 基本操作</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看文件</span></span><br><span class="line"><span class="built_in">dir</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看隐藏文件</span></span><br><span class="line"><span class="built_in">dir</span> /a</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看文件详细信息</span></span><br><span class="line"><span class="built_in">dir</span> /q</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建目录</span></span><br><span class="line">md 目录名</span><br><span class="line"><span class="built_in">mkdir</span> 目录名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除目录</span></span><br><span class="line"><span class="built_in">rmdir</span> 目录名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 强制删除目录及其内容</span></span><br><span class="line"><span class="built_in">rmdir</span> /s /q 目录名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除文件</span></span><br><span class="line">del 文件名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 强制删除只读文件</span></span><br><span class="line">del -f 文件名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除目录及子目录</span></span><br><span class="line">del /s /q 目录</span><br><span class="line"></span><br><span class="line"><span class="comment"># 重命名文件</span></span><br><span class="line">ren 原文件名 新文件名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 移动文件</span></span><br><span class="line">move 源文件 目标路径</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-复制操作"><a href="#4-2-复制操作" class="headerlink" title="4.2 复制操作"></a>4.2 复制操作</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 复制文件</span></span><br><span class="line">copy 源文件 目标文件</span><br><span class="line"></span><br><span class="line"><span class="comment"># 覆盖复制（不提示）</span></span><br><span class="line">copy 源文件 目标文件 /y</span><br><span class="line"></span><br><span class="line"><span class="comment"># 复制文件和目录树</span></span><br><span class="line">xcopy 源 目标 /E /I /Y</span><br><span class="line"></span><br><span class="line"><span class="comment"># 复制到网络共享</span></span><br><span class="line">copy 文件名 \\ip\admin$</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-文件内容查看"><a href="#4-3-文件内容查看" class="headerlink" title="4.3 文件内容查看"></a>4.3 文件内容查看</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 显示文本文件内容</span></span><br><span class="line"><span class="built_in">type</span> 文件名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 分页显示</span></span><br><span class="line">more 文件名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查找字符串</span></span><br><span class="line">findstr <span class="string">&quot;字符串&quot;</span> 文件名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 对比两个文件</span></span><br><span class="line"><span class="built_in">fc</span> file1.txt file2.txt</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="五、进程管理"><a href="#五、进程管理" class="headerlink" title="五、进程管理"></a>五、进程管理</h2><h3 id="5-1-进程操作"><a href="#5-1-进程操作" class="headerlink" title="5.1 进程操作"></a>5.1 进程操作</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看进程</span></span><br><span class="line">tasklist</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看进程及服务</span></span><br><span class="line">tasklist /svc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看进程加载的 DLL</span></span><br><span class="line">tasklist /m</span><br><span class="line"></span><br><span class="line"><span class="comment"># 结束进程</span></span><br><span class="line">taskkill /PID 进程ID</span><br><span class="line"></span><br><span class="line"><span class="comment"># 强制结束进程</span></span><br><span class="line">taskkill /F /IM 进程名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 结束进程及子进程</span></span><br><span class="line">taskkill /F /T /IM 进程名</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-内存查看"><a href="#5-2-内存查看" class="headerlink" title="5.2 内存查看"></a>5.2 内存查看</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看内存使用</span></span><br><span class="line">mem</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看 CPU 使用情况</span></span><br><span class="line">mem /c /p</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、注册表操作"><a href="#六、注册表操作" class="headerlink" title="六、注册表操作"></a>六、注册表操作</h2><h3 id="6-1-注册表编辑"><a href="#6-1-注册表编辑" class="headerlink" title="6.1 注册表编辑"></a>6.1 注册表编辑</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 打开注册表</span></span><br><span class="line">regedit</span><br><span class="line"></span><br><span class="line"><span class="comment"># 打开注册表（32位）</span></span><br><span class="line">regedt32</span><br><span class="line"></span><br><span class="line"><span class="comment"># 导出注册表</span></span><br><span class="line">regedit /e 备份文件.reg</span><br><span class="line"></span><br><span class="line"><span class="comment"># 导入注册表</span></span><br><span class="line">regedit /s 备份文件.reg</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查询注册表值</span></span><br><span class="line">reg query <span class="string">&quot;键路径&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加注册表值</span></span><br><span class="line">reg add <span class="string">&quot;键路径&quot;</span> /v 值名 /t 类型 /d 数据</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除注册表值</span></span><br><span class="line">reg delete <span class="string">&quot;键路径&quot;</span> /v 值名</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="七、磁盘管理"><a href="#七、磁盘管理" class="headerlink" title="七、磁盘管理"></a>七、磁盘管理</h2><h3 id="7-1-磁盘检查"><a href="#7-1-磁盘检查" class="headerlink" title="7.1 磁盘检查"></a>7.1 磁盘检查</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 检查磁盘</span></span><br><span class="line">chkdsk D:</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查并修复磁盘</span></span><br><span class="line">chkdsk D: /F</span><br><span class="line"></span><br><span class="line"><span class="comment"># 格式化磁盘</span></span><br><span class="line">format D: /FS:NTFS</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-文件属性"><a href="#7-2-文件属性" class="headerlink" title="7.2 文件属性"></a>7.2 文件属性</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看文件属性</span></span><br><span class="line">attrib 文件名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改文件属性</span></span><br><span class="line">attrib +R 文件名    <span class="comment"># 只读</span></span><br><span class="line">attrib -R 文件名    <span class="comment"># 取消只读</span></span><br><span class="line">attrib +H 文件名    <span class="comment"># 隐藏</span></span><br><span class="line">attrib -H 文件名    <span class="comment"># 取消隐藏</span></span><br><span class="line">attrib +S 文件名    <span class="comment"># 系统</span></span><br><span class="line">attrib -S 文件名    <span class="comment"># 取消系统</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="八、FTP-命令"><a href="#八、FTP-命令" class="headerlink" title="八、FTP 命令"></a>八、FTP 命令</h2><h3 id="8-1-连接与传输"><a href="#8-1-连接与传输" class="headerlink" title="8.1 连接与传输"></a>8.1 连接与传输</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 连接 FTP 服务器</span></span><br><span class="line">ftp ip 地址</span><br><span class="line"></span><br><span class="line"><span class="comment"># 匿名登录</span></span><br><span class="line">ftp</span><br><span class="line">open ip</span><br><span class="line"></span><br><span class="line"><span class="comment"># 上传文件（二进制）</span></span><br><span class="line">put 本地文件</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载文件</span></span><br><span class="line">get 远程文件</span><br><span class="line"></span><br><span class="line"><span class="comment"># 多文件上传</span></span><br><span class="line">mput *.txt</span><br><span class="line"></span><br><span class="line"><span class="comment"># 多文件下载</span></span><br><span class="line">mget *.txt</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置二进制模式</span></span><br><span class="line">bin</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置 ASCII 模式</span></span><br><span class="line">ascii</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看远程目录</span></span><br><span class="line"><span class="built_in">ls</span> 或 <span class="built_in">dir</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 退出</span></span><br><span class="line"><span class="built_in">bye</span> 或 quit</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-2-常用-FTP-内部命令"><a href="#8-2-常用-FTP-内部命令" class="headerlink" title="8.2 常用 FTP 内部命令"></a>8.2 常用 FTP 内部命令</h3><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pwd</code></td>
+<td>显示远程当前目录</td>
+</tr>
+<tr>
+<td><code>cd</code></td>
+<td>切换远程目录</td>
+</tr>
+<tr>
+<td><code>lcd</code></td>
+<td>切换本地目录</td>
+</tr>
+<tr>
+<td><code>mkdir</code></td>
+<td>创建远程目录</td>
+</tr>
+<tr>
+<td><code>delete</code></td>
+<td>删除远程文件</td>
+</tr>
+<tr>
+<td><code>rmdir</code></td>
+<td>删除远程目录</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>显示 FTP 状态</td>
+</tr>
+<tr>
+<td><code>!command</code></td>
+<td>执行本地命令</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="九、MySQL-命令"><a href="#九、MySQL-命令" class="headerlink" title="九、MySQL 命令"></a>九、MySQL 命令</h2><h3 id="9-1-连接与用户"><a href="#9-1-连接与用户" class="headerlink" title="9.1 连接与用户"></a>9.1 连接与用户</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 连接 MySQL</span></span><br><span class="line">mysql -h 主机 -u 用户 -p密码</span><br><span class="line"></span><br><span class="line"><span class="comment"># 退出</span></span><br><span class="line"><span class="built_in">exit</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改密码</span></span><br><span class="line">mysqladmin -u 用户 -p 旧密码 password 新密码</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-2-数据库操作"><a href="#9-2-数据库操作" class="headerlink" title="9.2 数据库操作"></a>9.2 数据库操作</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 显示数据库</span></span><br><span class="line"><span class="keyword">show</span> databases;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 创建数据库</span></span><br><span class="line"><span class="keyword">create</span> database 库名;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 删除数据库</span></span><br><span class="line"><span class="keyword">drop</span> database 库名;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 使用数据库</span></span><br><span class="line">use 库名;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 显示表</span></span><br><span class="line"><span class="keyword">show</span> tables;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 显示表结构</span></span><br><span class="line"><span class="keyword">describe</span> 表名;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 清空表</span></span><br><span class="line"><span class="keyword">delete</span> <span class="keyword">from</span> 表名;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="十、Linux-常用命令"><a href="#十、Linux-常用命令" class="headerlink" title="十、Linux 常用命令"></a>十、Linux 常用命令</h2><h3 id="10-1-文件操作"><a href="#10-1-文件操作" class="headerlink" title="10.1 文件操作"></a>10.1 文件操作</h3><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+<th>Windows 对应</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ls</code></td>
+<td>列出文件</td>
+<td><code>dir</code></td>
+</tr>
+<tr>
+<td><code>ls -la</code></td>
+<td>显示隐藏文件</td>
+<td><code>dir /a</code></td>
+</tr>
+<tr>
+<td><code>pwd</code></td>
+<td>显示当前目录</td>
+<td><code>cd</code> (无参数)</td>
+</tr>
+<tr>
+<td><code>cd</code></td>
+<td>切换目录</td>
+<td><code>cd</code></td>
+</tr>
+<tr>
+<td><code>cat</code></td>
+<td>查看文件内容</td>
+<td><code>type</code></td>
+</tr>
+<tr>
+<td><code>cp</code></td>
+<td>复制文件</td>
+<td><code>copy</code></td>
+</tr>
+<tr>
+<td><code>mv</code></td>
+<td>移动&#x2F;重命名</td>
+<td><code>move</code> &#x2F; <code>ren</code></td>
+</tr>
+<tr>
+<td><code>rm</code></td>
+<td>删除文件</td>
+<td><code>del</code></td>
+</tr>
+<tr>
+<td><code>rm -rf</code></td>
+<td>删除目录</td>
+<td><code>rmdir /s /q</code></td>
+</tr>
+<tr>
+<td><code>mkdir</code></td>
+<td>创建目录</td>
+<td><code>md</code> &#x2F; <code>mkdir</code></td>
+</tr>
+<tr>
+<td><code>chmod</code></td>
+<td>修改权限</td>
+<td><code>attrib</code></td>
+</tr>
+</tbody></table>
+<h3 id="10-2-系统操作"><a href="#10-2-系统操作" class="headerlink" title="10.2 系统操作"></a>10.2 系统操作</h3><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>uname</code></td>
+<td>显示版本信息</td>
+</tr>
+<tr>
+<td><code>whoami</code></td>
+<td>查看当前用户</td>
+</tr>
+<tr>
+<td><code>ps</code></td>
+<td>显示进程状态</td>
+</tr>
+<tr>
+<td><code>kill</code></td>
+<td>结束进程</td>
+</tr>
+<tr>
+<td><code>top</code></td>
+<td>实时显示进程</td>
+</tr>
+<tr>
+<td><code>df</code></td>
+<td>查看磁盘空间</td>
+</tr>
+<tr>
+<td><code>du</code></td>
+<td>查看目录大小</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="十一、批处理命令"><a href="#十一、批处理命令" class="headerlink" title="十一、批处理命令"></a>十一、批处理命令</h2><h3 id="11-1-变量与控制"><a href="#11-1-变量与控制" class="headerlink" title="11.1 变量与控制"></a>11.1 变量与控制</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">@echo off</span><br><span class="line"></span><br><span class="line"> REM 注释内容</span><br><span class="line"> echo 显示信息</span><br><span class="line"></span><br><span class="line"> if exist file.txt (</span><br><span class="line">     echo 文件存在</span><br><span class="line"> ) else (</span><br><span class="line">     echo 文件不存在</span><br><span class="line"> )</span><br><span class="line"></span><br><span class="line"> for %%i in (1,2,3) do echo %%i</span><br><span class="line"></span><br><span class="line"> goto label</span><br><span class="line"> :label</span><br><span class="line"></span><br><span class="line"> pause</span><br></pre></td></tr></table></figure>
+
+<h3 id="11-2-常用符号"><a href="#11-2-常用符号" class="headerlink" title="11.2 常用符号"></a>11.2 常用符号</h3><table>
+<thead>
+<tr>
+<th>符号</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>@</code></td>
+<td>不显示命令本身</td>
+</tr>
+<tr>
+<td><code>&gt;</code></td>
+<td>输出重定向（覆盖）</td>
+</tr>
+<tr>
+<td><code>&gt;&gt;</code></td>
+<td>输出重定向（追加）</td>
+</tr>
+<tr>
+<td><code>&lt;</code></td>
+<td>输入重定向</td>
+</tr>
+<tr>
+<td>&#96;</td>
+<td>&#96;</td>
+</tr>
+<tr>
+<td><code>&amp;</code></td>
+<td>命令连接（顺序执行）</td>
+</tr>
+<tr>
+<td><code>&amp;&amp;</code></td>
+<td>命令连接（成功则执行）</td>
+</tr>
+<tr>
+<td>&#96;</td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="十二、其他工具命令"><a href="#十二、其他工具命令" class="headerlink" title="十二、其他工具命令"></a>十二、其他工具命令</h2><h3 id="12-1-实用工具"><a href="#12-1-实用工具" class="headerlink" title="12.1 实用工具"></a>12.1 实用工具</h3><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>notepad</code></td>
+<td>记事本</td>
+</tr>
+<tr>
+<td><code>calc</code></td>
+<td>计算器</td>
+</tr>
+<tr>
+<td><code>mspaint</code></td>
+<td>画图板</td>
+</tr>
+<tr>
+<td><code>write</code></td>
+<td>写字板</td>
+</tr>
+<tr>
+<td><code>charmap</code></td>
+<td>字符映射表</td>
+</tr>
+<tr>
+<td><code>osk</code></td>
+<td>屏幕键盘</td>
+</tr>
+<tr>
+<td><code>magnify</code></td>
+<td>放大镜</td>
+</tr>
+<tr>
+<td><code>mplayer2</code></td>
+<td>Media Player</td>
+</tr>
+<tr>
+<td><code>cleanmgr</code></td>
+<td>磁盘清理</td>
+</tr>
+<tr>
+<td><code>control</code></td>
+<td>控制面板</td>
+</tr>
+</tbody></table>
+<h3 id="12-2-辅助命令"><a href="#12-2-辅助命令" class="headerlink" title="12.2 辅助命令"></a>12.2 辅助命令</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 扫描并修复系统文件</span></span><br><span class="line">sfc /scannow</span><br><span class="line"></span><br><span class="line"><span class="comment"># 文件签名验证</span></span><br><span class="line">sigverif</span><br><span class="line"></span><br><span class="line"><span class="comment"># 系统文件检查</span></span><br><span class="line">sfc.exe</span><br><span class="line"></span><br><span class="line"><span class="comment"># IIS 重启</span></span><br><span class="line">iisreset /restart</span><br><span class="line"></span><br><span class="line"><span class="comment"># IIS 启动</span></span><br><span class="line">iisreset /start</span><br><span class="line"></span><br><span class="line"><span class="comment"># IIS 停止</span></span><br><span class="line">iisreset /stop</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="十三、快捷参考表"><a href="#十三、快捷参考表" class="headerlink" title="十三、快捷参考表"></a>十三、快捷参考表</h2><h3 id="13-1-系统管理速查"><a href="#13-1-系统管理速查" class="headerlink" title="13.1 系统管理速查"></a>13.1 系统管理速查</h3><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>命令</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>任务管理器</td>
+<td><code>taskmgr</code></td>
+</tr>
+<tr>
+<td>注册表</td>
+<td><code>regedit</code></td>
+</tr>
+<tr>
+<td>服务管理</td>
+<td><code>services.msc</code></td>
+</tr>
+<tr>
+<td>设备管理</td>
+<td><code>devmgmt.msc</code></td>
+</tr>
+<tr>
+<td>磁盘管理</td>
+<td><code>diskmgmt.msc</code></td>
+</tr>
+<tr>
+<td>组策略</td>
+<td><code>gpedit.msc</code></td>
+</tr>
+<tr>
+<td>计算机管理</td>
+<td><code>compmgmt.msc</code></td>
+</tr>
+</tbody></table>
+<h3 id="13-2-网络命令速查"><a href="#13-2-网络命令速查" class="headerlink" title="13.2 网络命令速查"></a>13.2 网络命令速查</h3><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>命令</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>查看 IP</td>
+<td><code>ipconfig</code></td>
+</tr>
+<tr>
+<td>刷新 DNS</td>
+<td><code>ipconfig /flushdns</code></td>
+</tr>
+<tr>
+<td>测试连通</td>
+<td><code>ping</code></td>
+</tr>
+<tr>
+<td>路由跟踪</td>
+<td><code>tracert</code></td>
+</tr>
+<tr>
+<td>查看端口</td>
+<td><code>netstat -an</code></td>
+</tr>
+<tr>
+<td>查看 ARP</td>
+<td><code>arp -a</code></td>
+</tr>
+</tbody></table>
+<h3 id="13-3-文件操作速查"><a href="#13-3-文件操作速查" class="headerlink" title="13.3 文件操作速查"></a>13.3 文件操作速查</h3><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>命令</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>复制</td>
+<td><code>copy</code> &#x2F; <code>xcopy</code></td>
+</tr>
+<tr>
+<td>移动</td>
+<td><code>move</code></td>
+</tr>
+<tr>
+<td>删除</td>
+<td><code>del</code> &#x2F; <code>rmdir</code></td>
+</tr>
+<tr>
+<td>查看内容</td>
+<td><code>type</code></td>
+</tr>
+<tr>
+<td>查找</td>
+<td><code>findstr</code></td>
+</tr>
+</tbody></table>
+<hr>
+<blockquote>
+<p>💡 <strong>使用建议</strong>：</p>
+<ul>
+<li>使用 <code>命令 /?</code> 查看详细帮助信息</li>
+<li>使用 <code>Tab</code> 键自动补全命令和路径</li>
+<li>使用 <code>↑</code> <code>↓</code> 箭头键浏览历史命令</li>
+<li>管理员权限运行某些命令需要管理员权限</li>
+<li>定期使用 <code>sfc /scannow</code> 检查系统文件</li>
+</ul>
+</blockquote>
+<hr>
+<p><strong>转载请注明来源</strong>，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 <a href="mailto:&#x31;&#52;&#x38;&#x37;&#x38;&#52;&#50;&#49;&#49;&#48;&#64;&#113;&#113;&#46;&#99;&#x6f;&#109;">&#x31;&#52;&#x38;&#x37;&#x38;&#52;&#50;&#49;&#49;&#48;&#64;&#113;&#113;&#46;&#99;&#x6f;&#109;</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><div class="post-copyright__author_img"><img class="post-copyright__author_img_front" src="/img/logo.png"></div><div class="post-copyright__author_name">xinzhuzi</div><div class="post-copyright__author_desc">记录技术与生活</div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">新诸子</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/CMD/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>CMD<span class="tagsPageCount">1</span></span></a><a class="post-meta__tags" href="/tags/Windows/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>Windows<span class="tagsPageCount">1</span></span></a><a class="post-meta__tags" href="/tags/%E5%91%BD%E4%BB%A4%E8%A1%8C/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>命令行<span class="tagsPageCount">1</span></span></a><a class="post-meta__tags" href="/tags/%E7%BD%91%E7%BB%9C%E5%91%BD%E4%BB%A4/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>网络命令<span class="tagsPageCount">1</span></span></a><a class="post-meta__tags" href="/tags/%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>系统管理<span class="tagsPageCount">1</span></span></a></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/05/08/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/2020-05-08-%E7%A7%91%E5%AD%A6%E4%B8%8A%E7%BD%91/"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">开发者必备：科学上网与访问国外技术资源的完整指南</div></div></a></div><div class="next-post pull-right"><a href="/2020/05/08/%E5%85%B6%E4%BB%96/2020-05-08-%E8%AF%97%E8%AF%8D%E9%9A%8F%E7%AC%94/"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">诗词随笔</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><div class="top-group"><div class="sayhi" id="sayhi" onclick="sco.changeWittyWord()"></div></div></div><div class="avatar"><img alt="头像" src="/img/logo.png"></div><div class="description"></div><div class="bottom-group"><span class="left"><div class="name">xinzhuzi</div><div class="desc">只有迎风，风筝才能飞得更高。</div></span><div class="social-icons is-center"></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude fas fa-bars"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Windows-%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%AE%8C%E5%85%A8%E5%8F%82%E8%80%83%E6%89%8B%E5%86%8C"><span class="toc-text">Windows 命令行完全参考手册</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%89%93%E5%BC%80-CMD"><span class="toc-text">一、打开 CMD</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%89%93%E5%BC%80%E6%96%B9%E5%BC%8F"><span class="toc-text">1.1 打开方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E5%B8%B8%E7%94%A8%E5%90%AF%E5%8A%A8%E5%8F%82%E6%95%B0"><span class="toc-text">1.2 常用启动参数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86%E5%91%BD%E4%BB%A4"><span class="toc-text">二、系统管理命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E7%B3%BB%E7%BB%9F%E5%B7%A5%E5%85%B7"><span class="toc-text">2.1 系统工具</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF"><span class="toc-text">2.2 系统信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86"><span class="toc-text">2.3 用户管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%85%B3%E6%9C%BA%E9%87%8D%E5%90%AF"><span class="toc-text">2.4 关机重启</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BD%91%E7%BB%9C%E5%91%BD%E4%BB%A4"><span class="toc-text">三、网络命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%BD%91%E7%BB%9C%E8%BF%9E%E6%8E%A5"><span class="toc-text">3.1 网络连接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E7%BD%91%E7%BB%9C%E8%AF%8A%E6%96%AD"><span class="toc-text">3.2 网络诊断</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E7%BD%91%E7%BB%9C%E6%9C%8D%E5%8A%A1"><span class="toc-text">3.3 网络服务</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C%E5%91%BD%E4%BB%A4"><span class="toc-text">四、文件操作命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="toc-text">4.1 基本操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E5%A4%8D%E5%88%B6%E6%93%8D%E4%BD%9C"><span class="toc-text">4.2 复制操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9%E6%9F%A5%E7%9C%8B"><span class="toc-text">4.3 文件内容查看</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86"><span class="toc-text">五、进程管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E8%BF%9B%E7%A8%8B%E6%93%8D%E4%BD%9C"><span class="toc-text">5.1 进程操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E5%86%85%E5%AD%98%E6%9F%A5%E7%9C%8B"><span class="toc-text">5.2 内存查看</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%B3%A8%E5%86%8C%E8%A1%A8%E6%93%8D%E4%BD%9C"><span class="toc-text">六、注册表操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E6%B3%A8%E5%86%8C%E8%A1%A8%E7%BC%96%E8%BE%91"><span class="toc-text">6.1 注册表编辑</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86"><span class="toc-text">七、磁盘管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E7%A3%81%E7%9B%98%E6%A3%80%E6%9F%A5"><span class="toc-text">7.1 磁盘检查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E6%96%87%E4%BB%B6%E5%B1%9E%E6%80%A7"><span class="toc-text">7.2 文件属性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81FTP-%E5%91%BD%E4%BB%A4"><span class="toc-text">八、FTP 命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E8%BF%9E%E6%8E%A5%E4%B8%8E%E4%BC%A0%E8%BE%93"><span class="toc-text">8.1 连接与传输</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E5%B8%B8%E7%94%A8-FTP-%E5%86%85%E9%83%A8%E5%91%BD%E4%BB%A4"><span class="toc-text">8.2 常用 FTP 内部命令</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81MySQL-%E5%91%BD%E4%BB%A4"><span class="toc-text">九、MySQL 命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E8%BF%9E%E6%8E%A5%E4%B8%8E%E7%94%A8%E6%88%B7"><span class="toc-text">9.1 连接与用户</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C"><span class="toc-text">9.2 数据库操作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81Linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="toc-text">十、Linux 常用命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C"><span class="toc-text">10.1 文件操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-%E7%B3%BB%E7%BB%9F%E6%93%8D%E4%BD%9C"><span class="toc-text">10.2 系统操作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E6%89%B9%E5%A4%84%E7%90%86%E5%91%BD%E4%BB%A4"><span class="toc-text">十一、批处理命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-%E5%8F%98%E9%87%8F%E4%B8%8E%E6%8E%A7%E5%88%B6"><span class="toc-text">11.1 变量与控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-2-%E5%B8%B8%E7%94%A8%E7%AC%A6%E5%8F%B7"><span class="toc-text">11.2 常用符号</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E5%85%B6%E4%BB%96%E5%B7%A5%E5%85%B7%E5%91%BD%E4%BB%A4"><span class="toc-text">十二、其他工具命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#12-1-%E5%AE%9E%E7%94%A8%E5%B7%A5%E5%85%B7"><span class="toc-text">12.1 实用工具</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-2-%E8%BE%85%E5%8A%A9%E5%91%BD%E4%BB%A4"><span class="toc-text">12.2 辅助命令</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81%E5%BF%AB%E6%8D%B7%E5%8F%82%E8%80%83%E8%A1%A8"><span class="toc-text">十三、快捷参考表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#13-1-%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86%E9%80%9F%E6%9F%A5"><span class="toc-text">13.1 系统管理速查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-2-%E7%BD%91%E7%BB%9C%E5%91%BD%E4%BB%A4%E9%80%9F%E6%9F%A5"><span class="toc-text">13.2 网络命令速查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-3-%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C%E9%80%9F%E6%9F%A5"><span class="toc-text">13.3 文件操作速查</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude fas fa-map"></i><span>最近发布</span></div><div class="aside-list"><a class="aside-list-item" href="/2025/01/13/%E5%B0%8F%E8%AF%B4/2025-01-13-%E9%81%93%E5%8A%AB/" title="道劫"><div class="content"><span class="title" href="/2025/01/13/%E5%B0%8F%E8%AF%B4/2025-01-13-%E9%81%93%E5%8A%AB/" title="道劫">道劫</span><span class="categories" href="/2025/01/13/%E5%B0%8F%E8%AF%B4/2025-01-13-%E9%81%93%E5%8A%AB/">千年志*道劫</span></div></a><a class="aside-list-item" href="/2025/01/13/%E6%B8%B8%E6%88%8F/2025-01-13-%E6%B8%B8%E6%88%8F%E5%8D%B3%E5%B0%86%E5%8F%91%E5%94%AE/" title="游戏即将发售"><div class="content"><span class="title" href="/2025/01/13/%E6%B8%B8%E6%88%8F/2025-01-13-%E6%B8%B8%E6%88%8F%E5%8D%B3%E5%B0%86%E5%8F%91%E5%94%AE/" title="游戏即将发售">游戏即将发售</span><span class="categories" href="/2025/01/13/%E6%B8%B8%E6%88%8F/2025-01-13-%E6%B8%B8%E6%88%8F%E5%8D%B3%E5%B0%86%E5%8F%91%E5%94%AE/">千年志*道劫</span></div></a><a class="aside-list-item" href="/2020/05/08/AI%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/2020-05-08-AI,%E8%A1%8C%E4%B8%BA%E6%A0%91,FSM/" title="Unity 游戏 AI 核心术语详解 - 行为树与状态机"><div class="content"><span class="title" href="/2020/05/08/AI%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/2020-05-08-AI,%E8%A1%8C%E4%B8%BA%E6%A0%91,FSM/" title="Unity 游戏 AI 核心术语详解 - 行为树与状态机">Unity 游戏 AI 核心术语详解 - 行为树与状态机</span><span class="categories" href="/2020/05/08/AI%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/2020-05-08-AI,%E8%A1%8C%E4%B8%BA%E6%A0%91,FSM/">技术文章</span></div></a><a class="aside-list-item" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Lua%20%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" title="Lua 源码阅读完全指南 - 从虚拟机到垃圾回收"><div class="content"><span class="title" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Lua%20%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" title="Lua 源码阅读完全指南 - 从虚拟机到垃圾回收">Lua 源码阅读完全指南 - 从虚拟机到垃圾回收</span><span class="categories" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Lua%20%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">技术文章</span></div></a><a class="aside-list-item" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Tolua%20C#%20Lua%20%E4%BA%A4%E4%BA%92/" title="ToLua C# 与 Lua 交互详解 - 虚拟机架构与调用链路"><div class="content"><span class="title" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Tolua%20C#%20Lua%20%E4%BA%A4%E4%BA%92/" title="ToLua C# 与 Lua 交互详解 - 虚拟机架构与调用链路">ToLua C# 与 Lua 交互详解 - 虚拟机架构与调用链路</span><span class="categories" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Tolua%20C#%20Lua%20%E4%BA%A4%E4%BA%92/">技术文章</span></div></a></div></div></div></div></main><footer id="footer"><!-- +footerDeals()  // 社交图标已移至footerBar中--><div id="st-footer"></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2023 - 2026 By<a class="footer-bar-link" href="/" title="xinzhuzi">xinzhuzi</a></div><div class="beian-group"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://hexo.io/" title="框架：Hexo">框架：Hexo</a><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com/everfu/hexo-theme-solitude" title="主题：Solitude">主题：Solitude</a></div></div><div class="footer-bar-right"><div id="footer_social_icons"><a class="social_icon social-QQ群" target="_blank" rel="noopener" href="https://qm.qq.com/cgi-bin/qm/qr?k=xxx&amp;jump_from=webapi" title="QQ群"><i class="solitude  fab fa-qq"></i></a><a class="social_icon social-QQ" href="tencent://message/?uin=1487842110&amp;Site=&amp;Menu=yes" title="QQ"><i class="solitude  fab fa-qq"></i></a><div class="wechat-wrapper"><a class="social_icon social-WeChat" href="javascript:void(0);" title="WeChat"><i class="solitude  fab fa-weixin"></i></a><img class="wechat-qr-code" src="/images/wechat-qr.jpg" alt="微信二维码"></div><a class="social_icon social-Bilibili" target="_blank" rel="noopener" href="https://space.bilibili.com/451180511" title="Bilibili"><i class="solitude  fab fa-bilibili"></i></a><a class="social_icon social-Douyin" target="_blank" rel="noopener" href="https://v.douyin.com/yN7I0458nxU/" title="Douyin"><i class="solitude  fab fa-tiktok"></i></a></div></div></div></div><div class="comment-barrage needEndHide"></div></footer></div><div><!-- Critical scripts loaded synchronously--><script src="/js/utils.js?v=3.0.21"></script><script src="/js/main.js?v=3.0.21"></script><!-- Non-critical scripts loaded asynchronously--><script async src="/js/third_party/waterfall.min.js?v=3.0.21"></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><!-- Feature-specific scripts loaded asynchronously--><script defer src="/js/tw_cn.js?v=3.0.21"></script><!-- UI enhancement scripts--><script defer src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><!-- Music player scripts--><!-- Cover color processing scripts--><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+utils.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+</script><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!-- Search functionality--><!-- Right menu functionality--><script src="/js/custom_category.js"></script><div class="js-pjax"></div></div><!-- pjax--><script>let pjax = null;
+
+function initPjax() {
+    if (typeof Pjax === 'undefined') {
+        console.warn('Pjax is not loaded yet, retrying...');
+        setTimeout(initPjax, 100);
+        return;
+    }
+
+    pjax = new Pjax({
+        elements: 'a:not([target="_blank"])',
+        selectors: ["title","#body-wrap","#site-config","meta[name=\"description\"]",".js-pjax","meta[property^=\"og:\"]","#config-diff",".rs_show",".rs_hide"],
+        cacheBust: false,
+        analytics: false,
+        scrollRestoration: false
+    })
+
+    // 将 pjax 实例挂载到全局
+    window.pjax = pjax;
+
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+        const newScript = document.createElement('script')
+        const content = item.text || item.textContent || item.innerHTML || ""
+        Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+        newScript.appendChild(document.createTextNode(content))
+        item.parentNode.replaceChild(newScript, item)
+    })
+
+    document.addEventListener('pjax:complete', () => {
+        window.refreshFn()
+
+        document.querySelectorAll('script[data-pjax]').forEach(item => {
+            const newScript = document.createElement('script')
+            const content = item.text || item.textContent || item.innerHTML || ""
+            Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+            newScript.appendChild(document.createTextNode(content))
+            item.parentNode.replaceChild(newScript, item)
+        })
+
+        GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+    })
+
+    document.addEventListener('pjax:error', (e) => {
+        if (e.request.status === 404) {
+            pjax.loadUrl('/404.html')
+        }
+    })
+}
+
+// 初始化 Pjax
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPjax);
+} else {
+    initPjax();
+}</script><!-- google adsense--></body></html>
+        <script>
+            const posts = ["2025/01/13/小说/2025-01-13-道劫/","2025/01/13/游戏/2025-01-13-游戏即将发售/","2020/05/08/AI游戏设计/2020-05-08-AI,行为树,FSM/","2020/05/08/Lua热更新/2020-05-08-Lua 源码阅读/","2020/05/08/Lua热更新/2020-05-08-Tolua C# Lua 交互/","2020/05/08/Lua热更新/2020-05-08-ToLua C-C++ C# 交互/","2020/05/08/Lua热更新/2020-05-08-Tolua 介绍/","2020/05/08/Lua热更新/2020-05-08-Tolua C-C++ Lua 交互/","2020/05/08/工具使用/2020-05-08-Hexo 的简单操作/","2020/05/08/工具使用/2020-05-08-博客搭建以及编写/","2020/05/08/工具使用/2020-05-08-好用的插件软件/","2020/05/08/工具使用/2020-05-08-破解 TeamViewer/","2020/05/08/工具使用/2020-05-08-科学上网/","2020/05/08/其他/2020-05-08-MD 格式/","2020/05/08/其他/2020-05-08-诗词随笔/","2020/05/08/其他/2020-05-08-共产党宣言/","2020/05/08/Unity/2020-05-08-1 Canvas/","2020/05/08/Unity/2020-05-08-1 介绍UnityEditor/","2020/05/08/Unity/2020-05-08-10 Screenshot/","2020/05/08/Unity/2020-05-08-11 Handles/","2020/05/08/Unity/2020-05-08-12 Gizmos/","2020/05/08/Unity/2020-05-08-13 简单Node/","2020/05/08/Unity/2020-05-08-14 NodeEditor/","2020/05/08/Unity/2020-05-08-14 FlatNode/","2020/05/08/Unity/2020-05-08-2 UnityEditor常用属性/","2020/05/08/Unity/2020-05-08-3 数据交互/","2020/05/08/Unity/2020-05-08-5 EditorWindow/","2020/05/08/Unity/2020-05-08-4 EditorGUI/","2020/05/08/Unity/2020-05-08-6 MenuItem/","2020/05/08/Unity/2020-05-08-7 CustomEditor_PropertyDrawer/","2020/05/08/Unity/2020-05-08-8 EditorGUILayout/","2020/05/08/Unity/2020-05-08-9 EditorWindow案例1/","2020/05/08/Unity/2020-05-08-AssetBundle 全解析/","2020/05/08/Unity/2020-05-08-AssetBundle 打包策略/","2020/05/08/Unity/2020-05-08-Unity AndroidStudio工具检测优化/","2020/05/08/Unity/2020-05-08-Unity  浮点数精度/","2020/05/08/Unity/2020-05-08-Unity GC/","2020/05/08/Unity/2020-05-08-Unity CPU优化/","2020/05/08/Unity/2020-05-08-Unity GPU优化/","2020/05/08/Unity/2020-05-08-Unity NGUI-UGUI优化/","2020/05/08/Unity/2020-05-08-Unity NGUI/","2020/05/08/Unity/2020-05-08-Unity OverDraw优化/","2020/05/08/Unity/2020-05-08-Unity UI优化/","2020/05/08/Unity/2020-05-08-Unity UGUI优化/","2020/05/08/Unity/2020-05-08-Unity UWA工具检测优化/","2020/05/08/Unity/2020-05-08-Unity Xcode工具检测优化/","2020/05/08/Unity/2020-05-08-Unity 优化总纲/","2020/05/08/Unity/2020-05-08-Unity 代码编写规范/","2020/05/08/Unity/2020-05-08-Unity 优化 1/","2020/05/08/Unity/2020-05-08-Unity 内存优化/","2020/05/08/Unity/2020-05-08-Unity 渲染优化/","2020/05/08/Unity/2020-05-08-Unity 网络优化/","2020/05/08/Unity/2020-05-08-Unity-OcclusionCulling-Occlusion Culling/","2020/05/08/Unity/2020-05-08-Unity-Optimize-XCode/","2020/05/08/Unity/2020-05-08-Unity 资源优化/","2020/05/08/Unity/2020-05-08-Unity3D工程阅读方法,直捣黄龙篇/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第一章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第七章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第三章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第九章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第五章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第二章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第八章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第六章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十一章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十二章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第四章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十章/","2020/05/08/Unity/2020-05-08-Unity后工业化流程/","2020/05/08/Unity/2020-05-08-Unity后工业化流程1/","2020/05/08/Unity/2020-05-08-Unity后工业化流程2/","2020/05/08/Unity/2020-05-08-Unity工具UPR/","2020/05/08/Unity/2020-05-08-Unity工具UWA/","2020/05/08/Unity/2020-05-08-Unity工具使用/","2020/05/08/Unity/2020-05-08-Unity编辑器中Stats窗口详解/","2020/05/08/Unity/2020-05-08-各个平台的路径/","2020/05/08/Unity/2020-05-08-图片与字符串互转/","2020/05/08/Unity/2020-05-08-在 Unity 下使用 VSCode 配置/","2020/05/08/Unity/2020-05-08-渲染基本流程/","2020/05/08/编程基础/2020-05-08-C#与C-C++的交互/","2020/05/08/编程基础/2020-05-08-学习算法大纲/","2020/05/08/编程基础/2020-05-08-C-C++指针详解/","2020/05/08/编程基础/2020-05-08-C基础案例/","2020/05/08/编程基础/2020-05-08-程序员需要掌握的英文单词/","2020/05/08/编程基础/2020-05-08-正则表达式/","2020/05/08/网络编程/2020-05-08-BestHttp介绍2/","2020/05/08/网络编程/2020-05-08-BestHttp介绍1/","2020/05/08/网络编程/2020-05-08-Net-net/","2020/05/08/网络编程/2020-05-08-Protobuf-Lua-Python/","2020/05/08/网络编程/2020-05-08-帧同步/","2020/05/08/网络编程/2020-05-08-网络部分/"];
+            function toRandomPost() {
+                const randomPost = posts[Math.floor(Math.random() * posts.length)];
+                pjax.loadUrl(GLOBAL_CONFIG.root + randomPost);
+            }
+        </script>

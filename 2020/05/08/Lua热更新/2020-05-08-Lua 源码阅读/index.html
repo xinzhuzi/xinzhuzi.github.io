@@ -1,0 +1,797 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Lua 源码阅读完全指南 - 从虚拟机到垃圾回收 | 新诸子</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/img/pwa/favicon.png"><link rel="stylesheet" href="/css/index.css?v=3.0.21"><link rel="canonical" href="https://xinzhuzi.github.io/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Lua%20%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/index.html"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><!-- Feature-specific CSS--><!-- aplayer--><!-- swiper--><!-- fancybox ui--><!-- katex--><!-- Open Graph--><meta name="description" content="Lua 源码阅读完全指南 - 从虚拟机到垃圾回收 本文系统介绍 Lua 源码的核心概念，包括虚拟机原理、编译流程、垃圾回收机制、热更新原理等高级话题。 一、学习路线1.1 推荐书籍 阶段 书籍 说明 初级 《Programming in Lua》(Lua 编程) 编写 Lua 代码的基"><!-- pwa--><meta name="apple-mobile-web-app-capable" content="新诸子"><meta name="theme-color" content="var(--efu-main)"><meta name="apple-mobile-web-app-status-bar-style" content="var(--efu-main)"><link rel="bookmark" href="/img/pwa/favicon.png"><link rel="apple-touch-icon" href="/img/pwa/favicon.png" sizes="180x180"><script>console.log(' %c Solitude %c ' + '3.0.21' + ' %c https://github.com/everfu/hexo-theme-solitude',
+    'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+    'background:#ff9a9a ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff',
+    'background:unset ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff')
+</script><script>(()=>{
+        const saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        };
+        window.utils = {
+            saveToLocal: saveToLocal,
+            getCSS: (url, id = false) => new Promise((resolve, reject) => {
+              const link = document.createElement('link')
+              link.rel = 'stylesheet'
+              link.href = url
+              if (id) link.id = id
+              link.onerror = reject
+              link.onload = link.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+              }
+              document.head.appendChild(link)
+            }),
+            getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+              const script = document.createElement('script')
+              script.src = url
+              script.async = true
+              script.onerror = reject
+              script.onload = script.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+              }
+
+              Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+              })
+
+              document.head.appendChild(script)
+            }),
+            addGlobalFn: (key, fn, name = false, parent = window) => {
+                const globalFn = parent.globalFn || {}
+                const keyObj = globalFn[key] || {}
+
+                if (name && keyObj[name]) return
+
+                name = name || Object.keys(keyObj).length
+                keyObj[name] = fn
+                globalFn[key] = keyObj
+                parent.globalFn = globalFn
+            },
+            addEventListenerPjax: (ele, event, fn, option = false) => {
+              ele.addEventListener(event, fn, option)
+              utils.addGlobalFn('pjax', () => {
+                  ele.removeEventListener(event, fn, option)
+              })
+            },
+            diffDateFormat: (selector) => {
+                selector.forEach(item => {
+                    const date = new Date(item.getAttribute('datetime') || item.textContent);
+                    item.textContent = (date.getMonth() + 1).toString()+'/'+date.getDate().toString();
+                });
+            },
+        }
+    })()</script><!-- theme--><script>initTheme = () => {
+    let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const cachedMode = utils.saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+    typeof rm === 'object' && rm.mode(cachedMode === 'dark' && isDarkMode)
+}
+initTheme()</script><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2023-04-20 00:00:00',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.avif'
+    },
+    copyright: false,
+    highlight: {"limit":200,"expand":true,"copy":true,"syntax":"highlight.js"},
+    randomlink: false,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"day":" 天","f12":"开发者模式已打开，请遵循GPL协议。","totalk":"无需删除空行，直接输入评论即可"},
+    aside: {
+        state: {
+            morning: "✨ 早上好，新的一天开始了",
+            noon: "🍲 午餐时间",
+            afternoon: "🌞 下午好",
+            night: "早点休息",
+            goodnight: "晚安 😴",
+        },
+        witty_words: [],
+        witty_comment: {
+            prefix: '好久不见，',
+            back: '欢迎再次回来，',
+        },
+    },
+    covercolor: {
+        enable: false
+    },
+    comment: false,
+    lightbox: 'null',
+    right_menu: false,
+    translate: {"translateDelay":0,"defaultEncoding":2},
+    lure: false,
+    expire: false,
+};</script><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: '',
+    toc: true,
+    comment: false,
+    ai_text: false,
+    color: false,
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body id="body"><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude fas fa-xmark"></i></div><div class="console-card-group"><div class="console-card-group-right"><div class="console-card tags" onclick="sco.hideConsole()"><div class="card-content"><div class="author-content-item-tips">标签</div><div class="author-content-item-title">寻找感兴趣的领域</div></div><div class="card-tag-cloud"><a href="/tags/Unity/">Unity<sup>66</sup></a><a href="/tags/AI/">AI<sup>1</sup></a><a href="/tags/%E8%A1%8C%E4%B8%BA%E6%A0%91/">行为树<sup>1</sup></a><a href="/tags/%E7%8A%B6%E6%80%81%E6%9C%BA/">状态机<sup>1</sup></a><a href="/tags/FSM/">FSM<sup>1</sup></a><a href="/tags/BT/">BT<sup>1</sup></a><a href="/tags/GOAP/">GOAP<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/">游戏设计<sup>1</sup></a><a href="/tags/Lua/">Lua<sup>5</sup></a><a href="/tags/LuaJIT/">LuaJIT<sup>2</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/">虚拟机<sup>2</sup></a><a href="/tags/GC/">GC<sup>4</sup></a><a href="/tags/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">源码阅读<sup>1</sup></a><a href="/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80/">脚本语言<sup>1</sup></a><a href="/tags/ToLua/">ToLua<sup>4</sup></a><a href="/tags/C/">C#<sup>3</sup></a><a href="/tags/%E4%BA%A4%E4%BA%92/">交互<sup>3</sup></a><a href="/tags/CLR/">CLR<sup>1</sup></a><a href="/tags/IL2CPP/">IL2CPP<sup>3</sup></a><a href="/tags/C/">C++<sup>3</sup></a><a href="/tags/P-Invoke/">P/Invoke<sup>1</sup></a><a href="/tags/%E4%BA%92%E6%93%8D%E4%BD%9C/">互操作<sup>1</sup></a><a href="/tags/DllImport/">DllImport<sup>1</sup></a><a href="/tags/Marshal/">Marshal<sup>1</sup></a><a href="/tags/%E7%83%AD%E6%9B%B4%E6%96%B0/">热更新<sup>3</sup></a><a href="/tags/%E8%B7%A8%E8%AF%AD%E8%A8%80%E4%BA%A4%E4%BA%92/">跨语言交互<sup>1</sup></a><a href="/tags/C/">C<sup>3</sup></a><a href="/tags/API/">API<sup>1</sup></a><a href="/tags/%E6%A0%88/">栈<sup>1</sup></a><a href="/tags/tolua/">tolua<sup>1</sup></a><a href="/tags/%E4%B8%96%E7%95%8C%E8%A7%82/">世界观<sup>1</sup></a><a href="/tags/Hexo/">Hexo<sup>2</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/">博客<sup>2</sup></a><a href="/tags/%E9%9D%99%E6%80%81%E7%AB%99%E7%82%B9%E7%94%9F%E6%88%90%E5%99%A8/">静态站点生成器<sup>1</sup></a><a href="/tags/Node-js/">Node.js<sup>1</sup></a><a href="/tags/Git/">Git<sup>1</sup></a><a href="/tags/GitHub-Pages/">GitHub Pages<sup>1</sup></a><a href="/tags/Markdown/">Markdown<sup>1</sup></a><a href="/tags/%E5%86%99%E4%BD%9C/">写作<sup>1</sup></a><a href="/tags/VSCode/">VSCode<sup>2</sup></a><a href="/tags/Mac/">Mac<sup>2</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具<sup>1</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E8%BD%AF%E4%BB%B6/">效率软件<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/">游戏开发<sup>1</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E9%93%BE/">工具链<sup>1</sup></a><a href="/tags/VPN/">VPN<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%B7%A5%E5%85%B7/">网络工具<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E8%B5%84%E6%BA%90/">开发资源<sup>1</sup></a><a href="/tags/Google/">Google<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0/">技术学习<sup>1</sup></a><a href="/tags/GitHub%E5%8A%A0%E9%80%9F/">GitHub加速<sup>1</sup></a><a href="/tags/CMD/">CMD<sup>1</sup></a><a href="/tags/Windows/">Windows<sup>1</sup></a><a href="/tags/%E5%91%BD%E4%BB%A4%E8%A1%8C/">命令行<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%91%BD%E4%BB%A4/">网络命令<sup>1</sup></a><a href="/tags/%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86/">系统管理<sup>1</sup></a><a href="/tags/%E5%85%AC%E5%91%8A/">公告<sup>1</sup></a><a href="/tags/UGUI/">UGUI<sup>15</sup></a><a href="/tags/Canvas/">Canvas<sup>4</sup></a><a href="/tags/UI%E4%BC%98%E5%8C%96/">UI优化<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化<sup>16</sup></a><a href="/tags/RectTransform/">RectTransform<sup>2</sup></a><a href="/tags/UnityEditor/">UnityEditor<sup>12</sup></a><a href="/tags/%E7%BC%96%E8%BE%91%E5%99%A8%E6%89%A9%E5%B1%95/">编辑器扩展<sup>11</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91/">工具开发<sup>3</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E6%8F%90%E5%8D%87/">效率提升<sup>1</sup></a><a href="/tags/EditorWindow/">EditorWindow<sup>4</sup></a><a href="/tags/RenderTexture/">RenderTexture<sup>1</sup></a><a href="/tags/%E6%88%AA%E5%9B%BE%E5%B7%A5%E5%85%B7/">截图工具<sup>1</sup></a><a href="/tags/Handles/">Handles<sup>1</sup></a><a href="/tags/OnSceneGUI/">OnSceneGUI<sup>1</sup></a><a href="/tags/%E5%9C%BA%E6%99%AF%E8%A7%86%E5%9B%BE/">场景视图<sup>2</sup></a><a href="/tags/Gizmos/">Gizmos<sup>1</sup></a><a href="/tags/OnDrawGizmos/">OnDrawGizmos<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95%E5%B7%A5%E5%85%B7/">调试工具<sup>1</sup></a><a href="/tags/%E8%8A%82%E7%82%B9%E7%BC%96%E8%BE%91%E5%99%A8/">节点编辑器<sup>1</sup></a><a href="/tags/GraphView/">GraphView<sup>1</sup></a><a href="/tags/%E5%8F%AF%E8%A7%86%E5%8C%96%E7%BC%96%E7%A8%8B/">可视化编程<sup>1</sup></a><a href="/tags/%E6%8A%80%E8%83%BD%E7%BC%96%E8%BE%91%E5%99%A8/">技能编辑器<sup>1</sup></a><a href="/tags/FlatBuffers/">FlatBuffers<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BC%93%E5%AD%98/">数据缓存<sup>1</sup></a><a href="/tags/GamePlay/">GamePlay<sup>1</sup></a><a href="/tags/PropertyAttribute/">PropertyAttribute<sup>1</sup></a><a href="/tags/%E6%A3%80%E8%A7%86%E9%9D%A2%E6%9D%BF/">检视面板<sup>1</sup></a><a href="/tags/ScriptableObject/">ScriptableObject<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/">数据存储<sup>1</sup></a><a href="/tags/JSON/">JSON<sup>1</sup></a><a href="/tags/%E7%AA%97%E5%8F%A3%E5%BC%80%E5%8F%91/">窗口开发<sup>1</sup></a><a href="/tags/EditorGUI/">EditorGUI<sup>1</sup></a><a href="/tags/GUI%E6%8E%A7%E4%BB%B6/">GUI控件<sup>1</sup></a><a href="/tags/%E7%95%8C%E9%9D%A2%E8%AE%BE%E8%AE%A1/">界面设计<sup>2</sup></a><a href="/tags/MenuItem/">MenuItem<sup>1</sup></a><a href="/tags/%E8%8F%9C%E5%8D%95%E5%BC%80%E5%8F%91/">菜单开发<sup>1</sup></a><a href="/tags/%E5%BF%AB%E6%8D%B7%E9%94%AE/">快捷键<sup>1</sup></a><a href="/tags/CustomEditor/">CustomEditor<sup>1</sup></a><a href="/tags/PropertyDrawer/">PropertyDrawer<sup>1</sup></a><a href="/tags/Inspector/">Inspector<sup>1</sup></a><a href="/tags/EditorGUILayout/">EditorGUILayout<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E6%8E%A7%E4%BB%B6/">布局控件<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%88%98%E6%A1%88%E4%BE%8B/">实战案例<sup>2</sup></a><a href="/tags/AssetBundle/">AssetBundle<sup>5</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/">资源管理<sup>3</sup></a><a href="/tags/%E6%89%93%E5%8C%85%E7%AD%96%E7%95%A5/">打包策略<sup>3</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">内存管理<sup>4</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E5%88%86%E6%9E%90/">依赖分析<sup>1</sup></a><a href="/tags/%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96/">加载优化<sup>2</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E7%AE%A1%E7%90%86/">依赖管理<sup>1</sup></a><a href="/tags/%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">最佳实践<sup>2</sup></a><a href="/tags/Android/">Android<sup>2</sup></a><a href="/tags/%E4%BC%98%E5%8C%96/">优化<sup>3</sup></a><a href="/tags/Android-Studio/">Android Studio<sup>2</sup></a><a href="/tags/Profiler/">Profiler<sup>7</sup></a><a href="/tags/ADB/">ADB<sup>2</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90/">性能分析<sup>4</sup></a><a href="/tags/%E6%B5%AE%E7%82%B9%E6%95%B0/">浮点数<sup>1</sup></a><a href="/tags/%E7%B2%BE%E5%BA%A6/">精度<sup>1</sup></a><a href="/tags/Transform/">Transform<sup>1</sup></a><a href="/tags/%E5%9D%90%E6%A0%87%E7%B3%BB%E7%BB%9F/">坐标系统<sup>1</sup></a><a href="/tags/%E7%9B%B8%E6%9C%BA/">相机<sup>1</sup></a><a href="/tags/Z-Buffer/">Z-Buffer<sup>1</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/">内存优化<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD/">性能<sup>4</sup></a><a href="/tags/Boehm/">Boehm<sup>2</sup></a><a href="/tags/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">对象池<sup>2</sup></a><a href="/tags/Unsafe/">Unsafe<sup>1</sup></a><a href="/tags/CPU%E4%BC%98%E5%8C%96/">CPU优化<sup>2</sup></a><a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程<sup>1</sup></a><a href="/tags/Job-System/">Job System<sup>1</sup></a><a href="/tags/Burst/">Burst<sup>1</sup></a><a href="/tags/%E5%8D%8F%E7%A8%8B/">协程<sup>1</sup></a><a href="/tags/GPU%E4%BC%98%E5%8C%96/">GPU优化<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93/">渲染<sup>1</sup></a><a href="/tags/Shader/">Shader<sup>3</sup></a><a href="/tags/DrawCall/">DrawCall<sup>9</sup></a><a href="/tags/Batch/">Batch<sup>1</sup></a><a href="/tags/OverDraw/">OverDraw<sup>5</sup></a><a href="/tags/LOD/">LOD<sup>2</sup></a><a href="/tags/Mobile/">Mobile<sup>1</sup></a><a href="/tags/NGUI/">NGUI<sup>3</sup></a><a href="/tags/UI%E6%A1%86%E6%9E%B6/">UI框架<sup>1</sup></a><a href="/tags/UIPanel/">UIPanel<sup>1</sup></a><a href="/tags/UIWidget/">UIWidget<sup>1</sup></a><a href="/tags/%E7%A7%BB%E5%8A%A8%E7%AB%AF/">移动端<sup>1</sup></a><a href="/tags/TBR/">TBR<sup>1</sup></a><a href="/tags/%E5%B8%A6%E5%AE%BD%E4%BC%98%E5%8C%96/">带宽优化<sup>2</sup></a><a href="/tags/GPU/">GPU<sup>2</sup></a><a href="/tags/HUD%E4%BC%98%E5%8C%96/">HUD优化<sup>1</sup></a><a href="/tags/%E5%90%88%E6%89%B9/">合批<sup>1</sup></a><a href="/tags/%E7%BD%91%E6%A0%BC%E9%87%8D%E5%BB%BA/">网格重建<sup>1</sup></a><a href="/tags/UWA/">UWA<sup>3</sup></a><a href="/tags/%E6%80%BB%E7%BA%B2/">总纲<sup>1</sup></a><a href="/tags/UPR/">UPR<sup>4</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB/">优化体系<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E8%A7%84%E8%8C%83/">代码规范<sup>1</sup></a><a href="/tags/GC%E4%BC%98%E5%8C%96/">GC优化<sup>1</sup></a><a href="/tags/FPS%E6%A0%87%E5%87%86/">FPS标准<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96/">代码优化<sup>1</sup></a><a href="/tags/MonoBehaviour/">MonoBehaviour<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E4%BC%98%E5%8C%96/">渲染优化<sup>4</sup></a><a href="/tags/OverShading/">OverShading<sup>1</sup></a><a href="/tags/Shader%E4%BC%98%E5%8C%96/">Shader优化<sup>1</sup></a><a href="/tags/%E9%81%AE%E6%8C%A1%E5%89%94%E9%99%A4/">遮挡剔除<sup>2</sup></a><a href="/tags/OcclusionCulling/">OcclusionCulling<sup>1</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E4%BC%98%E5%8C%96/">资源优化<sup>2</sup></a><a href="/tags/%E7%BA%B9%E7%90%86%E4%BC%98%E5%8C%96/">纹理优化<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB/">代码阅读<sup>1</sup></a><a href="/tags/%E9%A1%B9%E7%9B%AE%E5%88%86%E6%9E%90/">项目分析<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E7%90%86%E8%A7%A3/">架构理解<sup>1</sup></a><a href="/tags/%E5%B7%A5%E7%A8%8B%E5%85%A5%E9%97%A8/">工程入门<sup>1</sup></a><a href="/tags/TextMeshPro/">TextMeshPro<sup>2</sup></a><a href="/tags/UI%E7%B3%BB%E7%BB%9F/">UI系统<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/">架构设计<sup>1</sup></a><a href="/tags/ScrollRect/">ScrollRect<sup>1</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%BB%9A%E5%8A%A8/">虚拟滚动<sup>1</sup></a><a href="/tags/%E5%88%97%E8%A1%A8%E4%BC%98%E5%8C%96/">列表优化<sup>1</sup></a><a href="/tags/%E9%94%9A%E7%82%B9/">锚点<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E7%B3%BB%E7%BB%9F/">布局系统<sup>1</sup></a><a href="/tags/UI%E9%80%82%E9%85%8D/">UI适配<sup>1</sup></a><a href="/tags/UI%E7%89%B9%E6%95%88/">UI特效<sup>1</sup></a><a href="/tags/%E7%B2%92%E5%AD%90%E7%B3%BB%E7%BB%9F/">粒子系统<sup>1</sup></a><a href="/tags/%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/">视觉效果<sup>1</sup></a><a href="/tags/TMP/">TMP<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E6%B8%B2%E6%9F%93/">文本渲染<sup>1</sup></a><a href="/tags/%E5%AD%97%E4%BD%93/">字体<sup>1</sup></a><a href="/tags/%E5%AF%8C%E6%96%87%E6%9C%AC/">富文本<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E6%A8%A1%E5%BC%8F/">渲染模式<sup>1</sup></a><a href="/tags/Sprite-Atlas/">Sprite Atlas<sup>1</sup></a><a href="/tags/%E5%9B%BE%E9%9B%86/">图集<sup>1</sup></a><a href="/tags/DoTween/">DoTween<sup>1</sup></a><a href="/tags/%E5%8A%A8%E7%94%BB/">动画<sup>1</sup></a><a href="/tags/%E8%BF%87%E6%B8%A1%E6%95%88%E6%9E%9C/">过渡效果<sup>1</sup></a><a href="/tags/UI%E5%8A%A8%E6%95%88/">UI动效<sup>1</sup></a><a href="/tags/UI%E6%9E%B6%E6%9E%84/">UI架构<sup>1</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E5%B7%A5%E5%85%B7/">优化工具<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95/">调试<sup>1</sup></a><a href="/tags/EventSystem/">EventSystem<sup>1</sup></a><a href="/tags/%E4%BA%8B%E4%BB%B6/">事件<sup>1</sup></a><a href="/tags/UI%E4%BA%8B%E4%BB%B6/">UI事件<sup>1</sup></a><a href="/tags/%E5%B1%8F%E5%B9%95%E9%80%82%E9%85%8D/">屏幕适配<sup>1</sup></a><a href="/tags/%E5%A4%9A%E5%88%86%E8%BE%A8%E7%8E%87/">多分辨率<sup>1</sup></a><a href="/tags/Canvas-Scaler/">Canvas Scaler<sup>1</sup></a><a href="/tags/%E9%80%82%E9%85%8D%E7%AD%96%E7%95%A5/">适配策略<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96/">自动化<sup>1</sup></a><a href="/tags/Jenkins/">Jenkins<sup>3</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/">性能测试<sup>1</sup></a><a href="/tags/Airtest/">Airtest<sup>2</sup></a><a href="/tags/CI-CD/">CI/CD<sup>2</sup></a><a href="/tags/%E5%B7%A5%E4%B8%9A%E5%8C%96%E6%B5%81%E7%A8%8B/">工业化流程<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%89%93%E5%8C%85/">自动化打包<sup>1</sup></a><a href="/tags/iOS/">iOS<sup>1</sup></a><a href="/tags/%E6%9E%84%E5%BB%BA/">构建<sup>1</sup></a><a href="/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/">持续集成<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/">自动化测试<sup>1</sup></a><a href="/tags/Python/">Python<sup>2</sup></a><a href="/tags/ARM/">ARM<sup>1</sup></a><a href="/tags/Xcode/">Xcode<sup>1</sup></a><a href="/tags/RenderDoc/">RenderDoc<sup>1</sup></a><a href="/tags/Stats/">Stats<sup>1</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/">性能监控<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%BB%9F%E8%AE%A1/">渲染统计<sup>1</sup></a><a href="/tags/FPS/">FPS<sup>1</sup></a><a href="/tags/Occlusion-Culling/">Occlusion Culling<sup>1</sup></a><a href="/tags/Overdraw/">Overdraw<sup>1</sup></a><a href="/tags/Base64/">Base64<sup>1</sup></a><a href="/tags/%E5%9B%BE%E7%89%87%E7%BC%96%E7%A0%81/">图片编码<sup>1</sup></a><a href="/tags/Texture2D/">Texture2D<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/">开发环境<sup>1</sup></a><a href="/tags/%E9%85%8D%E7%BD%AE/">配置<sup>1</sup></a><a href="/tags/Mono/">Mono<sup>1</sup></a><a href="/tags/NET-Core/">.NET Core<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF/">渲染管线<sup>1</sup></a><a href="/tags/%E6%89%B9%E5%A4%84%E7%90%86/">批处理<sup>1</sup></a><a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/">图形学<sup>1</sup></a><a href="/tags/%E7%AE%97%E6%B3%95/">算法<sup>2</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<sup>1</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">学习路线<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/">编程基础<sup>2</sup></a><a href="/tags/%E9%9D%A2%E8%AF%95%E5%87%86%E5%A4%87/">面试准备<sup>2</sup></a><a href="/tags/%E6%8C%87%E9%92%88/">指针<sup>1</sup></a><a href="/tags/%E6%95%B0%E7%BB%84/">数组<sup>1</sup></a><a href="/tags/%E6%8E%92%E5%BA%8F/">排序<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/">编程入门<sup>1</sup></a><a href="/tags/%E8%8B%B1%E8%AF%AD/">英语<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E8%AF%8D%E6%B1%87/">技术词汇<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E6%9C%AF%E8%AF%AD/">编程术语<sup>1</sup></a><a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<sup>1</sup></a><a href="/tags/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式<sup>1</sup></a><a href="/tags/Regex/">Regex<sup>1</sup></a><a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%A4%84%E7%90%86/">字符串处理<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E9%AA%8C%E8%AF%81/">数据验证<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86/">文本处理<sup>1</sup></a><a href="/tags/BestHTTP/">BestHTTP<sup>2</sup></a><a href="/tags/WebSocket/">WebSocket<sup>1</sup></a><a href="/tags/Socket-IO/">Socket.IO<sup>1</sup></a><a href="/tags/SignalR/">SignalR<sup>1</sup></a><a href="/tags/SSE/">SSE<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%97%B6%E9%80%9A%E4%BF%A1/">实时通信<sup>1</sup></a><a href="/tags/HTTP/">HTTP<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82/">网络请求<sup>1</sup></a><a href="/tags/%E6%8F%92%E4%BB%B6/">插件<sup>1</sup></a><a href="/tags/Protobuf/">Protobuf<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/">网络通信<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%8F%E5%88%97%E5%8C%96/">数据序列化<sup>1</sup></a><a href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0/">跨平台<sup>1</sup></a><a href="/tags/%E5%B8%A7%E5%90%8C%E6%AD%A5/">帧同步<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%90%8C%E6%AD%A5/">网络同步<sup>1</sup></a><a href="/tags/%E5%A4%9A%E4%BA%BA%E6%B8%B8%E6%88%8F/">多人游戏<sup>1</sup></a><a href="/tags/%E5%AE%9A%E7%82%B9%E6%95%B0/">定点数<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%90%8C%E6%AD%A5/">游戏同步<sup>1</sup></a><a href="/tags/%E5%BC%B1%E7%BD%91%E4%BC%98%E5%8C%96/">弱网优化<sup>1</sup></a></div></div><div class="console-card history" onclick="sco.hideConsole()"><ul class="card-archive-list"><li class="item"><a href="/archives/2025/01/"><span class="date">2025/01</span><div class="count-group"><span class="count">2</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/2020/05/"><span class="date">2020/05</span><div class="count-group"><span class="count">89</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/"><span class="date">全部文章</span><div class="count-group"><span class="count">91</span><span class="unit">篇</span></div></a></li></ul></div></div></div><div class="button-group"><div class="console-btn-item"><span class="darkmode_switchbutton" onclick="sco.switchDarkMode()" title="昼夜切换"><i class="solitude fas fa-circle-half-stroke"></i></span></div><div class="console-btn-item" id="consoleHideAside"><span class="asideSwitch" onclick="sco.switchHideAside()" title="边栏显示控制"><i class="solitude fas fa-arrows-left-right-to-line"></i></span></div></div><div class="console-mask" onclick="sco.hideConsole()"></div></div><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">91</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">270</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude fas fa-circle-half-stroke"></i><span>显示模式</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/categories/%E5%8D%83%E5%B9%B4%E5%BF%97-%E9%81%93%E5%8A%AB/"><span>千年志*道劫</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/"><span>技术博客</span></a></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-tags"><div class="card-tag-cloud"><a href="/tags/Unity/">Unity<sup>66</sup></a><a href="/tags/AI/">AI<sup>1</sup></a><a href="/tags/%E8%A1%8C%E4%B8%BA%E6%A0%91/">行为树<sup>1</sup></a><a href="/tags/%E7%8A%B6%E6%80%81%E6%9C%BA/">状态机<sup>1</sup></a><a href="/tags/FSM/">FSM<sup>1</sup></a><a href="/tags/BT/">BT<sup>1</sup></a><a href="/tags/GOAP/">GOAP<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/">游戏设计<sup>1</sup></a><a href="/tags/Lua/">Lua<sup>5</sup></a><a href="/tags/LuaJIT/">LuaJIT<sup>2</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/">虚拟机<sup>2</sup></a><a href="/tags/GC/">GC<sup>4</sup></a><a href="/tags/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">源码阅读<sup>1</sup></a><a href="/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80/">脚本语言<sup>1</sup></a><a href="/tags/ToLua/">ToLua<sup>4</sup></a><a href="/tags/C/">C#<sup>3</sup></a><a href="/tags/%E4%BA%A4%E4%BA%92/">交互<sup>3</sup></a><a href="/tags/CLR/">CLR<sup>1</sup></a><a href="/tags/IL2CPP/">IL2CPP<sup>3</sup></a><a href="/tags/C/">C++<sup>3</sup></a><a href="/tags/P-Invoke/">P/Invoke<sup>1</sup></a><a href="/tags/%E4%BA%92%E6%93%8D%E4%BD%9C/">互操作<sup>1</sup></a><a href="/tags/DllImport/">DllImport<sup>1</sup></a><a href="/tags/Marshal/">Marshal<sup>1</sup></a><a href="/tags/%E7%83%AD%E6%9B%B4%E6%96%B0/">热更新<sup>3</sup></a><a href="/tags/%E8%B7%A8%E8%AF%AD%E8%A8%80%E4%BA%A4%E4%BA%92/">跨语言交互<sup>1</sup></a><a href="/tags/C/">C<sup>3</sup></a><a href="/tags/API/">API<sup>1</sup></a><a href="/tags/%E6%A0%88/">栈<sup>1</sup></a><a href="/tags/tolua/">tolua<sup>1</sup></a><a href="/tags/%E4%B8%96%E7%95%8C%E8%A7%82/">世界观<sup>1</sup></a><a href="/tags/Hexo/">Hexo<sup>2</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/">博客<sup>2</sup></a><a href="/tags/%E9%9D%99%E6%80%81%E7%AB%99%E7%82%B9%E7%94%9F%E6%88%90%E5%99%A8/">静态站点生成器<sup>1</sup></a><a href="/tags/Node-js/">Node.js<sup>1</sup></a><a href="/tags/Git/">Git<sup>1</sup></a><a href="/tags/GitHub-Pages/">GitHub Pages<sup>1</sup></a><a href="/tags/Markdown/">Markdown<sup>1</sup></a><a href="/tags/%E5%86%99%E4%BD%9C/">写作<sup>1</sup></a><a href="/tags/VSCode/">VSCode<sup>2</sup></a><a href="/tags/Mac/">Mac<sup>2</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具<sup>1</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E8%BD%AF%E4%BB%B6/">效率软件<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/">游戏开发<sup>1</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E9%93%BE/">工具链<sup>1</sup></a><a href="/tags/VPN/">VPN<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%B7%A5%E5%85%B7/">网络工具<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E8%B5%84%E6%BA%90/">开发资源<sup>1</sup></a><a href="/tags/Google/">Google<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0/">技术学习<sup>1</sup></a><a href="/tags/GitHub%E5%8A%A0%E9%80%9F/">GitHub加速<sup>1</sup></a><a href="/tags/CMD/">CMD<sup>1</sup></a><a href="/tags/Windows/">Windows<sup>1</sup></a><a href="/tags/%E5%91%BD%E4%BB%A4%E8%A1%8C/">命令行<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%91%BD%E4%BB%A4/">网络命令<sup>1</sup></a><a href="/tags/%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86/">系统管理<sup>1</sup></a><a href="/tags/%E5%85%AC%E5%91%8A/">公告<sup>1</sup></a><a href="/tags/UGUI/">UGUI<sup>15</sup></a><a href="/tags/Canvas/">Canvas<sup>4</sup></a><a href="/tags/UI%E4%BC%98%E5%8C%96/">UI优化<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化<sup>16</sup></a><a href="/tags/RectTransform/">RectTransform<sup>2</sup></a><a href="/tags/UnityEditor/">UnityEditor<sup>12</sup></a><a href="/tags/%E7%BC%96%E8%BE%91%E5%99%A8%E6%89%A9%E5%B1%95/">编辑器扩展<sup>11</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91/">工具开发<sup>3</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E6%8F%90%E5%8D%87/">效率提升<sup>1</sup></a><a href="/tags/EditorWindow/">EditorWindow<sup>4</sup></a><a href="/tags/RenderTexture/">RenderTexture<sup>1</sup></a><a href="/tags/%E6%88%AA%E5%9B%BE%E5%B7%A5%E5%85%B7/">截图工具<sup>1</sup></a><a href="/tags/Handles/">Handles<sup>1</sup></a><a href="/tags/OnSceneGUI/">OnSceneGUI<sup>1</sup></a><a href="/tags/%E5%9C%BA%E6%99%AF%E8%A7%86%E5%9B%BE/">场景视图<sup>2</sup></a><a href="/tags/Gizmos/">Gizmos<sup>1</sup></a><a href="/tags/OnDrawGizmos/">OnDrawGizmos<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95%E5%B7%A5%E5%85%B7/">调试工具<sup>1</sup></a><a href="/tags/%E8%8A%82%E7%82%B9%E7%BC%96%E8%BE%91%E5%99%A8/">节点编辑器<sup>1</sup></a><a href="/tags/GraphView/">GraphView<sup>1</sup></a><a href="/tags/%E5%8F%AF%E8%A7%86%E5%8C%96%E7%BC%96%E7%A8%8B/">可视化编程<sup>1</sup></a><a href="/tags/%E6%8A%80%E8%83%BD%E7%BC%96%E8%BE%91%E5%99%A8/">技能编辑器<sup>1</sup></a><a href="/tags/FlatBuffers/">FlatBuffers<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BC%93%E5%AD%98/">数据缓存<sup>1</sup></a><a href="/tags/GamePlay/">GamePlay<sup>1</sup></a><a href="/tags/PropertyAttribute/">PropertyAttribute<sup>1</sup></a><a href="/tags/%E6%A3%80%E8%A7%86%E9%9D%A2%E6%9D%BF/">检视面板<sup>1</sup></a><a href="/tags/ScriptableObject/">ScriptableObject<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/">数据存储<sup>1</sup></a><a href="/tags/JSON/">JSON<sup>1</sup></a><a href="/tags/%E7%AA%97%E5%8F%A3%E5%BC%80%E5%8F%91/">窗口开发<sup>1</sup></a><a href="/tags/EditorGUI/">EditorGUI<sup>1</sup></a><a href="/tags/GUI%E6%8E%A7%E4%BB%B6/">GUI控件<sup>1</sup></a><a href="/tags/%E7%95%8C%E9%9D%A2%E8%AE%BE%E8%AE%A1/">界面设计<sup>2</sup></a><a href="/tags/MenuItem/">MenuItem<sup>1</sup></a><a href="/tags/%E8%8F%9C%E5%8D%95%E5%BC%80%E5%8F%91/">菜单开发<sup>1</sup></a><a href="/tags/%E5%BF%AB%E6%8D%B7%E9%94%AE/">快捷键<sup>1</sup></a><a href="/tags/CustomEditor/">CustomEditor<sup>1</sup></a><a href="/tags/PropertyDrawer/">PropertyDrawer<sup>1</sup></a><a href="/tags/Inspector/">Inspector<sup>1</sup></a><a href="/tags/EditorGUILayout/">EditorGUILayout<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E6%8E%A7%E4%BB%B6/">布局控件<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%88%98%E6%A1%88%E4%BE%8B/">实战案例<sup>2</sup></a><a href="/tags/AssetBundle/">AssetBundle<sup>5</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/">资源管理<sup>3</sup></a><a href="/tags/%E6%89%93%E5%8C%85%E7%AD%96%E7%95%A5/">打包策略<sup>3</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">内存管理<sup>4</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E5%88%86%E6%9E%90/">依赖分析<sup>1</sup></a><a href="/tags/%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96/">加载优化<sup>2</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E7%AE%A1%E7%90%86/">依赖管理<sup>1</sup></a><a href="/tags/%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">最佳实践<sup>2</sup></a><a href="/tags/Android/">Android<sup>2</sup></a><a href="/tags/%E4%BC%98%E5%8C%96/">优化<sup>3</sup></a><a href="/tags/Android-Studio/">Android Studio<sup>2</sup></a><a href="/tags/Profiler/">Profiler<sup>7</sup></a><a href="/tags/ADB/">ADB<sup>2</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90/">性能分析<sup>4</sup></a><a href="/tags/%E6%B5%AE%E7%82%B9%E6%95%B0/">浮点数<sup>1</sup></a><a href="/tags/%E7%B2%BE%E5%BA%A6/">精度<sup>1</sup></a><a href="/tags/Transform/">Transform<sup>1</sup></a><a href="/tags/%E5%9D%90%E6%A0%87%E7%B3%BB%E7%BB%9F/">坐标系统<sup>1</sup></a><a href="/tags/%E7%9B%B8%E6%9C%BA/">相机<sup>1</sup></a><a href="/tags/Z-Buffer/">Z-Buffer<sup>1</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/">内存优化<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD/">性能<sup>4</sup></a><a href="/tags/Boehm/">Boehm<sup>2</sup></a><a href="/tags/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">对象池<sup>2</sup></a><a href="/tags/Unsafe/">Unsafe<sup>1</sup></a><a href="/tags/CPU%E4%BC%98%E5%8C%96/">CPU优化<sup>2</sup></a><a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程<sup>1</sup></a><a href="/tags/Job-System/">Job System<sup>1</sup></a><a href="/tags/Burst/">Burst<sup>1</sup></a><a href="/tags/%E5%8D%8F%E7%A8%8B/">协程<sup>1</sup></a><a href="/tags/GPU%E4%BC%98%E5%8C%96/">GPU优化<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93/">渲染<sup>1</sup></a><a href="/tags/Shader/">Shader<sup>3</sup></a><a href="/tags/DrawCall/">DrawCall<sup>9</sup></a><a href="/tags/Batch/">Batch<sup>1</sup></a><a href="/tags/OverDraw/">OverDraw<sup>5</sup></a><a href="/tags/LOD/">LOD<sup>2</sup></a><a href="/tags/Mobile/">Mobile<sup>1</sup></a><a href="/tags/NGUI/">NGUI<sup>3</sup></a><a href="/tags/UI%E6%A1%86%E6%9E%B6/">UI框架<sup>1</sup></a><a href="/tags/UIPanel/">UIPanel<sup>1</sup></a><a href="/tags/UIWidget/">UIWidget<sup>1</sup></a><a href="/tags/%E7%A7%BB%E5%8A%A8%E7%AB%AF/">移动端<sup>1</sup></a><a href="/tags/TBR/">TBR<sup>1</sup></a><a href="/tags/%E5%B8%A6%E5%AE%BD%E4%BC%98%E5%8C%96/">带宽优化<sup>2</sup></a><a href="/tags/GPU/">GPU<sup>2</sup></a><a href="/tags/HUD%E4%BC%98%E5%8C%96/">HUD优化<sup>1</sup></a><a href="/tags/%E5%90%88%E6%89%B9/">合批<sup>1</sup></a><a href="/tags/%E7%BD%91%E6%A0%BC%E9%87%8D%E5%BB%BA/">网格重建<sup>1</sup></a><a href="/tags/UWA/">UWA<sup>3</sup></a><a href="/tags/%E6%80%BB%E7%BA%B2/">总纲<sup>1</sup></a><a href="/tags/UPR/">UPR<sup>4</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB/">优化体系<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E8%A7%84%E8%8C%83/">代码规范<sup>1</sup></a><a href="/tags/GC%E4%BC%98%E5%8C%96/">GC优化<sup>1</sup></a><a href="/tags/FPS%E6%A0%87%E5%87%86/">FPS标准<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96/">代码优化<sup>1</sup></a><a href="/tags/MonoBehaviour/">MonoBehaviour<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E4%BC%98%E5%8C%96/">渲染优化<sup>4</sup></a><a href="/tags/OverShading/">OverShading<sup>1</sup></a><a href="/tags/Shader%E4%BC%98%E5%8C%96/">Shader优化<sup>1</sup></a><a href="/tags/%E9%81%AE%E6%8C%A1%E5%89%94%E9%99%A4/">遮挡剔除<sup>2</sup></a><a href="/tags/OcclusionCulling/">OcclusionCulling<sup>1</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E4%BC%98%E5%8C%96/">资源优化<sup>2</sup></a><a href="/tags/%E7%BA%B9%E7%90%86%E4%BC%98%E5%8C%96/">纹理优化<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB/">代码阅读<sup>1</sup></a><a href="/tags/%E9%A1%B9%E7%9B%AE%E5%88%86%E6%9E%90/">项目分析<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E7%90%86%E8%A7%A3/">架构理解<sup>1</sup></a><a href="/tags/%E5%B7%A5%E7%A8%8B%E5%85%A5%E9%97%A8/">工程入门<sup>1</sup></a><a href="/tags/TextMeshPro/">TextMeshPro<sup>2</sup></a><a href="/tags/UI%E7%B3%BB%E7%BB%9F/">UI系统<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/">架构设计<sup>1</sup></a><a href="/tags/ScrollRect/">ScrollRect<sup>1</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%BB%9A%E5%8A%A8/">虚拟滚动<sup>1</sup></a><a href="/tags/%E5%88%97%E8%A1%A8%E4%BC%98%E5%8C%96/">列表优化<sup>1</sup></a><a href="/tags/%E9%94%9A%E7%82%B9/">锚点<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E7%B3%BB%E7%BB%9F/">布局系统<sup>1</sup></a><a href="/tags/UI%E9%80%82%E9%85%8D/">UI适配<sup>1</sup></a><a href="/tags/UI%E7%89%B9%E6%95%88/">UI特效<sup>1</sup></a><a href="/tags/%E7%B2%92%E5%AD%90%E7%B3%BB%E7%BB%9F/">粒子系统<sup>1</sup></a><a href="/tags/%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/">视觉效果<sup>1</sup></a><a href="/tags/TMP/">TMP<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E6%B8%B2%E6%9F%93/">文本渲染<sup>1</sup></a><a href="/tags/%E5%AD%97%E4%BD%93/">字体<sup>1</sup></a><a href="/tags/%E5%AF%8C%E6%96%87%E6%9C%AC/">富文本<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E6%A8%A1%E5%BC%8F/">渲染模式<sup>1</sup></a><a href="/tags/Sprite-Atlas/">Sprite Atlas<sup>1</sup></a><a href="/tags/%E5%9B%BE%E9%9B%86/">图集<sup>1</sup></a><a href="/tags/DoTween/">DoTween<sup>1</sup></a><a href="/tags/%E5%8A%A8%E7%94%BB/">动画<sup>1</sup></a><a href="/tags/%E8%BF%87%E6%B8%A1%E6%95%88%E6%9E%9C/">过渡效果<sup>1</sup></a><a href="/tags/UI%E5%8A%A8%E6%95%88/">UI动效<sup>1</sup></a><a href="/tags/UI%E6%9E%B6%E6%9E%84/">UI架构<sup>1</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E5%B7%A5%E5%85%B7/">优化工具<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95/">调试<sup>1</sup></a><a href="/tags/EventSystem/">EventSystem<sup>1</sup></a><a href="/tags/%E4%BA%8B%E4%BB%B6/">事件<sup>1</sup></a><a href="/tags/UI%E4%BA%8B%E4%BB%B6/">UI事件<sup>1</sup></a><a href="/tags/%E5%B1%8F%E5%B9%95%E9%80%82%E9%85%8D/">屏幕适配<sup>1</sup></a><a href="/tags/%E5%A4%9A%E5%88%86%E8%BE%A8%E7%8E%87/">多分辨率<sup>1</sup></a><a href="/tags/Canvas-Scaler/">Canvas Scaler<sup>1</sup></a><a href="/tags/%E9%80%82%E9%85%8D%E7%AD%96%E7%95%A5/">适配策略<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96/">自动化<sup>1</sup></a><a href="/tags/Jenkins/">Jenkins<sup>3</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/">性能测试<sup>1</sup></a><a href="/tags/Airtest/">Airtest<sup>2</sup></a><a href="/tags/CI-CD/">CI/CD<sup>2</sup></a><a href="/tags/%E5%B7%A5%E4%B8%9A%E5%8C%96%E6%B5%81%E7%A8%8B/">工业化流程<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%89%93%E5%8C%85/">自动化打包<sup>1</sup></a><a href="/tags/iOS/">iOS<sup>1</sup></a><a href="/tags/%E6%9E%84%E5%BB%BA/">构建<sup>1</sup></a><a href="/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/">持续集成<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/">自动化测试<sup>1</sup></a><a href="/tags/Python/">Python<sup>2</sup></a><a href="/tags/ARM/">ARM<sup>1</sup></a><a href="/tags/Xcode/">Xcode<sup>1</sup></a><a href="/tags/RenderDoc/">RenderDoc<sup>1</sup></a><a href="/tags/Stats/">Stats<sup>1</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/">性能监控<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%BB%9F%E8%AE%A1/">渲染统计<sup>1</sup></a><a href="/tags/FPS/">FPS<sup>1</sup></a><a href="/tags/Occlusion-Culling/">Occlusion Culling<sup>1</sup></a><a href="/tags/Overdraw/">Overdraw<sup>1</sup></a><a href="/tags/Base64/">Base64<sup>1</sup></a><a href="/tags/%E5%9B%BE%E7%89%87%E7%BC%96%E7%A0%81/">图片编码<sup>1</sup></a><a href="/tags/Texture2D/">Texture2D<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/">开发环境<sup>1</sup></a><a href="/tags/%E9%85%8D%E7%BD%AE/">配置<sup>1</sup></a><a href="/tags/Mono/">Mono<sup>1</sup></a><a href="/tags/NET-Core/">.NET Core<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF/">渲染管线<sup>1</sup></a><a href="/tags/%E6%89%B9%E5%A4%84%E7%90%86/">批处理<sup>1</sup></a><a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/">图形学<sup>1</sup></a><a href="/tags/%E7%AE%97%E6%B3%95/">算法<sup>2</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<sup>1</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">学习路线<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/">编程基础<sup>2</sup></a><a href="/tags/%E9%9D%A2%E8%AF%95%E5%87%86%E5%A4%87/">面试准备<sup>2</sup></a><a href="/tags/%E6%8C%87%E9%92%88/">指针<sup>1</sup></a><a href="/tags/%E6%95%B0%E7%BB%84/">数组<sup>1</sup></a><a href="/tags/%E6%8E%92%E5%BA%8F/">排序<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/">编程入门<sup>1</sup></a><a href="/tags/%E8%8B%B1%E8%AF%AD/">英语<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E8%AF%8D%E6%B1%87/">技术词汇<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E6%9C%AF%E8%AF%AD/">编程术语<sup>1</sup></a><a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<sup>1</sup></a><a href="/tags/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式<sup>1</sup></a><a href="/tags/Regex/">Regex<sup>1</sup></a><a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%A4%84%E7%90%86/">字符串处理<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E9%AA%8C%E8%AF%81/">数据验证<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86/">文本处理<sup>1</sup></a><a href="/tags/BestHTTP/">BestHTTP<sup>2</sup></a><a href="/tags/WebSocket/">WebSocket<sup>1</sup></a><a href="/tags/Socket-IO/">Socket.IO<sup>1</sup></a><a href="/tags/SignalR/">SignalR<sup>1</sup></a><a href="/tags/SSE/">SSE<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%97%B6%E9%80%9A%E4%BF%A1/">实时通信<sup>1</sup></a><a href="/tags/HTTP/">HTTP<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82/">网络请求<sup>1</sup></a><a href="/tags/%E6%8F%92%E4%BB%B6/">插件<sup>1</sup></a><a href="/tags/Protobuf/">Protobuf<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/">网络通信<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%8F%E5%88%97%E5%8C%96/">数据序列化<sup>1</sup></a><a href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0/">跨平台<sup>1</sup></a><a href="/tags/%E5%B8%A7%E5%90%8C%E6%AD%A5/">帧同步<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%90%8C%E6%AD%A5/">网络同步<sup>1</sup></a><a href="/tags/%E5%A4%9A%E4%BA%BA%E6%B8%B8%E6%88%8F/">多人游戏<sup>1</sup></a><a href="/tags/%E5%AE%9A%E7%82%B9%E6%95%B0/">定点数<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%90%8C%E6%AD%A5/">游戏同步<sup>1</sup></a><a href="/tags/%E5%BC%B1%E7%BD%91%E4%BC%98%E5%8C%96/">弱网优化<sup>1</sup></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><a href="/" title="返回博客主页" id="site-name"><span class="title">主页</span><i class="solitude fas fa-home"></i></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">Lua 源码阅读完全指南 - 从虚拟机到垃圾回收</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/categories/%E5%8D%83%E5%B9%B4%E5%BF%97-%E9%81%93%E5%8A%AB/"><span>千年志*道劫</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/"><span>技术博客</span></a></div></div></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="nav-totop" onclick="sco.toTop()"><a class="totopbtn"><i class="solitude fas fa-arrow-up"></i><span id="percent">0</span></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude fas fa-bars"></i></a></div></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><span class="post-meta-categories"><a class="post-meta-categories" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/">技术文章</a></span><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Lua/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>Lua</span></a><a class="post-meta__tags" href="/tags/LuaJIT/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>LuaJIT</span></a><a class="post-meta__tags" href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>虚拟机</span></a><a class="post-meta__tags" href="/tags/GC/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>GC</span></a><a class="post-meta__tags" href="/tags/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>源码阅读</span></a><a class="post-meta__tags" href="/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>脚本语言</span></a></div></div></div></div><h1 class="post-title">Lua 源码阅读完全指南 - 从虚拟机到垃圾回收</h1><div id="post-meta"><div class="meta-secondline"></div></div></div><div class="post-radius-bottom"></div><article class="post-content article-container"><h1 id="Lua-源码阅读完全指南-从虚拟机到垃圾回收"><a href="#Lua-源码阅读完全指南-从虚拟机到垃圾回收" class="headerlink" title="Lua 源码阅读完全指南 - 从虚拟机到垃圾回收"></a>Lua 源码阅读完全指南 - 从虚拟机到垃圾回收</h1><blockquote>
+<p>本文系统介绍 Lua 源码的核心概念，包括虚拟机原理、编译流程、垃圾回收机制、热更新原理等高级话题。</p>
+</blockquote>
+<hr>
+<h2 id="一、学习路线"><a href="#一、学习路线" class="headerlink" title="一、学习路线"></a>一、学习路线</h2><h3 id="1-1-推荐书籍"><a href="#1-1-推荐书籍" class="headerlink" title="1.1 推荐书籍"></a>1.1 推荐书籍</h3><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>书籍</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>初级</strong></td>
+<td>《Programming in Lua》(Lua 编程)</td>
+<td>编写 Lua 代码的基本操作</td>
+</tr>
+<tr>
+<td><strong>中级</strong></td>
+<td>《Lua 程序设计第四版》</td>
+<td>深入理解 Lua 特性</td>
+</tr>
+<tr>
+<td><strong>高级</strong></td>
+<td>《Lua 设计与实现》</td>
+<td>Lua 实现的算法、虚拟机、编译器、GC</td>
+</tr>
+</tbody></table>
+<h3 id="1-2-学习资源"><a href="#1-2-学习资源" class="headerlink" title="1.2 学习资源"></a>1.2 学习资源</h3><table>
+<thead>
+<tr>
+<th>资源类型</th>
+<th>链接</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>官方文档</td>
+<td><a target="_blank" rel="noopener" href="https://www.lua.org/">https://www.lua.org/</a></td>
+</tr>
+<tr>
+<td>Bilibili 教程</td>
+<td><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1Zz411i7QW">https://www.bilibili.com/video/BV1Zz411i7QW</a></td>
+</tr>
+<tr>
+<td>中文文档</td>
+<td><a target="_blank" rel="noopener" href="https://cloudwu.github.io/lua53doc/">https://cloudwu.github.io/lua53doc/</a></td>
+</tr>
+<tr>
+<td>CSDN 系列</td>
+<td><a target="_blank" rel="noopener" href="https://blog.csdn.net/yuanlin2008">https://blog.csdn.net/yuanlin2008</a></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="二、源码文件结构"><a href="#二、源码文件结构" class="headerlink" title="二、源码文件结构"></a>二、源码文件结构</h2><h3 id="2-1-虚拟机核心文件"><a href="#2-1-虚拟机核心文件" class="headerlink" title="2.1 虚拟机核心文件"></a>2.1 虚拟机核心文件</h3><table>
+<thead>
+<tr>
+<th>文件名</th>
+<th>作用</th>
+<th>接口前缀</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>lopcodes.c</code></td>
+<td>字节码&#x2F;操作码定义</td>
+<td><code>luaP_</code></td>
+</tr>
+<tr>
+<td><code>lcode.c</code></td>
+<td>源码生成器</td>
+<td><code>luaK_</code></td>
+</tr>
+<tr>
+<td><code>llex.c</code></td>
+<td>词法分析</td>
+<td><code>luaX_</code></td>
+</tr>
+<tr>
+<td><code>lparser.c</code></td>
+<td>语法分析器</td>
+<td><code>luaY_</code></td>
+</tr>
+<tr>
+<td><code>lapi.c</code></td>
+<td>C 语言接口</td>
+<td><code>lua_</code></td>
+</tr>
+<tr>
+<td><code>ldebug.c</code></td>
+<td>调试库、反射、钩子</td>
+<td><code>luaG_</code></td>
+</tr>
+<tr>
+<td><code>ldo.c</code></td>
+<td>函数调用、栈管理</td>
+<td><code>luaD_</code></td>
+</tr>
+<tr>
+<td><code>ldump.c</code></td>
+<td>预编译块序列化</td>
+<td><code>luaU_</code></td>
+</tr>
+<tr>
+<td><code>lfunc.c</code></td>
+<td>原型和闭包操作</td>
+<td><code>luaF_</code></td>
+</tr>
+<tr>
+<td><code>lgc.c</code></td>
+<td>垃圾回收</td>
+<td><code>luaC_</code></td>
+</tr>
+<tr>
+<td><code>lmem.c</code></td>
+<td>内存管理</td>
+<td><code>luaM_</code></td>
+</tr>
+<tr>
+<td><code>lobject.c</code></td>
+<td>对象管理</td>
+<td><code>luaO_</code></td>
+</tr>
+<tr>
+<td><code>lstate.c</code></td>
+<td>全局状态机</td>
+<td><code>luaE_</code></td>
+</tr>
+<tr>
+<td><code>lstring.c</code></td>
+<td>字符串操作</td>
+<td><code>luaS_</code></td>
+</tr>
+<tr>
+<td><code>ltable.c</code></td>
+<td>表操作</td>
+<td><code>luaH_</code></td>
+</tr>
+<tr>
+<td><code>lundump.c</code></td>
+<td>加载预编译字节码</td>
+<td><code>luaU_</code></td>
+</tr>
+<tr>
+<td><code>ltm.c</code></td>
+<td>Tag 方法</td>
+<td><code>luaT_</code></td>
+</tr>
+<tr>
+<td><code>lzio.c</code></td>
+<td>缓存流接口</td>
+<td><code>luaZ_</code></td>
+</tr>
+<tr>
+<td><strong><code>lvm.c</code></strong></td>
+<td><strong>虚拟机执行引擎</strong></td>
+<td><code>luaV_</code></td>
+</tr>
+</tbody></table>
+<h3 id="2-2-内嵌库文件"><a href="#2-2-内嵌库文件" class="headerlink" title="2.2 内嵌库文件"></a>2.2 内嵌库文件</h3><table>
+<thead>
+<tr>
+<th>文件名</th>
+<th>作用</th>
+<th>接口前缀</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>lauxlib.c</code></td>
+<td>辅助函数库</td>
+<td><code>luaL_</code></td>
+</tr>
+<tr>
+<td><code>lbaselib.c</code></td>
+<td>基础库</td>
+<td><code>luaB_</code></td>
+</tr>
+<tr>
+<td><code>ldblib.c</code></td>
+<td>调试库</td>
+<td><code>db_</code></td>
+</tr>
+<tr>
+<td><code>liolib.c</code></td>
+<td>IO 库</td>
+<td><code>io_</code></td>
+</tr>
+<tr>
+<td><code>lmathlib.c</code></td>
+<td>数学库</td>
+<td><code>math_</code></td>
+</tr>
+<tr>
+<td><code>loslib.c</code></td>
+<td>操作系统库</td>
+<td><code>os_</code></td>
+</tr>
+<tr>
+<td><code>ltablib.c</code></td>
+<td>表操作库</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>lstrlib.c</code></td>
+<td>字符串库</td>
+<td><code>str_</code></td>
+</tr>
+<tr>
+<td><code>loadlib.c</code></td>
+<td>动态加载器</td>
+<td><code>ll_</code></td>
+</tr>
+</tbody></table>
+<h3 id="2-3-编译器与解释器"><a href="#2-3-编译器与解释器" class="headerlink" title="2.3 编译器与解释器"></a>2.3 编译器与解释器</h3><table>
+<thead>
+<tr>
+<th>文件名</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>lua.c</code></td>
+<td>Lua 解释器</td>
+</tr>
+<tr>
+<td><code>luac.c</code></td>
+<td>字节码编译器</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、虚拟机原理"><a href="#三、虚拟机原理" class="headerlink" title="三、虚拟机原理"></a>三、虚拟机原理</h2><h3 id="3-1-虚拟机类型对比"><a href="#3-1-虚拟机类型对比" class="headerlink" title="3.1 虚拟机类型对比"></a>3.1 虚拟机类型对比</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────────────────────┐</span><br><span class="line">│                    虚拟机实现方式对比                                    │</span><br><span class="line">├─────────────────────────────────────────────────────────────────────────┤</span><br><span class="line">│                                                                         │</span><br><span class="line">│  ┌─────────────────────┐              ┌─────────────────────┐           │</span><br><span class="line">│  │   基于栈的 VM        │              │  基于寄存器的 VM     │           │</span><br><span class="line">│  │   (Stack-Based)     │              │  (Register-Based)   │           │</span><br><span class="line">│  ├─────────────────────┤              ├─────────────────────┤           │</span><br><span class="line">│  │  JVM, Python        │              │  Lua, LuaJIT        │           │</span><br><span class="line">│  │  操作数在栈中        │              │  操作数在寄存器中    │           │</span><br><span class="line">│  │  需要入栈/出栈操作   │              │  无需入栈/出栈      │           │</span><br><span class="line">│  │  指令执行次数多      │              │  指令执行次数少      │           │</span><br><span class="line">│  │  内存复制多          │              │  内存复制少          │           │</span><br><span class="line">│  │  占用内存较少        │              │  指令占用空间较大    │           │</span><br><span class="line">│  └─────────────────────┘              └─────────────────────┘           │</span><br><span class="line">│                                                                         │</span><br><span class="line">│  为什么 Lua 快？                                                         │</span><br><span class="line">│  └── 基于寄存器的 VM 减少了指令执行次数和内存复制操作                      │</span><br><span class="line">│                                                                         │</span><br><span class="line">└─────────────────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-Lua-指令格式"><a href="#3-2-Lua-指令格式" class="headerlink" title="3.2 Lua 指令格式"></a>3.2 Lua 指令格式</h3><p>Lua 指令分为 5 种格式：</p>
+<table>
+<thead>
+<tr>
+<th>格式</th>
+<th>说明</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>iABC</code></td>
+<td>标准指令</td>
+<td>大部分算术&#x2F;逻辑运算</td>
+</tr>
+<tr>
+<td><code>iABx</code></td>
+<td>带 Bx 扩展</td>
+<td>加载常量、跳转</td>
+</tr>
+<tr>
+<td><code>iAsBx</code></td>
+<td>带符号 Bx</td>
+<td>条件跳转</td>
+</tr>
+<tr>
+<td><code>iAx</code></td>
+<td>单大操作数</td>
+<td>EXTRA</td>
+</tr>
+<tr>
+<td><code>ISx</code></td>
+<td>系统指令</td>
+<td>特殊操作</td>
+</tr>
+</tbody></table>
+<h3 id="3-3-查看字节码"><a href="#3-3-查看字节码" class="headerlink" title="3.3 查看字节码"></a>3.3 查看字节码</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看 Lua 代码生成的字节码</span></span><br><span class="line">luac -l -l test.lua</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成预编译文件</span></span><br><span class="line">luac -o test.luac test.lua</span><br><span class="line"></span><br><span class="line"><span class="comment"># 运行预编译文件</span></span><br><span class="line">lua test.luac</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="四、类型系统"><a href="#四、类型系统" class="headerlink" title="四、类型系统"></a>四、类型系统</h2><h3 id="4-1-基本类型"><a href="#4-1-基本类型" class="headerlink" title="4.1 基本类型"></a>4.1 基本类型</h3><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>说明</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>nil</code></td>
+<td>空类型</td>
+<td>只有一个值 <code>nil</code></td>
+</tr>
+<tr>
+<td><code>boolean</code></td>
+<td>布尔</td>
+<td><code>true</code> &#x2F; <code>false</code></td>
+</tr>
+<tr>
+<td><code>number</code></td>
+<td>数字</td>
+<td>Lua 5.3+ 默认 64 位浮点</td>
+</tr>
+<tr>
+<td><code>string</code></td>
+<td>字符串</td>
+<td>不可变，自动去重</td>
+</tr>
+<tr>
+<td><code>table</code></td>
+<td>表</td>
+<td>关联数组，Lua 的核心</td>
+</tr>
+<tr>
+<td><code>function</code></td>
+<td>函数</td>
+<td>支持 C 函数和 Lua 函数</td>
+</tr>
+<tr>
+<td><code>userdata</code></td>
+<td>用户数据</td>
+<td>封装 C 数据</td>
+</tr>
+<tr>
+<td><code>thread</code></td>
+<td>线程</td>
+<td>实际是协程</td>
+</tr>
+</tbody></table>
+<h3 id="4-2-Table-类型详解"><a href="#4-2-Table-类型详解" class="headerlink" title="4.2 Table 类型详解"></a>4.2 Table 类型详解</h3><p>Table 是 Lua 的核心数据结构，内部实现为数组 + 哈希表：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────────────────────┐</span><br><span class="line">│                         Table 内部结构                                  │</span><br><span class="line">├─────────────────────────────────────────────────────────────────────────┤</span><br><span class="line">│                                                                         │</span><br><span class="line">│  Table                                                                  │</span><br><span class="line">│  ┌─────────────────────┬─────────────────────┐                          │</span><br><span class="line">│  │   数组部分           │      哈希表部分       │                          │</span><br><span class="line">│  │   Array Part        │      Hash Part       │                          │</span><br><span class="line">│  ├─────────────────────┼─────────────────────┤                          │</span><br><span class="line">│  │ [1] = value1        │ [&quot;key1&quot;] = value3    │                          │</span><br><span class="line">│  │ [2] = value2        │ [&quot;key2&quot;] = value4    │                          │</span><br><span class="line">│  │ [3] = value3        │ [key3]  = value5     │                          │</span><br><span class="line">│  │ ...                 │ ...                 │                          │</span><br><span class="line">│  │ 适用于连续整数索引    │ 适用于任意类型索引    │                          │</span><br><span class="line">│  └─────────────────────┴─────────────────────┘                          │</span><br><span class="line">│                                                                         │</span><br><span class="line">│  最佳实践:                                                               │</span><br><span class="line">│  └── 避免混用数组和哈希表部分，提升性能                                │</span><br><span class="line">│                                                                         │</span><br><span class="line">└─────────────────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="五、元表与元方法"><a href="#五、元表与元方法" class="headerlink" title="五、元表与元方法"></a>五、元表与元方法</h2><h3 id="5-1-元表操作"><a href="#5-1-元表操作" class="headerlink" title="5.1 元表操作"></a>5.1 元表操作</h3><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 获取元表</span></span><br><span class="line"><span class="built_in">getmetatable</span>(obj)</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 设置元表</span></span><br><span class="line"><span class="built_in">setmetatable</span>(obj, metatable)</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-元方法完整列表"><a href="#5-2-元方法完整列表" class="headerlink" title="5.2 元方法完整列表"></a>5.2 元方法完整列表</h3><table>
+<thead>
+<tr>
+<th>元方法</th>
+<th>触发条件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>算术运算</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>__add</code></td>
+<td><code>a + b</code></td>
+<td>加法</td>
+</tr>
+<tr>
+<td><code>__sub</code></td>
+<td><code>a - b</code></td>
+<td>减法</td>
+</tr>
+<tr>
+<td><code>__mul</code></td>
+<td><code>a * b</code></td>
+<td>乘法</td>
+</tr>
+<tr>
+<td><code>__div</code></td>
+<td><code>a / b</code></td>
+<td>除法</td>
+</tr>
+<tr>
+<td><code>__mod</code></td>
+<td><code>a % b</code></td>
+<td>取模</td>
+</tr>
+<tr>
+<td><code>__pow</code></td>
+<td><code>a ^ b</code></td>
+<td>次方</td>
+</tr>
+<tr>
+<td><code>__unm</code></td>
+<td><code>-a</code></td>
+<td>取负</td>
+</tr>
+<tr>
+<td><code>__idiv</code></td>
+<td><code>a // b</code></td>
+<td>向下取整除法</td>
+</tr>
+<tr>
+<td><strong>位运算</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>__band</code></td>
+<td><code>a &amp; b</code></td>
+<td>按位与</td>
+</tr>
+<tr>
+<td><code>__bor</code></td>
+<td><code>a | b</code></td>
+<td>按位或</td>
+</tr>
+<tr>
+<td><code>__bxor</code></td>
+<td><code>a ~ b</code></td>
+<td>按位异或</td>
+</tr>
+<tr>
+<td><code>__bnot</code></td>
+<td><code>~a</code></td>
+<td>按位非</td>
+</tr>
+<tr>
+<td><code>__shl</code></td>
+<td><code>a &lt;&lt; b</code></td>
+<td>左移</td>
+</tr>
+<tr>
+<td><code>__shr</code></td>
+<td><code>a &gt;&gt; b</code></td>
+<td>右移</td>
+</tr>
+<tr>
+<td><strong>其他运算</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>__concat</code></td>
+<td><code>a .. b</code></td>
+<td>字符串连接</td>
+</tr>
+<tr>
+<td><code>__len</code></td>
+<td><code>#a</code></td>
+<td>取长度</td>
+</tr>
+<tr>
+<td><strong>比较运算</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>__eq</code></td>
+<td><code>a == b</code></td>
+<td>等于</td>
+</tr>
+<tr>
+<td><code>__lt</code></td>
+<td><code>a &lt; b</code></td>
+<td>小于</td>
+</tr>
+<tr>
+<td><code>__le</code></td>
+<td><code>a &lt;= b</code></td>
+<td>小于等于</td>
+</tr>
+<tr>
+<td><strong>表访问</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>__index</code></td>
+<td><code>table[key]</code></td>
+<td>读取不存在的键</td>
+</tr>
+<tr>
+<td><code>__newindex</code></td>
+<td><code>table[key] = value</code></td>
+<td>写入不存在的键</td>
+</tr>
+<tr>
+<td><strong>其他</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>__call</code></td>
+<td><code>obj(args)</code></td>
+<td>函数调用</td>
+</tr>
+<tr>
+<td><code>__tostring</code></td>
+<td><code>tostring(obj)</code></td>
+<td>转字符串</td>
+</tr>
+<tr>
+<td><code>__gc</code></td>
+<td>GC 回收时</td>
+<td>析构函数</td>
+</tr>
+<tr>
+<td><code>__mode</code></td>
+<td>-</td>
+<td>弱引用标记</td>
+</tr>
+</tbody></table>
+<h3 id="5-3-index-查找流程"><a href="#5-3-index-查找流程" class="headerlink" title="5.3 __index 查找流程"></a>5.3 __index 查找流程</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────────────────────┐</span><br><span class="line">│                         __index 查找流程                                 │</span><br><span class="line">├─────────────────────────────────────────────────────────────────────────┤</span><br><span class="line">│                                                                         │</span><br><span class="line">│  table[key] 查找:                                                       │</span><br><span class="line">│                                                                         │</span><br><span class="line">│  ┌─────────────────┐                                                   │</span><br><span class="line">│  │ Step 1: 查自身   │                                                   │</span><br><span class="line">│  │ table 有 key?    │ ──Yes──&gt; 返回 value                               │</span><br><span class="line">│  └────────┬────────┘                                                   │</span><br><span class="line">│           │ No                                                          │</span><br><span class="line">│           ▼                                                             │</span><br><span class="line">│  ┌─────────────────┐                                                   │</span><br><span class="line">│  │ Step 2: 查元表   │                                                   │</span><br><span class="line">│  │ 有 metatable?    │ ──No───&gt; 返回 nil                                │</span><br><span class="line">│  └────────┬────────┘                                                   │</span><br><span class="line">│           │ Yes                                                         │</span><br><span class="line">│           ▼                                                             │</span><br><span class="line">│  ┌─────────────────┐                                                   │</span><br><span class="line">│  │ Step 3: 查 __index│                                                  │</span><br><span class="line">│  │ __index 是表?    │ ──Yes──&gt; 在 __index 表中查找                      │</span><br><span class="line">│  │                  │                                                   │</span><br><span class="line">│  │ __index 是函数?  │ ──Yes──&gt; 调用 __index(table, key)                 │</span><br><span class="line">│  └─────────────────┘                                                   │</span><br><span class="line">│                                                                         │</span><br><span class="line">│  ⚠️ 注意: 不是查找 metatable 自身的 key，而是 metatable.__index         │</span><br><span class="line">│                                                                         │</span><br><span class="line">└─────────────────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、垃圾回收机制"><a href="#六、垃圾回收机制" class="headerlink" title="六、垃圾回收机制"></a>六、垃圾回收机制</h2><h3 id="6-1-GC-算法演进"><a href="#6-1-GC-算法演进" class="headerlink" title="6.1 GC 算法演进"></a>6.1 GC 算法演进</h3><table>
+<thead>
+<tr>
+<th>版本</th>
+<th>算法</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Lua 5.0</strong></td>
+<td>双色标记清除</td>
+<td>全局暂停，会卡顿</td>
+</tr>
+<tr>
+<td><strong>Lua 5.1</strong></td>
+<td>三色增量标记</td>
+<td>可增量执行，减少卡顿</td>
+</tr>
+<tr>
+<td><strong>Lua 5.4+</strong></td>
+<td>分代 GC</td>
+<td>进一步优化性能</td>
+</tr>
+</tbody></table>
+<h3 id="6-2-三色标记算法"><a href="#6-2-三色标记算法" class="headerlink" title="6.2 三色标记算法"></a>6.2 三色标记算法</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────────────────────┐</span><br><span class="line">│                       三色标记算法 (Tri-Color Marking)                   │</span><br><span class="line">├─────────────────────────────────────────────────────────────────────────┤</span><br><span class="line">│                                                                         │</span><br><span class="line">│  颜色含义:                                                               │</span><br><span class="line">│  ┌─────────────────────────────────────────────────────────────────┐   │</span><br><span class="line">│  │  ● 白色 (White): 待访问状态，对象创建后的初始状态                │   │</span><br><span class="line">│  │  ● 灰色 (Gray):  待扫描状态，已访问但引用未遍历                  │   │</span><br><span class="line">│  │  ● 黑色 (Black): 已扫描状态，已访问且引用已遍历                  │   │</span><br><span class="line">│  └─────────────────────────────────────────────────────────────────┘   │</span><br><span class="line">│                                                                         │</span><br><span class="line">│  回收流程:                                                               │</span><br><span class="line">│                                                                         │</span><br><span class="line">│  1. 初始阶段                                                             │</span><br><span class="line">│     └── 遍历 root 节点引用的对象，从白色置为灰色                          │</span><br><span class="line">│                                                                         │</span><br><span class="line">│  2. 标记阶段                                                             │</span><br><span class="line">│     └── 从灰色链表取对象 → 标记为黑色 → 遍历其引用                        │</span><br><span class="line">│         └── 白色引用 → 标记为灰色，加入灰色链表                           │</span><br><span class="line">│                                                                         │</span><br><span class="line">│  3. 回收阶段                                                             │</span><br><span class="line">│     └── 遍历所有对象                                                     │</span><br><span class="line">│         └── 白色对象 → 回收（未被引用）                                  │</span><br><span class="line">│         └── 其他颜色 → 重置为白色，等待下一轮 GC                          │</span><br><span class="line">│                                                                         │</span><br><span class="line">│  双白色优化:                                                             │</span><br><span class="line">│  └── 白色分为&quot;当前白色&quot;和&quot;非当前白色&quot;，交替使用                          │</span><br><span class="line">│      └── 避免标记阶段后新创建的对象被误回收                              │</span><br><span class="line">│                                                                         │</span><br><span class="line">└─────────────────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-GC-控制函数"><a href="#6-3-GC-控制函数" class="headerlink" title="6.3 GC 控制函数"></a>6.3 GC 控制函数</h3><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">collectgarbage</span>(<span class="string">&quot;opt&quot;</span> [, <span class="built_in">arg</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 选项:</span></span><br><span class="line"><span class="comment">-- &quot;stop&quot;:      停止垃圾收集器</span></span><br><span class="line"><span class="comment">-- &quot;restart&quot;:   重启垃圾收集器</span></span><br><span class="line"><span class="comment">-- &quot;collect&quot;:   执行一次完整的垃圾收集</span></span><br><span class="line"><span class="comment">-- &quot;count&quot;:     返回当前已用内存 (KB)</span></span><br><span class="line"><span class="comment">-- &quot;step&quot;:      执行一步垃圾收集</span></span><br><span class="line"><span class="comment">-- &quot;setpause&quot;:  设置 pause 参数 (百分比)</span></span><br><span class="line"><span class="comment">-- &quot;setstepmul&quot;: 设置 step multiplier (百分比)</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="6-4-弱引用表"><a href="#6-4-弱引用表" class="headerlink" title="6.4 弱引用表"></a>6.4 弱引用表</h3><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 弱引用键</span></span><br><span class="line">weakKeyTable = &#123;&#125;</span><br><span class="line"><span class="built_in">setmetatable</span>(weakKeyTable, &#123;<span class="built_in">__mode</span> = <span class="string">&quot;k&quot;</span>&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 弱引用值</span></span><br><span class="line">weakValueTable = &#123;&#125;</span><br><span class="line"><span class="built_in">setmetatable</span>(weakValueTable, &#123;<span class="built_in">__mode</span> = <span class="string">&quot;v&quot;</span>&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 弱引用键和值</span></span><br><span class="line">weakTable = &#123;&#125;</span><br><span class="line"><span class="built_in">setmetatable</span>(weakTable, &#123;<span class="built_in">__mode</span> = <span class="string">&quot;kv&quot;</span>&#125;)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="七、模块加载流程"><a href="#七、模块加载流程" class="headerlink" title="七、模块加载流程"></a>七、模块加载流程</h2><h3 id="7-1-加载流程图"><a href="#7-1-加载流程图" class="headerlink" title="7.1 加载流程图"></a>7.1 加载流程图</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────────────────────┐</span><br><span class="line">│                         Lua 模块加载流程                                 │</span><br><span class="line">├─────────────────────────────────────────────────────────────────────────┤</span><br><span class="line">│                                                                         │</span><br><span class="line">│  require(&quot;module.name&quot;)                                                 │</span><br><span class="line">│        │                                                                │</span><br><span class="line">│        ▼                                                                │</span><br><span class="line">│  ┌─────────────────┐                                                   │</span><br><span class="line">│  │ 1. 检查缓存     │                                                   │</span><br><span class="line">│  │ package.loaded  │ ───Yes──&gt; 返回缓存的模块                           │</span><br><span class="line">│  └────────┬────────┘                                                   │</span><br><span class="line">│           │ No (未加载)                                                 │</span><br><span class="line">│           ▼                                                             │</span><br><span class="line">│  ┌─────────────────┐                                                   │</span><br><span class="line">│  │ 2. 搜索文件     │                                                   │</span><br><span class="line">│  │ package.path    │                                                   │</span><br><span class="line">│  └────────┬────────┘                                                   │</span><br><span class="line">│           │                                                             │</span><br><span class="line">│           ▼                                                             │</span><br><span class="line">│  ┌─────────────────┐                                                   │</span><br><span class="line">│  │ 3. 依次尝试 Loader│                                                  │</span><br><span class="line">│  │                  │                                                   │</span><br><span class="line">│  │ ┌─────────────┐ │                                                   │</span><br><span class="line">│  │ │ preload     │ │ → package.preload                               │</span><br><span class="line">│  │ ├─────────────┤ │                                                   │</span><br><span class="line">│  │ │ Lua loader  │ │ → loadfile(&quot;.lua&quot;)                              │</span><br><span class="line">│  │ ├─────────────┤ │                                                   │</span><br><span class="line">│  │ │ C loader    │ │ → package.cpath + loadlib                        │</span><br><span class="line">│  │ ├─────────────┤ │                                                   │</span><br><span class="line">│  │ │ Croot       │ │ → 全局符号查找                                   │</span><br><span class="line">│  │ └─────────────┘ │                                                   │</span><br><span class="line">│  └────────┬────────┘                                                   │</span><br><span class="line">│           │                                                             │</span><br><span class="line">│           ▼                                                             │</span><br><span class="line">│  ┌─────────────────┐                                                   │</span><br><span class="line">│  │ 4. 缓存结果     │                                                   │</span><br><span class="line">│  │ package.loaded  │ &lt;── 存入缓存，下次直接返回                         │</span><br><span class="line">│  └────────┬────────┘                                                   │</span><br><span class="line">│           │                                                             │</span><br><span class="line">│           ▼                                                             │</span><br><span class="line">│      返回模块                                                           │</span><br><span class="line">│                                                                         │</span><br><span class="line">└─────────────────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-热更新实现"><a href="#7-2-热更新实现" class="headerlink" title="7.2 热更新实现"></a>7.2 热更新实现</h3><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 方式一：将模块置空</span></span><br><span class="line"><span class="built_in">package</span>.<span class="built_in">loaded</span>[<span class="string">&quot;module_name&quot;</span>] = <span class="literal">nil</span></span><br><span class="line"><span class="built_in">require</span>(<span class="string">&quot;module_name&quot;</span>)  <span class="comment">-- 重新加载</span></span><br><span class="line"></span><br><span class="line"><span class="comment">-- 方式二：直接删除</span></span><br><span class="line"><span class="built_in">package</span>.<span class="built_in">loaded</span>[<span class="string">&quot;module_name&quot;</span>] = <span class="literal">nil</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>⚠️ <strong>注意</strong>：正在使用的代码无法被回收，只有未使用的模块才能安全重载。</p>
+</blockquote>
+<hr>
+<h2 id="八、Lua-与-C-互操作"><a href="#八、Lua-与-C-互操作" class="headerlink" title="八、Lua 与 C 互操作"></a>八、Lua 与 C 互操作</h2><h3 id="8-1-虚拟栈"><a href="#8-1-虚拟栈" class="headerlink" title="8.1 虚拟栈"></a>8.1 虚拟栈</h3><p>Lua 使用虚拟栈与 C 互传值：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────────────────────┐</span><br><span class="line">│                         Lua 虚拟栈结构                                   │</span><br><span class="line">├─────────────────────────────────────────────────────────────────────────┤</span><br><span class="line">│                                                                         │</span><br><span class="line">│  Lua 调用 C 函数:                                                        │</span><br><span class="line">│                                                                         │</span><br><span class="line">│  ┌─────────────────────────────────────────────────────────────────┐   │</span><br><span class="line">│  │  栈顶 (Top)                                                        │   │</span><br><span class="line">│  │  ┌─────┐                                                          │   │</span><br><span class="line">│  │  │ argN│  ← 第 N 个参数                                           │   │</span><br><span class="line">│  │  ├─────┤                                                          │   │</span><br><span class="line">│  │  │ ... │                                                         │   │</span><br><span class="line">│  │  ├─────┤                                                          │   │</span><br><span class="line">│  │  │ arg2│  ← 第 2 个参数                                           │   │</span><br><span class="line">│  │  ├─────┤                                                          │   │</span><br><span class="line">│  │  │ arg1│  ← 第 1 个参数 (索引 1)                                  │   │</span><br><span class="line">│  │  ├─────┤                                                          │   │</span><br><span class="line">│  │  │ ... │  ← 其他 Lua 值                                           │   │</span><br><span class="line">│  │  └─────┘                                                          │   │</span><br><span class="line">│  │  栈底                                                            │   │</span><br><span class="line">│  └─────────────────────────────────────────────────────────────────┘   │</span><br><span class="line">│                                                                         │</span><br><span class="line">│  C 函数签名:                                                             │</span><br><span class="line">│  typedef int (*lua_CFunction) (lua_State *L);                            │</span><br><span class="line">│                                                                         │</span><br><span class="line">└─────────────────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-2-C-函数示例"><a href="#8-2-C-函数示例" class="headerlink" title="8.2 C 函数示例"></a>8.2 C 函数示例</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 返回多个值的 C 函数</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">foo</span><span class="params">(lua_State *L)</span> &#123;</span><br><span class="line">    <span class="type">int</span> n = lua_gettop(L);        <span class="comment">// 获取参数个数</span></span><br><span class="line">    lua_Number sum = <span class="number">0.0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 遍历参数求和</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!lua_isnumber(L, i)) &#123;</span><br><span class="line">            lua_pushliteral(L, <span class="string">&quot;incorrect argument&quot;</span>);</span><br><span class="line">            lua_error(L);</span><br><span class="line">        &#125;</span><br><span class="line">        sum += lua_tonumber(L, i);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 返回平均值和总和</span></span><br><span class="line">    lua_pushnumber(L, sum / n);      <span class="comment">// 第一个返回值</span></span><br><span class="line">    lua_pushnumber(L, sum);          <span class="comment">// 第二个返回值</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">2</span>;                        <span class="comment">// 返回值个数</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="九、LuaJIT-扩展"><a href="#九、LuaJIT-扩展" class="headerlink" title="九、LuaJIT 扩展"></a>九、LuaJIT 扩展</h2><h3 id="9-1-FFI-Foreign-Function-Interface"><a href="#9-1-FFI-Foreign-Function-Interface" class="headerlink" title="9.1 FFI (Foreign Function Interface)"></a>9.1 FFI (Foreign Function Interface)</h3><p>FFI 允许 Lua 直接调用 C 函数：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> ffi = <span class="built_in">require</span>(<span class="string">&quot;ffi&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 定义 C 结构和函数</span></span><br><span class="line">ffi.cdef<span class="string">[[</span></span><br><span class="line"><span class="string">    typedef struct &#123; int x, y; &#125; point_t;</span></span><br><span class="line"><span class="string">    int printf(const char *fmt, ...);</span></span><br><span class="line"><span class="string">]]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">-- 使用 C 函数</span></span><br><span class="line">ffi.C.printf(<span class="string">&quot;Hello %s!\n&quot;</span>, <span class="string">&quot;world&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 创建 C 数据结构</span></span><br><span class="line"><span class="keyword">local</span> p = ffi.new(<span class="string">&quot;point_t&quot;</span>, <span class="number">10</span>, <span class="number">20</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-2-LuaJIT-优化建议"><a href="#9-2-LuaJIT-优化建议" class="headerlink" title="9.2 LuaJIT 优化建议"></a>9.2 LuaJIT 优化建议</h3><table>
+<thead>
+<tr>
+<th>建议</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>使用局部变量</td>
+<td>缓存全局变量&#x2F;函数，性能提升约 30%</td>
+</tr>
+<tr>
+<td>避免频繁创建临时表</td>
+<td>复用表对象</td>
+</tr>
+<tr>
+<td>使用 FFI</td>
+<td>高频计算用 C 实现</td>
+</tr>
+<tr>
+<td>使用 table.concat</td>
+<td>代替 <code>..</code> 拼接字符串</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="十、最佳实践"><a href="#十、最佳实践" class="headerlink" title="十、最佳实践"></a>十、最佳实践</h2><h3 id="10-1-性能优化"><a href="#10-1-性能优化" class="headerlink" title="10.1 性能优化"></a>10.1 性能优化</h3><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- ❌ 不推荐：频繁使用全局变量</span></span><br><span class="line"><span class="keyword">for</span> i = <span class="number">1</span>, <span class="number">10000</span> <span class="keyword">do</span></span><br><span class="line">    <span class="built_in">math</span>.<span class="built_in">sqrt</span>(i)</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">-- ✅ 推荐：缓存到局部变量</span></span><br><span class="line"><span class="keyword">local</span> <span class="built_in">sqrt</span> = <span class="built_in">math</span>.<span class="built_in">sqrt</span></span><br><span class="line"><span class="keyword">for</span> i = <span class="number">1</span>, <span class="number">10000</span> <span class="keyword">do</span></span><br><span class="line">    <span class="built_in">sqrt</span>(i)</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="10-2-字符串拼接"><a href="#10-2-字符串拼接" class="headerlink" title="10.2 字符串拼接"></a>10.2 字符串拼接</h3><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- ❌ 不推荐：使用 .. 拼接大量字符串</span></span><br><span class="line"><span class="keyword">local</span> result = <span class="string">&quot;&quot;</span></span><br><span class="line"><span class="keyword">for</span> i = <span class="number">1</span>, <span class="number">1000</span> <span class="keyword">do</span></span><br><span class="line">    result = result .. <span class="built_in">tostring</span>(i)  <span class="comment">-- 每次都创建新字符串</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">-- ✅ 推荐：使用 table.concat</span></span><br><span class="line"><span class="keyword">local</span> parts = &#123;&#125;</span><br><span class="line"><span class="keyword">for</span> i = <span class="number">1</span>, <span class="number">1000</span> <span class="keyword">do</span></span><br><span class="line">    parts[i] = <span class="built_in">tostring</span>(i)</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"><span class="keyword">local</span> result = <span class="built_in">table</span>.<span class="built_in">concat</span>(parts)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<blockquote>
+<p>💡 <strong>学习建议</strong>：</p>
+<ul>
+<li>使用 <code>luac -l -l</code> 分析字节码，理解 Lua 执行流程</li>
+<li>重点理解 <code>lvm.c</code> 中的虚拟机执行函数 <code>luaV_execute</code></li>
+<li>深入学习 GC 算法，理解三色标记的实现</li>
+<li>实践热更新机制，理解模块加载流程</li>
+</ul>
+</blockquote>
+<hr>
+<p><strong>转载请注明来源</strong>，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 <a href="mailto:&#49;&#52;&#x38;&#x37;&#x38;&#52;&#50;&#49;&#49;&#48;&#64;&#x71;&#113;&#x2e;&#x63;&#111;&#x6d;">&#49;&#52;&#x38;&#x37;&#x38;&#52;&#50;&#49;&#49;&#48;&#64;&#x71;&#113;&#x2e;&#x63;&#111;&#x6d;</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><div class="post-copyright__author_img"><img class="post-copyright__author_img_front" src="/img/logo.png"></div><div class="post-copyright__author_name">xinzhuzi</div><div class="post-copyright__author_desc">记录技术与生活</div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">新诸子</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Lua/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>Lua<span class="tagsPageCount">5</span></span></a><a class="post-meta__tags" href="/tags/LuaJIT/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>LuaJIT<span class="tagsPageCount">2</span></span></a><a class="post-meta__tags" href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>虚拟机<span class="tagsPageCount">2</span></span></a><a class="post-meta__tags" href="/tags/GC/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>GC<span class="tagsPageCount">4</span></span></a><a class="post-meta__tags" href="/tags/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>源码阅读<span class="tagsPageCount">1</span></span></a><a class="post-meta__tags" href="/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>脚本语言<span class="tagsPageCount">1</span></span></a></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/05/08/AI%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/2020-05-08-AI,%E8%A1%8C%E4%B8%BA%E6%A0%91,FSM/"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Unity 游戏 AI 核心术语详解 - 行为树与状态机</div></div></a></div><div class="next-post pull-right"><a href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Tolua%20C#%20Lua%20%E4%BA%A4%E4%BA%92/"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">ToLua C# 与 Lua 交互详解 - 虚拟机架构与调用链路</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><div class="top-group"><div class="sayhi" id="sayhi" onclick="sco.changeWittyWord()"></div></div></div><div class="avatar"><img alt="头像" src="/img/logo.png"></div><div class="description"></div><div class="bottom-group"><span class="left"><div class="name">xinzhuzi</div><div class="desc">只有迎风，风筝才能飞得更高。</div></span><div class="social-icons is-center"></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude fas fa-bars"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Lua-%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97-%E4%BB%8E%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%88%B0%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6"><span class="toc-text">Lua 源码阅读完全指南 - 从虚拟机到垃圾回收</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF"><span class="toc-text">一、学习路线</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%8E%A8%E8%8D%90%E4%B9%A6%E7%B1%8D"><span class="toc-text">1.1 推荐书籍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%BA%90"><span class="toc-text">1.2 学习资源</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%BA%90%E7%A0%81%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="toc-text">二、源码文件结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%B8%E5%BF%83%E6%96%87%E4%BB%B6"><span class="toc-text">2.1 虚拟机核心文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%86%85%E5%B5%8C%E5%BA%93%E6%96%87%E4%BB%B6"><span class="toc-text">2.2 内嵌库文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E7%BC%96%E8%AF%91%E5%99%A8%E4%B8%8E%E8%A7%A3%E9%87%8A%E5%99%A8"><span class="toc-text">2.3 编译器与解释器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%8E%9F%E7%90%86"><span class="toc-text">三、虚拟机原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%B1%BB%E5%9E%8B%E5%AF%B9%E6%AF%94"><span class="toc-text">3.1 虚拟机类型对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Lua-%E6%8C%87%E4%BB%A4%E6%A0%BC%E5%BC%8F"><span class="toc-text">3.2 Lua 指令格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%9F%A5%E7%9C%8B%E5%AD%97%E8%8A%82%E7%A0%81"><span class="toc-text">3.3 查看字节码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%B1%BB%E5%9E%8B%E7%B3%BB%E7%BB%9F"><span class="toc-text">四、类型系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%9F%BA%E6%9C%AC%E7%B1%BB%E5%9E%8B"><span class="toc-text">4.1 基本类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Table-%E7%B1%BB%E5%9E%8B%E8%AF%A6%E8%A7%A3"><span class="toc-text">4.2 Table 类型详解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%85%83%E8%A1%A8%E4%B8%8E%E5%85%83%E6%96%B9%E6%B3%95"><span class="toc-text">五、元表与元方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%85%83%E8%A1%A8%E6%93%8D%E4%BD%9C"><span class="toc-text">5.1 元表操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E5%85%83%E6%96%B9%E6%B3%95%E5%AE%8C%E6%95%B4%E5%88%97%E8%A1%A8"><span class="toc-text">5.2 元方法完整列表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-index-%E6%9F%A5%E6%89%BE%E6%B5%81%E7%A8%8B"><span class="toc-text">5.3 __index 查找流程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6"><span class="toc-text">六、垃圾回收机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-GC-%E7%AE%97%E6%B3%95%E6%BC%94%E8%BF%9B"><span class="toc-text">6.1 GC 算法演进</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E7%AE%97%E6%B3%95"><span class="toc-text">6.2 三色标记算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-GC-%E6%8E%A7%E5%88%B6%E5%87%BD%E6%95%B0"><span class="toc-text">6.3 GC 控制函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E5%BC%B1%E5%BC%95%E7%94%A8%E8%A1%A8"><span class="toc-text">6.4 弱引用表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%A8%A1%E5%9D%97%E5%8A%A0%E8%BD%BD%E6%B5%81%E7%A8%8B"><span class="toc-text">七、模块加载流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E5%8A%A0%E8%BD%BD%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="toc-text">7.1 加载流程图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E7%83%AD%E6%9B%B4%E6%96%B0%E5%AE%9E%E7%8E%B0"><span class="toc-text">7.2 热更新实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81Lua-%E4%B8%8E-C-%E4%BA%92%E6%93%8D%E4%BD%9C"><span class="toc-text">八、Lua 与 C 互操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E8%99%9A%E6%8B%9F%E6%A0%88"><span class="toc-text">8.1 虚拟栈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-C-%E5%87%BD%E6%95%B0%E7%A4%BA%E4%BE%8B"><span class="toc-text">8.2 C 函数示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81LuaJIT-%E6%89%A9%E5%B1%95"><span class="toc-text">九、LuaJIT 扩展</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-FFI-Foreign-Function-Interface"><span class="toc-text">9.1 FFI (Foreign Function Interface)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-LuaJIT-%E4%BC%98%E5%8C%96%E5%BB%BA%E8%AE%AE"><span class="toc-text">9.2 LuaJIT 优化建议</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-text">十、最佳实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><span class="toc-text">10.1 性能优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%8B%BC%E6%8E%A5"><span class="toc-text">10.2 字符串拼接</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude fas fa-map"></i><span>最近发布</span></div><div class="aside-list"><a class="aside-list-item" href="/2025/01/13/%E5%B0%8F%E8%AF%B4/2025-01-13-%E9%81%93%E5%8A%AB/" title="道劫"><div class="content"><span class="title" href="/2025/01/13/%E5%B0%8F%E8%AF%B4/2025-01-13-%E9%81%93%E5%8A%AB/" title="道劫">道劫</span><span class="categories" href="/2025/01/13/%E5%B0%8F%E8%AF%B4/2025-01-13-%E9%81%93%E5%8A%AB/">千年志*道劫</span></div></a><a class="aside-list-item" href="/2025/01/13/%E6%B8%B8%E6%88%8F/2025-01-13-%E6%B8%B8%E6%88%8F%E5%8D%B3%E5%B0%86%E5%8F%91%E5%94%AE/" title="游戏即将发售"><div class="content"><span class="title" href="/2025/01/13/%E6%B8%B8%E6%88%8F/2025-01-13-%E6%B8%B8%E6%88%8F%E5%8D%B3%E5%B0%86%E5%8F%91%E5%94%AE/" title="游戏即将发售">游戏即将发售</span><span class="categories" href="/2025/01/13/%E6%B8%B8%E6%88%8F/2025-01-13-%E6%B8%B8%E6%88%8F%E5%8D%B3%E5%B0%86%E5%8F%91%E5%94%AE/">千年志*道劫</span></div></a><a class="aside-list-item" href="/2020/05/08/AI%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/2020-05-08-AI,%E8%A1%8C%E4%B8%BA%E6%A0%91,FSM/" title="Unity 游戏 AI 核心术语详解 - 行为树与状态机"><div class="content"><span class="title" href="/2020/05/08/AI%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/2020-05-08-AI,%E8%A1%8C%E4%B8%BA%E6%A0%91,FSM/" title="Unity 游戏 AI 核心术语详解 - 行为树与状态机">Unity 游戏 AI 核心术语详解 - 行为树与状态机</span><span class="categories" href="/2020/05/08/AI%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/2020-05-08-AI,%E8%A1%8C%E4%B8%BA%E6%A0%91,FSM/">技术文章</span></div></a><a class="aside-list-item" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Lua%20%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" title="Lua 源码阅读完全指南 - 从虚拟机到垃圾回收"><div class="content"><span class="title" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Lua%20%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" title="Lua 源码阅读完全指南 - 从虚拟机到垃圾回收">Lua 源码阅读完全指南 - 从虚拟机到垃圾回收</span><span class="categories" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Lua%20%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">技术文章</span></div></a><a class="aside-list-item" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Tolua%20C#%20Lua%20%E4%BA%A4%E4%BA%92/" title="ToLua C# 与 Lua 交互详解 - 虚拟机架构与调用链路"><div class="content"><span class="title" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Tolua%20C#%20Lua%20%E4%BA%A4%E4%BA%92/" title="ToLua C# 与 Lua 交互详解 - 虚拟机架构与调用链路">ToLua C# 与 Lua 交互详解 - 虚拟机架构与调用链路</span><span class="categories" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Tolua%20C#%20Lua%20%E4%BA%A4%E4%BA%92/">技术文章</span></div></a></div></div></div></div></main><footer id="footer"><!-- +footerDeals()  // 社交图标已移至footerBar中--><div id="st-footer"></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2023 - 2026 By<a class="footer-bar-link" href="/" title="xinzhuzi">xinzhuzi</a></div><div class="beian-group"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://hexo.io/" title="框架：Hexo">框架：Hexo</a><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com/everfu/hexo-theme-solitude" title="主题：Solitude">主题：Solitude</a></div></div><div class="footer-bar-right"><div id="footer_social_icons"><a class="social_icon social-QQ群" target="_blank" rel="noopener" href="https://qm.qq.com/cgi-bin/qm/qr?k=xxx&amp;jump_from=webapi" title="QQ群"><i class="solitude  fab fa-qq"></i></a><a class="social_icon social-QQ" href="tencent://message/?uin=1487842110&amp;Site=&amp;Menu=yes" title="QQ"><i class="solitude  fab fa-qq"></i></a><div class="wechat-wrapper"><a class="social_icon social-WeChat" href="javascript:void(0);" title="WeChat"><i class="solitude  fab fa-weixin"></i></a><img class="wechat-qr-code" src="/images/wechat-qr.jpg" alt="微信二维码"></div><a class="social_icon social-Bilibili" target="_blank" rel="noopener" href="https://space.bilibili.com/451180511" title="Bilibili"><i class="solitude  fab fa-bilibili"></i></a><a class="social_icon social-Douyin" target="_blank" rel="noopener" href="https://v.douyin.com/yN7I0458nxU/" title="Douyin"><i class="solitude  fab fa-tiktok"></i></a></div></div></div></div><div class="comment-barrage needEndHide"></div></footer></div><div><!-- Critical scripts loaded synchronously--><script src="/js/utils.js?v=3.0.21"></script><script src="/js/main.js?v=3.0.21"></script><!-- Non-critical scripts loaded asynchronously--><script async src="/js/third_party/waterfall.min.js?v=3.0.21"></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><!-- Feature-specific scripts loaded asynchronously--><script defer src="/js/tw_cn.js?v=3.0.21"></script><!-- UI enhancement scripts--><script defer src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><!-- Music player scripts--><!-- Cover color processing scripts--><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+utils.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+</script><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!-- Search functionality--><!-- Right menu functionality--><script src="/js/custom_category.js"></script><div class="js-pjax"></div></div><!-- pjax--><script>let pjax = null;
+
+function initPjax() {
+    if (typeof Pjax === 'undefined') {
+        console.warn('Pjax is not loaded yet, retrying...');
+        setTimeout(initPjax, 100);
+        return;
+    }
+
+    pjax = new Pjax({
+        elements: 'a:not([target="_blank"])',
+        selectors: ["title","#body-wrap","#site-config","meta[name=\"description\"]",".js-pjax","meta[property^=\"og:\"]","#config-diff",".rs_show",".rs_hide"],
+        cacheBust: false,
+        analytics: false,
+        scrollRestoration: false
+    })
+
+    // 将 pjax 实例挂载到全局
+    window.pjax = pjax;
+
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+        const newScript = document.createElement('script')
+        const content = item.text || item.textContent || item.innerHTML || ""
+        Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+        newScript.appendChild(document.createTextNode(content))
+        item.parentNode.replaceChild(newScript, item)
+    })
+
+    document.addEventListener('pjax:complete', () => {
+        window.refreshFn()
+
+        document.querySelectorAll('script[data-pjax]').forEach(item => {
+            const newScript = document.createElement('script')
+            const content = item.text || item.textContent || item.innerHTML || ""
+            Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+            newScript.appendChild(document.createTextNode(content))
+            item.parentNode.replaceChild(newScript, item)
+        })
+
+        GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+    })
+
+    document.addEventListener('pjax:error', (e) => {
+        if (e.request.status === 404) {
+            pjax.loadUrl('/404.html')
+        }
+    })
+}
+
+// 初始化 Pjax
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPjax);
+} else {
+    initPjax();
+}</script><!-- google adsense--></body></html>
+        <script>
+            const posts = ["2025/01/13/小说/2025-01-13-道劫/","2025/01/13/游戏/2025-01-13-游戏即将发售/","2020/05/08/AI游戏设计/2020-05-08-AI,行为树,FSM/","2020/05/08/Lua热更新/2020-05-08-Lua 源码阅读/","2020/05/08/Lua热更新/2020-05-08-Tolua C# Lua 交互/","2020/05/08/Lua热更新/2020-05-08-ToLua C-C++ C# 交互/","2020/05/08/Lua热更新/2020-05-08-Tolua 介绍/","2020/05/08/Lua热更新/2020-05-08-Tolua C-C++ Lua 交互/","2020/05/08/工具使用/2020-05-08-Hexo 的简单操作/","2020/05/08/工具使用/2020-05-08-博客搭建以及编写/","2020/05/08/工具使用/2020-05-08-好用的插件软件/","2020/05/08/工具使用/2020-05-08-破解 TeamViewer/","2020/05/08/工具使用/2020-05-08-科学上网/","2020/05/08/其他/2020-05-08-MD 格式/","2020/05/08/其他/2020-05-08-诗词随笔/","2020/05/08/其他/2020-05-08-共产党宣言/","2020/05/08/Unity/2020-05-08-1 Canvas/","2020/05/08/Unity/2020-05-08-1 介绍UnityEditor/","2020/05/08/Unity/2020-05-08-10 Screenshot/","2020/05/08/Unity/2020-05-08-11 Handles/","2020/05/08/Unity/2020-05-08-12 Gizmos/","2020/05/08/Unity/2020-05-08-13 简单Node/","2020/05/08/Unity/2020-05-08-14 NodeEditor/","2020/05/08/Unity/2020-05-08-14 FlatNode/","2020/05/08/Unity/2020-05-08-2 UnityEditor常用属性/","2020/05/08/Unity/2020-05-08-3 数据交互/","2020/05/08/Unity/2020-05-08-5 EditorWindow/","2020/05/08/Unity/2020-05-08-4 EditorGUI/","2020/05/08/Unity/2020-05-08-6 MenuItem/","2020/05/08/Unity/2020-05-08-7 CustomEditor_PropertyDrawer/","2020/05/08/Unity/2020-05-08-8 EditorGUILayout/","2020/05/08/Unity/2020-05-08-9 EditorWindow案例1/","2020/05/08/Unity/2020-05-08-AssetBundle 全解析/","2020/05/08/Unity/2020-05-08-AssetBundle 打包策略/","2020/05/08/Unity/2020-05-08-Unity AndroidStudio工具检测优化/","2020/05/08/Unity/2020-05-08-Unity  浮点数精度/","2020/05/08/Unity/2020-05-08-Unity GC/","2020/05/08/Unity/2020-05-08-Unity CPU优化/","2020/05/08/Unity/2020-05-08-Unity GPU优化/","2020/05/08/Unity/2020-05-08-Unity NGUI-UGUI优化/","2020/05/08/Unity/2020-05-08-Unity NGUI/","2020/05/08/Unity/2020-05-08-Unity OverDraw优化/","2020/05/08/Unity/2020-05-08-Unity UI优化/","2020/05/08/Unity/2020-05-08-Unity UGUI优化/","2020/05/08/Unity/2020-05-08-Unity UWA工具检测优化/","2020/05/08/Unity/2020-05-08-Unity Xcode工具检测优化/","2020/05/08/Unity/2020-05-08-Unity 优化总纲/","2020/05/08/Unity/2020-05-08-Unity 代码编写规范/","2020/05/08/Unity/2020-05-08-Unity 优化 1/","2020/05/08/Unity/2020-05-08-Unity 内存优化/","2020/05/08/Unity/2020-05-08-Unity 渲染优化/","2020/05/08/Unity/2020-05-08-Unity 网络优化/","2020/05/08/Unity/2020-05-08-Unity-OcclusionCulling-Occlusion Culling/","2020/05/08/Unity/2020-05-08-Unity-Optimize-XCode/","2020/05/08/Unity/2020-05-08-Unity 资源优化/","2020/05/08/Unity/2020-05-08-Unity3D工程阅读方法,直捣黄龙篇/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第一章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第七章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第三章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第九章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第五章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第二章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第八章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第六章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十一章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十二章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第四章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十章/","2020/05/08/Unity/2020-05-08-Unity后工业化流程/","2020/05/08/Unity/2020-05-08-Unity后工业化流程1/","2020/05/08/Unity/2020-05-08-Unity后工业化流程2/","2020/05/08/Unity/2020-05-08-Unity工具UPR/","2020/05/08/Unity/2020-05-08-Unity工具UWA/","2020/05/08/Unity/2020-05-08-Unity工具使用/","2020/05/08/Unity/2020-05-08-Unity编辑器中Stats窗口详解/","2020/05/08/Unity/2020-05-08-各个平台的路径/","2020/05/08/Unity/2020-05-08-图片与字符串互转/","2020/05/08/Unity/2020-05-08-在 Unity 下使用 VSCode 配置/","2020/05/08/Unity/2020-05-08-渲染基本流程/","2020/05/08/编程基础/2020-05-08-C#与C-C++的交互/","2020/05/08/编程基础/2020-05-08-学习算法大纲/","2020/05/08/编程基础/2020-05-08-C-C++指针详解/","2020/05/08/编程基础/2020-05-08-C基础案例/","2020/05/08/编程基础/2020-05-08-程序员需要掌握的英文单词/","2020/05/08/编程基础/2020-05-08-正则表达式/","2020/05/08/网络编程/2020-05-08-BestHttp介绍2/","2020/05/08/网络编程/2020-05-08-BestHttp介绍1/","2020/05/08/网络编程/2020-05-08-Net-net/","2020/05/08/网络编程/2020-05-08-Protobuf-Lua-Python/","2020/05/08/网络编程/2020-05-08-帧同步/","2020/05/08/网络编程/2020-05-08-网络部分/"];
+            function toRandomPost() {
+                const randomPost = posts[Math.floor(Math.random() * posts.length)];
+                pjax.loadUrl(GLOBAL_CONFIG.root + randomPost);
+            }
+        </script>
