@@ -9,6 +9,8 @@ on:
 
 jobs:
   build-and-deploy:
+    # 防止循环：只在非 bot 提交时触发
+    if: github.event.pusher.name != 'github-actions[bot]'
     runs-on: ubuntu-latest
 
     steps:
@@ -17,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: master
-          submodules: true  # 如果有子模块
+          submodules: true
 
       # 2. 设置 Node.js 环境
       - name: Setup Node.js
@@ -51,8 +53,8 @@ jobs:
       # 6. 复制生成的文件到根目录
       - name: Copy generated files
         run: |
-          # 清理旧的静态文件（保留 src 和 .git）
-          find . -maxdepth 1 -type f -name "*.html" -delete
+          # 清理旧的静态文件（保留 src、.git 和 .github）
+          find . -maxdepth 1 -type f \( -name "*.html" -o -name "*.htm" \) -delete
           find . -maxdepth 1 -type d ! -name ".*" ! -name "src" ! -name "." -exec rm -rf {} + 2>/dev/null || true
 
           # 复制新生成的静态文件
@@ -68,4 +70,6 @@ jobs:
           force_orphan: false
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: 'Auto deploy blog ${{ github.event.head_commit.message }}'
+          commit_message: 'Auto deploy: ${{ github.event.head_commit.message }}'
+          # 跳过 CI 防止循环
+          skip_ci: true
