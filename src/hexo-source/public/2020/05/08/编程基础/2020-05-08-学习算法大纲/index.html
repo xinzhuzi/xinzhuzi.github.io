@@ -1,0 +1,563 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>程序员必掌握的算法与数据结构：从入门到精通的学习路线 | 新诸子</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/img/pwa/favicon.png"><link rel="stylesheet" href="/css/index.css?v=3.0.21"><link rel="canonical" href="https://xinzhuzi.github.io/2020/05/08/%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/2020-05-08-%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95%E5%A4%A7%E7%BA%B2/index.html"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><!-- Feature-specific CSS--><!-- aplayer--><!-- swiper--><!-- fancybox ui--><!-- katex--><!-- Open Graph--><meta name="description" content="📚 程序员必掌握的算法与数据结构：从入门到精通的学习路线 💡 算法学习的价值： 如何系统性地学习算法和数据结构？ 面试中常考的算法有哪些？ 从入门到精通的学习路径是什么？ 如何高效准备算法面试？ 完整学习路线！覆盖所有必备算法和数据结构，助你成为算法高手！ 🎯 学习目标核心能力 能"><!-- pwa--><meta name="apple-mobile-web-app-capable" content="新诸子"><meta name="theme-color" content="var(--efu-main)"><meta name="apple-mobile-web-app-status-bar-style" content="var(--efu-main)"><link rel="bookmark" href="/img/pwa/favicon.png"><link rel="apple-touch-icon" href="/img/pwa/favicon.png" sizes="180x180"><script>console.log(' %c Solitude %c ' + '3.0.21' + ' %c https://github.com/everfu/hexo-theme-solitude',
+    'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+    'background:#ff9a9a ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff',
+    'background:unset ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff')
+</script><script>(()=>{
+        const saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        };
+        window.utils = {
+            saveToLocal: saveToLocal,
+            getCSS: (url, id = false) => new Promise((resolve, reject) => {
+              const link = document.createElement('link')
+              link.rel = 'stylesheet'
+              link.href = url
+              if (id) link.id = id
+              link.onerror = reject
+              link.onload = link.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+              }
+              document.head.appendChild(link)
+            }),
+            getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+              const script = document.createElement('script')
+              script.src = url
+              script.async = true
+              script.onerror = reject
+              script.onload = script.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+              }
+
+              Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+              })
+
+              document.head.appendChild(script)
+            }),
+            addGlobalFn: (key, fn, name = false, parent = window) => {
+                const globalFn = parent.globalFn || {}
+                const keyObj = globalFn[key] || {}
+
+                if (name && keyObj[name]) return
+
+                name = name || Object.keys(keyObj).length
+                keyObj[name] = fn
+                globalFn[key] = keyObj
+                parent.globalFn = globalFn
+            },
+            addEventListenerPjax: (ele, event, fn, option = false) => {
+              ele.addEventListener(event, fn, option)
+              utils.addGlobalFn('pjax', () => {
+                  ele.removeEventListener(event, fn, option)
+              })
+            },
+            diffDateFormat: (selector) => {
+                selector.forEach(item => {
+                    const date = new Date(item.getAttribute('datetime') || item.textContent);
+                    item.textContent = (date.getMonth() + 1).toString()+'/'+date.getDate().toString();
+                });
+            },
+        }
+    })()</script><!-- theme--><script>initTheme = () => {
+    let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const cachedMode = utils.saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+    typeof rm === 'object' && rm.mode(cachedMode === 'dark' && isDarkMode)
+}
+initTheme()</script><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2023-04-20 00:00:00',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.avif'
+    },
+    copyright: false,
+    highlight: {"limit":200,"expand":true,"copy":true,"syntax":"highlight.js"},
+    randomlink: false,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"day":" 天","f12":"开发者模式已打开，请遵循GPL协议。","totalk":"无需删除空行，直接输入评论即可"},
+    aside: {
+        state: {
+            morning: "✨ 早上好，新的一天开始了",
+            noon: "🍲 午餐时间",
+            afternoon: "🌞 下午好",
+            night: "早点休息",
+            goodnight: "晚安 😴",
+        },
+        witty_words: [],
+        witty_comment: {
+            prefix: '好久不见，',
+            back: '欢迎再次回来，',
+        },
+    },
+    covercolor: {
+        enable: false
+    },
+    comment: false,
+    lightbox: 'null',
+    right_menu: false,
+    translate: {"translateDelay":0,"defaultEncoding":2},
+    lure: false,
+    expire: false,
+};</script><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: '',
+    toc: true,
+    comment: false,
+    ai_text: false,
+    color: false,
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body id="body"><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude fas fa-xmark"></i></div><div class="console-card-group"><div class="console-card-group-right"><div class="console-card tags" onclick="sco.hideConsole()"><div class="card-content"><div class="author-content-item-tips">标签</div><div class="author-content-item-title">寻找感兴趣的领域</div></div><div class="card-tag-cloud"><a href="/tags/GitHub-Actions/">GitHub Actions<sup>1</sup></a><a href="/tags/Hexo/">Hexo<sup>3</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/">自动部署<sup>1</sup></a><a href="/tags/Unity/">Unity<sup>66</sup></a><a href="/tags/AI/">AI<sup>1</sup></a><a href="/tags/%E8%A1%8C%E4%B8%BA%E6%A0%91/">行为树<sup>1</sup></a><a href="/tags/%E7%8A%B6%E6%80%81%E6%9C%BA/">状态机<sup>1</sup></a><a href="/tags/FSM/">FSM<sup>1</sup></a><a href="/tags/BT/">BT<sup>1</sup></a><a href="/tags/GOAP/">GOAP<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/">游戏设计<sup>1</sup></a><a href="/tags/Lua/">Lua<sup>5</sup></a><a href="/tags/LuaJIT/">LuaJIT<sup>2</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/">虚拟机<sup>2</sup></a><a href="/tags/GC/">GC<sup>4</sup></a><a href="/tags/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">源码阅读<sup>1</sup></a><a href="/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80/">脚本语言<sup>1</sup></a><a href="/tags/ToLua/">ToLua<sup>4</sup></a><a href="/tags/C/">C#<sup>3</sup></a><a href="/tags/%E4%BA%A4%E4%BA%92/">交互<sup>3</sup></a><a href="/tags/CLR/">CLR<sup>1</sup></a><a href="/tags/IL2CPP/">IL2CPP<sup>3</sup></a><a href="/tags/C/">C++<sup>3</sup></a><a href="/tags/P-Invoke/">P/Invoke<sup>1</sup></a><a href="/tags/%E4%BA%92%E6%93%8D%E4%BD%9C/">互操作<sup>1</sup></a><a href="/tags/DllImport/">DllImport<sup>1</sup></a><a href="/tags/Marshal/">Marshal<sup>1</sup></a><a href="/tags/C/">C<sup>3</sup></a><a href="/tags/API/">API<sup>1</sup></a><a href="/tags/%E6%A0%88/">栈<sup>1</sup></a><a href="/tags/tolua/">tolua<sup>1</sup></a><a href="/tags/%E7%83%AD%E6%9B%B4%E6%96%B0/">热更新<sup>3</sup></a><a href="/tags/%E8%B7%A8%E8%AF%AD%E8%A8%80%E4%BA%A4%E4%BA%92/">跨语言交互<sup>1</sup></a><a href="/tags/CMD/">CMD<sup>1</sup></a><a href="/tags/Windows/">Windows<sup>1</sup></a><a href="/tags/%E5%91%BD%E4%BB%A4%E8%A1%8C/">命令行<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%91%BD%E4%BB%A4/">网络命令<sup>1</sup></a><a href="/tags/%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86/">系统管理<sup>1</sup></a><a href="/tags/%E5%85%AC%E5%91%8A/">公告<sup>1</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/">博客<sup>2</sup></a><a href="/tags/%E9%9D%99%E6%80%81%E7%AB%99%E7%82%B9%E7%94%9F%E6%88%90%E5%99%A8/">静态站点生成器<sup>1</sup></a><a href="/tags/Node-js/">Node.js<sup>1</sup></a><a href="/tags/Git/">Git<sup>1</sup></a><a href="/tags/Mac/">Mac<sup>2</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具<sup>1</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E8%BD%AF%E4%BB%B6/">效率软件<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/">游戏开发<sup>1</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E9%93%BE/">工具链<sup>1</sup></a><a href="/tags/GitHub-Pages/">GitHub Pages<sup>1</sup></a><a href="/tags/Markdown/">Markdown<sup>1</sup></a><a href="/tags/%E5%86%99%E4%BD%9C/">写作<sup>1</sup></a><a href="/tags/VSCode/">VSCode<sup>2</sup></a><a href="/tags/VPN/">VPN<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%B7%A5%E5%85%B7/">网络工具<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E8%B5%84%E6%BA%90/">开发资源<sup>1</sup></a><a href="/tags/Google/">Google<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0/">技术学习<sup>1</sup></a><a href="/tags/GitHub%E5%8A%A0%E9%80%9F/">GitHub加速<sup>1</sup></a><a href="/tags/BestHTTP/">BestHTTP<sup>2</sup></a><a href="/tags/HTTP/">HTTP<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82/">网络请求<sup>1</sup></a><a href="/tags/%E6%8F%92%E4%BB%B6/">插件<sup>1</sup></a><a href="/tags/WebSocket/">WebSocket<sup>1</sup></a><a href="/tags/Socket-IO/">Socket.IO<sup>1</sup></a><a href="/tags/SignalR/">SignalR<sup>1</sup></a><a href="/tags/SSE/">SSE<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%97%B6%E9%80%9A%E4%BF%A1/">实时通信<sup>1</sup></a><a href="/tags/Protobuf/">Protobuf<sup>1</sup></a><a href="/tags/Python/">Python<sup>2</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/">网络通信<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%8F%E5%88%97%E5%8C%96/">数据序列化<sup>1</sup></a><a href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0/">跨平台<sup>1</sup></a><a href="/tags/%E5%B8%A7%E5%90%8C%E6%AD%A5/">帧同步<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%90%8C%E6%AD%A5/">网络同步<sup>1</sup></a><a href="/tags/%E5%A4%9A%E4%BA%BA%E6%B8%B8%E6%88%8F/">多人游戏<sup>1</sup></a><a href="/tags/%E5%AE%9A%E7%82%B9%E6%95%B0/">定点数<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%90%8C%E6%AD%A5/">游戏同步<sup>1</sup></a><a href="/tags/%E5%BC%B1%E7%BD%91%E4%BC%98%E5%8C%96/">弱网优化<sup>1</sup></a><a href="/tags/UGUI/">UGUI<sup>15</sup></a><a href="/tags/Canvas/">Canvas<sup>4</sup></a><a href="/tags/UI%E4%BC%98%E5%8C%96/">UI优化<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化<sup>16</sup></a><a href="/tags/RectTransform/">RectTransform<sup>2</sup></a><a href="/tags/UnityEditor/">UnityEditor<sup>12</sup></a><a href="/tags/%E7%BC%96%E8%BE%91%E5%99%A8%E6%89%A9%E5%B1%95/">编辑器扩展<sup>11</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91/">工具开发<sup>3</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E6%8F%90%E5%8D%87/">效率提升<sup>1</sup></a><a href="/tags/EditorWindow/">EditorWindow<sup>4</sup></a><a href="/tags/RenderTexture/">RenderTexture<sup>1</sup></a><a href="/tags/%E6%88%AA%E5%9B%BE%E5%B7%A5%E5%85%B7/">截图工具<sup>1</sup></a><a href="/tags/Handles/">Handles<sup>1</sup></a><a href="/tags/OnSceneGUI/">OnSceneGUI<sup>1</sup></a><a href="/tags/%E5%9C%BA%E6%99%AF%E8%A7%86%E5%9B%BE/">场景视图<sup>2</sup></a><a href="/tags/Gizmos/">Gizmos<sup>1</sup></a><a href="/tags/OnDrawGizmos/">OnDrawGizmos<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95%E5%B7%A5%E5%85%B7/">调试工具<sup>1</sup></a><a href="/tags/%E8%8A%82%E7%82%B9%E7%BC%96%E8%BE%91%E5%99%A8/">节点编辑器<sup>1</sup></a><a href="/tags/GraphView/">GraphView<sup>1</sup></a><a href="/tags/%E5%8F%AF%E8%A7%86%E5%8C%96%E7%BC%96%E7%A8%8B/">可视化编程<sup>1</sup></a><a href="/tags/%E6%8A%80%E8%83%BD%E7%BC%96%E8%BE%91%E5%99%A8/">技能编辑器<sup>1</sup></a><a href="/tags/FlatBuffers/">FlatBuffers<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BC%93%E5%AD%98/">数据缓存<sup>1</sup></a><a href="/tags/GamePlay/">GamePlay<sup>1</sup></a><a href="/tags/ScriptableObject/">ScriptableObject<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/">数据存储<sup>1</sup></a><a href="/tags/JSON/">JSON<sup>1</sup></a><a href="/tags/PropertyAttribute/">PropertyAttribute<sup>1</sup></a><a href="/tags/%E6%A3%80%E8%A7%86%E9%9D%A2%E6%9D%BF/">检视面板<sup>1</sup></a><a href="/tags/EditorGUI/">EditorGUI<sup>1</sup></a><a href="/tags/GUI%E6%8E%A7%E4%BB%B6/">GUI控件<sup>1</sup></a><a href="/tags/%E7%95%8C%E9%9D%A2%E8%AE%BE%E8%AE%A1/">界面设计<sup>2</sup></a><a href="/tags/%E7%AA%97%E5%8F%A3%E5%BC%80%E5%8F%91/">窗口开发<sup>1</sup></a><a href="/tags/MenuItem/">MenuItem<sup>1</sup></a><a href="/tags/%E8%8F%9C%E5%8D%95%E5%BC%80%E5%8F%91/">菜单开发<sup>1</sup></a><a href="/tags/%E5%BF%AB%E6%8D%B7%E9%94%AE/">快捷键<sup>1</sup></a><a href="/tags/CustomEditor/">CustomEditor<sup>1</sup></a><a href="/tags/PropertyDrawer/">PropertyDrawer<sup>1</sup></a><a href="/tags/Inspector/">Inspector<sup>1</sup></a><a href="/tags/EditorGUILayout/">EditorGUILayout<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E6%8E%A7%E4%BB%B6/">布局控件<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%88%98%E6%A1%88%E4%BE%8B/">实战案例<sup>2</sup></a><a href="/tags/AssetBundle/">AssetBundle<sup>5</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/">资源管理<sup>3</sup></a><a href="/tags/%E6%89%93%E5%8C%85%E7%AD%96%E7%95%A5/">打包策略<sup>3</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">内存管理<sup>4</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E5%88%86%E6%9E%90/">依赖分析<sup>1</sup></a><a href="/tags/%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96/">加载优化<sup>2</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E7%AE%A1%E7%90%86/">依赖管理<sup>1</sup></a><a href="/tags/%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">最佳实践<sup>2</sup></a><a href="/tags/%E6%B5%AE%E7%82%B9%E6%95%B0/">浮点数<sup>1</sup></a><a href="/tags/%E7%B2%BE%E5%BA%A6/">精度<sup>1</sup></a><a href="/tags/Transform/">Transform<sup>1</sup></a><a href="/tags/%E5%9D%90%E6%A0%87%E7%B3%BB%E7%BB%9F/">坐标系统<sup>1</sup></a><a href="/tags/%E7%9B%B8%E6%9C%BA/">相机<sup>1</sup></a><a href="/tags/Z-Buffer/">Z-Buffer<sup>1</sup></a><a href="/tags/%E4%BC%98%E5%8C%96/">优化<sup>3</sup></a><a href="/tags/Android/">Android<sup>2</sup></a><a href="/tags/Android-Studio/">Android Studio<sup>2</sup></a><a href="/tags/Profiler/">Profiler<sup>7</sup></a><a href="/tags/ADB/">ADB<sup>2</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90/">性能分析<sup>4</sup></a><a href="/tags/CPU%E4%BC%98%E5%8C%96/">CPU优化<sup>2</sup></a><a href="/tags/%E6%80%A7%E8%83%BD/">性能<sup>4</sup></a><a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程<sup>1</sup></a><a href="/tags/Job-System/">Job System<sup>1</sup></a><a href="/tags/Burst/">Burst<sup>1</sup></a><a href="/tags/%E5%8D%8F%E7%A8%8B/">协程<sup>1</sup></a><a href="/tags/GPU%E4%BC%98%E5%8C%96/">GPU优化<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93/">渲染<sup>1</sup></a><a href="/tags/Shader/">Shader<sup>3</sup></a><a href="/tags/DrawCall/">DrawCall<sup>9</sup></a><a href="/tags/Batch/">Batch<sup>1</sup></a><a href="/tags/OverDraw/">OverDraw<sup>5</sup></a><a href="/tags/LOD/">LOD<sup>2</sup></a><a href="/tags/Mobile/">Mobile<sup>1</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/">内存优化<sup>4</sup></a><a href="/tags/Boehm/">Boehm<sup>2</sup></a><a href="/tags/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">对象池<sup>2</sup></a><a href="/tags/Unsafe/">Unsafe<sup>1</sup></a><a href="/tags/NGUI/">NGUI<sup>3</sup></a><a href="/tags/UI%E6%A1%86%E6%9E%B6/">UI框架<sup>1</sup></a><a href="/tags/UIPanel/">UIPanel<sup>1</sup></a><a href="/tags/UIWidget/">UIWidget<sup>1</sup></a><a href="/tags/%E7%A7%BB%E5%8A%A8%E7%AB%AF/">移动端<sup>1</sup></a><a href="/tags/TBR/">TBR<sup>1</sup></a><a href="/tags/%E5%B8%A6%E5%AE%BD%E4%BC%98%E5%8C%96/">带宽优化<sup>2</sup></a><a href="/tags/GPU/">GPU<sup>2</sup></a><a href="/tags/%E5%90%88%E6%89%B9/">合批<sup>1</sup></a><a href="/tags/%E7%BD%91%E6%A0%BC%E9%87%8D%E5%BB%BA/">网格重建<sup>1</sup></a><a href="/tags/HUD%E4%BC%98%E5%8C%96/">HUD优化<sup>1</sup></a><a href="/tags/UWA/">UWA<sup>3</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E8%A7%84%E8%8C%83/">代码规范<sup>1</sup></a><a href="/tags/GC%E4%BC%98%E5%8C%96/">GC优化<sup>1</sup></a><a href="/tags/FPS%E6%A0%87%E5%87%86/">FPS标准<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96/">代码优化<sup>1</sup></a><a href="/tags/MonoBehaviour/">MonoBehaviour<sup>1</sup></a><a href="/tags/%E6%80%BB%E7%BA%B2/">总纲<sup>1</sup></a><a href="/tags/UPR/">UPR<sup>4</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB/">优化体系<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E4%BC%98%E5%8C%96/">渲染优化<sup>4</sup></a><a href="/tags/OverShading/">OverShading<sup>1</sup></a><a href="/tags/Shader%E4%BC%98%E5%8C%96/">Shader优化<sup>1</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E4%BC%98%E5%8C%96/">资源优化<sup>2</sup></a><a href="/tags/%E7%BA%B9%E7%90%86%E4%BC%98%E5%8C%96/">纹理优化<sup>1</sup></a><a href="/tags/%E9%81%AE%E6%8C%A1%E5%89%94%E9%99%A4/">遮挡剔除<sup>2</sup></a><a href="/tags/OcclusionCulling/">OcclusionCulling<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB/">代码阅读<sup>1</sup></a><a href="/tags/%E9%A1%B9%E7%9B%AE%E5%88%86%E6%9E%90/">项目分析<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E7%90%86%E8%A7%A3/">架构理解<sup>1</sup></a><a href="/tags/%E5%B7%A5%E7%A8%8B%E5%85%A5%E9%97%A8/">工程入门<sup>1</sup></a><a href="/tags/TextMeshPro/">TextMeshPro<sup>2</sup></a><a href="/tags/UI%E7%B3%BB%E7%BB%9F/">UI系统<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/">架构设计<sup>1</sup></a><a href="/tags/ScrollRect/">ScrollRect<sup>1</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%BB%9A%E5%8A%A8/">虚拟滚动<sup>1</sup></a><a href="/tags/%E5%88%97%E8%A1%A8%E4%BC%98%E5%8C%96/">列表优化<sup>1</sup></a><a href="/tags/%E9%94%9A%E7%82%B9/">锚点<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E7%B3%BB%E7%BB%9F/">布局系统<sup>1</sup></a><a href="/tags/UI%E9%80%82%E9%85%8D/">UI适配<sup>1</sup></a><a href="/tags/UI%E7%89%B9%E6%95%88/">UI特效<sup>1</sup></a><a href="/tags/%E7%B2%92%E5%AD%90%E7%B3%BB%E7%BB%9F/">粒子系统<sup>1</sup></a><a href="/tags/%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/">视觉效果<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E6%A8%A1%E5%BC%8F/">渲染模式<sup>1</sup></a><a href="/tags/TMP/">TMP<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E6%B8%B2%E6%9F%93/">文本渲染<sup>1</sup></a><a href="/tags/%E5%AD%97%E4%BD%93/">字体<sup>1</sup></a><a href="/tags/%E5%AF%8C%E6%96%87%E6%9C%AC/">富文本<sup>1</sup></a><a href="/tags/Sprite-Atlas/">Sprite Atlas<sup>1</sup></a><a href="/tags/%E5%9B%BE%E9%9B%86/">图集<sup>1</sup></a><a href="/tags/DoTween/">DoTween<sup>1</sup></a><a href="/tags/%E5%8A%A8%E7%94%BB/">动画<sup>1</sup></a><a href="/tags/%E8%BF%87%E6%B8%A1%E6%95%88%E6%9E%9C/">过渡效果<sup>1</sup></a><a href="/tags/UI%E5%8A%A8%E6%95%88/">UI动效<sup>1</sup></a><a href="/tags/UI%E6%9E%B6%E6%9E%84/">UI架构<sup>1</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E5%B7%A5%E5%85%B7/">优化工具<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95/">调试<sup>1</sup></a><a href="/tags/%E5%B1%8F%E5%B9%95%E9%80%82%E9%85%8D/">屏幕适配<sup>1</sup></a><a href="/tags/%E5%A4%9A%E5%88%86%E8%BE%A8%E7%8E%87/">多分辨率<sup>1</sup></a><a href="/tags/Canvas-Scaler/">Canvas Scaler<sup>1</sup></a><a href="/tags/%E9%80%82%E9%85%8D%E7%AD%96%E7%95%A5/">适配策略<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96/">自动化<sup>1</sup></a><a href="/tags/Jenkins/">Jenkins<sup>3</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/">性能测试<sup>1</sup></a><a href="/tags/Airtest/">Airtest<sup>2</sup></a><a href="/tags/CI-CD/">CI/CD<sup>2</sup></a><a href="/tags/%E5%B7%A5%E4%B8%9A%E5%8C%96%E6%B5%81%E7%A8%8B/">工业化流程<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%89%93%E5%8C%85/">自动化打包<sup>1</sup></a><a href="/tags/iOS/">iOS<sup>1</sup></a><a href="/tags/%E6%9E%84%E5%BB%BA/">构建<sup>1</sup></a><a href="/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/">持续集成<sup>1</sup></a><a href="/tags/EventSystem/">EventSystem<sup>1</sup></a><a href="/tags/%E4%BA%8B%E4%BB%B6/">事件<sup>1</sup></a><a href="/tags/UI%E4%BA%8B%E4%BB%B6/">UI事件<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/">自动化测试<sup>1</sup></a><a href="/tags/ARM/">ARM<sup>1</sup></a><a href="/tags/Xcode/">Xcode<sup>1</sup></a><a href="/tags/RenderDoc/">RenderDoc<sup>1</sup></a><a href="/tags/Stats/">Stats<sup>1</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/">性能监控<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%BB%9F%E8%AE%A1/">渲染统计<sup>1</sup></a><a href="/tags/FPS/">FPS<sup>1</sup></a><a href="/tags/Occlusion-Culling/">Occlusion Culling<sup>1</sup></a><a href="/tags/Overdraw/">Overdraw<sup>1</sup></a><a href="/tags/Base64/">Base64<sup>1</sup></a><a href="/tags/%E5%9B%BE%E7%89%87%E7%BC%96%E7%A0%81/">图片编码<sup>1</sup></a><a href="/tags/Texture2D/">Texture2D<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/">开发环境<sup>1</sup></a><a href="/tags/%E9%85%8D%E7%BD%AE/">配置<sup>1</sup></a><a href="/tags/Mono/">Mono<sup>1</sup></a><a href="/tags/NET-Core/">.NET Core<sup>1</sup></a><a href="/tags/%E4%B8%96%E7%95%8C%E8%A7%82/">世界观<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF/">渲染管线<sup>1</sup></a><a href="/tags/%E6%89%B9%E5%A4%84%E7%90%86/">批处理<sup>1</sup></a><a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/">图形学<sup>1</sup></a><a href="/tags/%E6%8C%87%E9%92%88/">指针<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/">编程基础<sup>2</sup></a><a href="/tags/%E7%AE%97%E6%B3%95/">算法<sup>2</sup></a><a href="/tags/%E6%95%B0%E7%BB%84/">数组<sup>1</sup></a><a href="/tags/%E6%8E%92%E5%BA%8F/">排序<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/">编程入门<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<sup>1</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">学习路线<sup>1</sup></a><a href="/tags/%E9%9D%A2%E8%AF%95%E5%87%86%E5%A4%87/">面试准备<sup>2</sup></a><a href="/tags/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式<sup>1</sup></a><a href="/tags/Regex/">Regex<sup>1</sup></a><a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%A4%84%E7%90%86/">字符串处理<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E9%AA%8C%E8%AF%81/">数据验证<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86/">文本处理<sup>1</sup></a><a href="/tags/%E8%8B%B1%E8%AF%AD/">英语<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E8%AF%8D%E6%B1%87/">技术词汇<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E6%9C%AF%E8%AF%AD/">编程术语<sup>1</sup></a><a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<sup>1</sup></a></div></div><div class="console-card history" onclick="sco.hideConsole()"><ul class="card-archive-list"><li class="item"><a href="/archives/2026/01/"><span class="date">2026/01</span><div class="count-group"><span class="count">1</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/2025/01/"><span class="date">2025/01</span><div class="count-group"><span class="count">2</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/2020/05/"><span class="date">2020/05</span><div class="count-group"><span class="count">89</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/"><span class="date">全部文章</span><div class="count-group"><span class="count">92</span><span class="unit">篇</span></div></a></li></ul></div></div></div><div class="button-group"><div class="console-btn-item"><span class="darkmode_switchbutton" onclick="sco.switchDarkMode()" title="昼夜切换"><i class="solitude fas fa-circle-half-stroke"></i></span></div><div class="console-btn-item" id="consoleHideAside"><span class="asideSwitch" onclick="sco.switchHideAside()" title="边栏显示控制"><i class="solitude fas fa-arrows-left-right-to-line"></i></span></div></div><div class="console-mask" onclick="sco.hideConsole()"></div></div><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">92</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">272</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude fas fa-circle-half-stroke"></i><span>显示模式</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/categories/%E5%8D%83%E5%B9%B4%E5%BF%97-%E9%81%93%E5%8A%AB/"><span>千年志*道劫</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/"><span>技术博客</span></a></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-tags"><div class="card-tag-cloud"><a href="/tags/GitHub-Actions/">GitHub Actions<sup>1</sup></a><a href="/tags/Hexo/">Hexo<sup>3</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/">自动部署<sup>1</sup></a><a href="/tags/Unity/">Unity<sup>66</sup></a><a href="/tags/AI/">AI<sup>1</sup></a><a href="/tags/%E8%A1%8C%E4%B8%BA%E6%A0%91/">行为树<sup>1</sup></a><a href="/tags/%E7%8A%B6%E6%80%81%E6%9C%BA/">状态机<sup>1</sup></a><a href="/tags/FSM/">FSM<sup>1</sup></a><a href="/tags/BT/">BT<sup>1</sup></a><a href="/tags/GOAP/">GOAP<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/">游戏设计<sup>1</sup></a><a href="/tags/Lua/">Lua<sup>5</sup></a><a href="/tags/LuaJIT/">LuaJIT<sup>2</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/">虚拟机<sup>2</sup></a><a href="/tags/GC/">GC<sup>4</sup></a><a href="/tags/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">源码阅读<sup>1</sup></a><a href="/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80/">脚本语言<sup>1</sup></a><a href="/tags/ToLua/">ToLua<sup>4</sup></a><a href="/tags/C/">C#<sup>3</sup></a><a href="/tags/%E4%BA%A4%E4%BA%92/">交互<sup>3</sup></a><a href="/tags/CLR/">CLR<sup>1</sup></a><a href="/tags/IL2CPP/">IL2CPP<sup>3</sup></a><a href="/tags/C/">C++<sup>3</sup></a><a href="/tags/P-Invoke/">P/Invoke<sup>1</sup></a><a href="/tags/%E4%BA%92%E6%93%8D%E4%BD%9C/">互操作<sup>1</sup></a><a href="/tags/DllImport/">DllImport<sup>1</sup></a><a href="/tags/Marshal/">Marshal<sup>1</sup></a><a href="/tags/C/">C<sup>3</sup></a><a href="/tags/API/">API<sup>1</sup></a><a href="/tags/%E6%A0%88/">栈<sup>1</sup></a><a href="/tags/tolua/">tolua<sup>1</sup></a><a href="/tags/%E7%83%AD%E6%9B%B4%E6%96%B0/">热更新<sup>3</sup></a><a href="/tags/%E8%B7%A8%E8%AF%AD%E8%A8%80%E4%BA%A4%E4%BA%92/">跨语言交互<sup>1</sup></a><a href="/tags/CMD/">CMD<sup>1</sup></a><a href="/tags/Windows/">Windows<sup>1</sup></a><a href="/tags/%E5%91%BD%E4%BB%A4%E8%A1%8C/">命令行<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%91%BD%E4%BB%A4/">网络命令<sup>1</sup></a><a href="/tags/%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86/">系统管理<sup>1</sup></a><a href="/tags/%E5%85%AC%E5%91%8A/">公告<sup>1</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/">博客<sup>2</sup></a><a href="/tags/%E9%9D%99%E6%80%81%E7%AB%99%E7%82%B9%E7%94%9F%E6%88%90%E5%99%A8/">静态站点生成器<sup>1</sup></a><a href="/tags/Node-js/">Node.js<sup>1</sup></a><a href="/tags/Git/">Git<sup>1</sup></a><a href="/tags/Mac/">Mac<sup>2</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具<sup>1</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E8%BD%AF%E4%BB%B6/">效率软件<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/">游戏开发<sup>1</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E9%93%BE/">工具链<sup>1</sup></a><a href="/tags/GitHub-Pages/">GitHub Pages<sup>1</sup></a><a href="/tags/Markdown/">Markdown<sup>1</sup></a><a href="/tags/%E5%86%99%E4%BD%9C/">写作<sup>1</sup></a><a href="/tags/VSCode/">VSCode<sup>2</sup></a><a href="/tags/VPN/">VPN<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%B7%A5%E5%85%B7/">网络工具<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E8%B5%84%E6%BA%90/">开发资源<sup>1</sup></a><a href="/tags/Google/">Google<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0/">技术学习<sup>1</sup></a><a href="/tags/GitHub%E5%8A%A0%E9%80%9F/">GitHub加速<sup>1</sup></a><a href="/tags/BestHTTP/">BestHTTP<sup>2</sup></a><a href="/tags/HTTP/">HTTP<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82/">网络请求<sup>1</sup></a><a href="/tags/%E6%8F%92%E4%BB%B6/">插件<sup>1</sup></a><a href="/tags/WebSocket/">WebSocket<sup>1</sup></a><a href="/tags/Socket-IO/">Socket.IO<sup>1</sup></a><a href="/tags/SignalR/">SignalR<sup>1</sup></a><a href="/tags/SSE/">SSE<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%97%B6%E9%80%9A%E4%BF%A1/">实时通信<sup>1</sup></a><a href="/tags/Protobuf/">Protobuf<sup>1</sup></a><a href="/tags/Python/">Python<sup>2</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/">网络通信<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%8F%E5%88%97%E5%8C%96/">数据序列化<sup>1</sup></a><a href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0/">跨平台<sup>1</sup></a><a href="/tags/%E5%B8%A7%E5%90%8C%E6%AD%A5/">帧同步<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%90%8C%E6%AD%A5/">网络同步<sup>1</sup></a><a href="/tags/%E5%A4%9A%E4%BA%BA%E6%B8%B8%E6%88%8F/">多人游戏<sup>1</sup></a><a href="/tags/%E5%AE%9A%E7%82%B9%E6%95%B0/">定点数<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%90%8C%E6%AD%A5/">游戏同步<sup>1</sup></a><a href="/tags/%E5%BC%B1%E7%BD%91%E4%BC%98%E5%8C%96/">弱网优化<sup>1</sup></a><a href="/tags/UGUI/">UGUI<sup>15</sup></a><a href="/tags/Canvas/">Canvas<sup>4</sup></a><a href="/tags/UI%E4%BC%98%E5%8C%96/">UI优化<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化<sup>16</sup></a><a href="/tags/RectTransform/">RectTransform<sup>2</sup></a><a href="/tags/UnityEditor/">UnityEditor<sup>12</sup></a><a href="/tags/%E7%BC%96%E8%BE%91%E5%99%A8%E6%89%A9%E5%B1%95/">编辑器扩展<sup>11</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91/">工具开发<sup>3</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E6%8F%90%E5%8D%87/">效率提升<sup>1</sup></a><a href="/tags/EditorWindow/">EditorWindow<sup>4</sup></a><a href="/tags/RenderTexture/">RenderTexture<sup>1</sup></a><a href="/tags/%E6%88%AA%E5%9B%BE%E5%B7%A5%E5%85%B7/">截图工具<sup>1</sup></a><a href="/tags/Handles/">Handles<sup>1</sup></a><a href="/tags/OnSceneGUI/">OnSceneGUI<sup>1</sup></a><a href="/tags/%E5%9C%BA%E6%99%AF%E8%A7%86%E5%9B%BE/">场景视图<sup>2</sup></a><a href="/tags/Gizmos/">Gizmos<sup>1</sup></a><a href="/tags/OnDrawGizmos/">OnDrawGizmos<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95%E5%B7%A5%E5%85%B7/">调试工具<sup>1</sup></a><a href="/tags/%E8%8A%82%E7%82%B9%E7%BC%96%E8%BE%91%E5%99%A8/">节点编辑器<sup>1</sup></a><a href="/tags/GraphView/">GraphView<sup>1</sup></a><a href="/tags/%E5%8F%AF%E8%A7%86%E5%8C%96%E7%BC%96%E7%A8%8B/">可视化编程<sup>1</sup></a><a href="/tags/%E6%8A%80%E8%83%BD%E7%BC%96%E8%BE%91%E5%99%A8/">技能编辑器<sup>1</sup></a><a href="/tags/FlatBuffers/">FlatBuffers<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BC%93%E5%AD%98/">数据缓存<sup>1</sup></a><a href="/tags/GamePlay/">GamePlay<sup>1</sup></a><a href="/tags/ScriptableObject/">ScriptableObject<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/">数据存储<sup>1</sup></a><a href="/tags/JSON/">JSON<sup>1</sup></a><a href="/tags/PropertyAttribute/">PropertyAttribute<sup>1</sup></a><a href="/tags/%E6%A3%80%E8%A7%86%E9%9D%A2%E6%9D%BF/">检视面板<sup>1</sup></a><a href="/tags/EditorGUI/">EditorGUI<sup>1</sup></a><a href="/tags/GUI%E6%8E%A7%E4%BB%B6/">GUI控件<sup>1</sup></a><a href="/tags/%E7%95%8C%E9%9D%A2%E8%AE%BE%E8%AE%A1/">界面设计<sup>2</sup></a><a href="/tags/%E7%AA%97%E5%8F%A3%E5%BC%80%E5%8F%91/">窗口开发<sup>1</sup></a><a href="/tags/MenuItem/">MenuItem<sup>1</sup></a><a href="/tags/%E8%8F%9C%E5%8D%95%E5%BC%80%E5%8F%91/">菜单开发<sup>1</sup></a><a href="/tags/%E5%BF%AB%E6%8D%B7%E9%94%AE/">快捷键<sup>1</sup></a><a href="/tags/CustomEditor/">CustomEditor<sup>1</sup></a><a href="/tags/PropertyDrawer/">PropertyDrawer<sup>1</sup></a><a href="/tags/Inspector/">Inspector<sup>1</sup></a><a href="/tags/EditorGUILayout/">EditorGUILayout<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E6%8E%A7%E4%BB%B6/">布局控件<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%88%98%E6%A1%88%E4%BE%8B/">实战案例<sup>2</sup></a><a href="/tags/AssetBundle/">AssetBundle<sup>5</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/">资源管理<sup>3</sup></a><a href="/tags/%E6%89%93%E5%8C%85%E7%AD%96%E7%95%A5/">打包策略<sup>3</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">内存管理<sup>4</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E5%88%86%E6%9E%90/">依赖分析<sup>1</sup></a><a href="/tags/%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96/">加载优化<sup>2</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E7%AE%A1%E7%90%86/">依赖管理<sup>1</sup></a><a href="/tags/%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">最佳实践<sup>2</sup></a><a href="/tags/%E6%B5%AE%E7%82%B9%E6%95%B0/">浮点数<sup>1</sup></a><a href="/tags/%E7%B2%BE%E5%BA%A6/">精度<sup>1</sup></a><a href="/tags/Transform/">Transform<sup>1</sup></a><a href="/tags/%E5%9D%90%E6%A0%87%E7%B3%BB%E7%BB%9F/">坐标系统<sup>1</sup></a><a href="/tags/%E7%9B%B8%E6%9C%BA/">相机<sup>1</sup></a><a href="/tags/Z-Buffer/">Z-Buffer<sup>1</sup></a><a href="/tags/%E4%BC%98%E5%8C%96/">优化<sup>3</sup></a><a href="/tags/Android/">Android<sup>2</sup></a><a href="/tags/Android-Studio/">Android Studio<sup>2</sup></a><a href="/tags/Profiler/">Profiler<sup>7</sup></a><a href="/tags/ADB/">ADB<sup>2</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90/">性能分析<sup>4</sup></a><a href="/tags/CPU%E4%BC%98%E5%8C%96/">CPU优化<sup>2</sup></a><a href="/tags/%E6%80%A7%E8%83%BD/">性能<sup>4</sup></a><a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程<sup>1</sup></a><a href="/tags/Job-System/">Job System<sup>1</sup></a><a href="/tags/Burst/">Burst<sup>1</sup></a><a href="/tags/%E5%8D%8F%E7%A8%8B/">协程<sup>1</sup></a><a href="/tags/GPU%E4%BC%98%E5%8C%96/">GPU优化<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93/">渲染<sup>1</sup></a><a href="/tags/Shader/">Shader<sup>3</sup></a><a href="/tags/DrawCall/">DrawCall<sup>9</sup></a><a href="/tags/Batch/">Batch<sup>1</sup></a><a href="/tags/OverDraw/">OverDraw<sup>5</sup></a><a href="/tags/LOD/">LOD<sup>2</sup></a><a href="/tags/Mobile/">Mobile<sup>1</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/">内存优化<sup>4</sup></a><a href="/tags/Boehm/">Boehm<sup>2</sup></a><a href="/tags/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">对象池<sup>2</sup></a><a href="/tags/Unsafe/">Unsafe<sup>1</sup></a><a href="/tags/NGUI/">NGUI<sup>3</sup></a><a href="/tags/UI%E6%A1%86%E6%9E%B6/">UI框架<sup>1</sup></a><a href="/tags/UIPanel/">UIPanel<sup>1</sup></a><a href="/tags/UIWidget/">UIWidget<sup>1</sup></a><a href="/tags/%E7%A7%BB%E5%8A%A8%E7%AB%AF/">移动端<sup>1</sup></a><a href="/tags/TBR/">TBR<sup>1</sup></a><a href="/tags/%E5%B8%A6%E5%AE%BD%E4%BC%98%E5%8C%96/">带宽优化<sup>2</sup></a><a href="/tags/GPU/">GPU<sup>2</sup></a><a href="/tags/%E5%90%88%E6%89%B9/">合批<sup>1</sup></a><a href="/tags/%E7%BD%91%E6%A0%BC%E9%87%8D%E5%BB%BA/">网格重建<sup>1</sup></a><a href="/tags/HUD%E4%BC%98%E5%8C%96/">HUD优化<sup>1</sup></a><a href="/tags/UWA/">UWA<sup>3</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E8%A7%84%E8%8C%83/">代码规范<sup>1</sup></a><a href="/tags/GC%E4%BC%98%E5%8C%96/">GC优化<sup>1</sup></a><a href="/tags/FPS%E6%A0%87%E5%87%86/">FPS标准<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96/">代码优化<sup>1</sup></a><a href="/tags/MonoBehaviour/">MonoBehaviour<sup>1</sup></a><a href="/tags/%E6%80%BB%E7%BA%B2/">总纲<sup>1</sup></a><a href="/tags/UPR/">UPR<sup>4</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB/">优化体系<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E4%BC%98%E5%8C%96/">渲染优化<sup>4</sup></a><a href="/tags/OverShading/">OverShading<sup>1</sup></a><a href="/tags/Shader%E4%BC%98%E5%8C%96/">Shader优化<sup>1</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E4%BC%98%E5%8C%96/">资源优化<sup>2</sup></a><a href="/tags/%E7%BA%B9%E7%90%86%E4%BC%98%E5%8C%96/">纹理优化<sup>1</sup></a><a href="/tags/%E9%81%AE%E6%8C%A1%E5%89%94%E9%99%A4/">遮挡剔除<sup>2</sup></a><a href="/tags/OcclusionCulling/">OcclusionCulling<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB/">代码阅读<sup>1</sup></a><a href="/tags/%E9%A1%B9%E7%9B%AE%E5%88%86%E6%9E%90/">项目分析<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E7%90%86%E8%A7%A3/">架构理解<sup>1</sup></a><a href="/tags/%E5%B7%A5%E7%A8%8B%E5%85%A5%E9%97%A8/">工程入门<sup>1</sup></a><a href="/tags/TextMeshPro/">TextMeshPro<sup>2</sup></a><a href="/tags/UI%E7%B3%BB%E7%BB%9F/">UI系统<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/">架构设计<sup>1</sup></a><a href="/tags/ScrollRect/">ScrollRect<sup>1</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%BB%9A%E5%8A%A8/">虚拟滚动<sup>1</sup></a><a href="/tags/%E5%88%97%E8%A1%A8%E4%BC%98%E5%8C%96/">列表优化<sup>1</sup></a><a href="/tags/%E9%94%9A%E7%82%B9/">锚点<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E7%B3%BB%E7%BB%9F/">布局系统<sup>1</sup></a><a href="/tags/UI%E9%80%82%E9%85%8D/">UI适配<sup>1</sup></a><a href="/tags/UI%E7%89%B9%E6%95%88/">UI特效<sup>1</sup></a><a href="/tags/%E7%B2%92%E5%AD%90%E7%B3%BB%E7%BB%9F/">粒子系统<sup>1</sup></a><a href="/tags/%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/">视觉效果<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E6%A8%A1%E5%BC%8F/">渲染模式<sup>1</sup></a><a href="/tags/TMP/">TMP<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E6%B8%B2%E6%9F%93/">文本渲染<sup>1</sup></a><a href="/tags/%E5%AD%97%E4%BD%93/">字体<sup>1</sup></a><a href="/tags/%E5%AF%8C%E6%96%87%E6%9C%AC/">富文本<sup>1</sup></a><a href="/tags/Sprite-Atlas/">Sprite Atlas<sup>1</sup></a><a href="/tags/%E5%9B%BE%E9%9B%86/">图集<sup>1</sup></a><a href="/tags/DoTween/">DoTween<sup>1</sup></a><a href="/tags/%E5%8A%A8%E7%94%BB/">动画<sup>1</sup></a><a href="/tags/%E8%BF%87%E6%B8%A1%E6%95%88%E6%9E%9C/">过渡效果<sup>1</sup></a><a href="/tags/UI%E5%8A%A8%E6%95%88/">UI动效<sup>1</sup></a><a href="/tags/UI%E6%9E%B6%E6%9E%84/">UI架构<sup>1</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E5%B7%A5%E5%85%B7/">优化工具<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95/">调试<sup>1</sup></a><a href="/tags/%E5%B1%8F%E5%B9%95%E9%80%82%E9%85%8D/">屏幕适配<sup>1</sup></a><a href="/tags/%E5%A4%9A%E5%88%86%E8%BE%A8%E7%8E%87/">多分辨率<sup>1</sup></a><a href="/tags/Canvas-Scaler/">Canvas Scaler<sup>1</sup></a><a href="/tags/%E9%80%82%E9%85%8D%E7%AD%96%E7%95%A5/">适配策略<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96/">自动化<sup>1</sup></a><a href="/tags/Jenkins/">Jenkins<sup>3</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/">性能测试<sup>1</sup></a><a href="/tags/Airtest/">Airtest<sup>2</sup></a><a href="/tags/CI-CD/">CI/CD<sup>2</sup></a><a href="/tags/%E5%B7%A5%E4%B8%9A%E5%8C%96%E6%B5%81%E7%A8%8B/">工业化流程<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%89%93%E5%8C%85/">自动化打包<sup>1</sup></a><a href="/tags/iOS/">iOS<sup>1</sup></a><a href="/tags/%E6%9E%84%E5%BB%BA/">构建<sup>1</sup></a><a href="/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/">持续集成<sup>1</sup></a><a href="/tags/EventSystem/">EventSystem<sup>1</sup></a><a href="/tags/%E4%BA%8B%E4%BB%B6/">事件<sup>1</sup></a><a href="/tags/UI%E4%BA%8B%E4%BB%B6/">UI事件<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/">自动化测试<sup>1</sup></a><a href="/tags/ARM/">ARM<sup>1</sup></a><a href="/tags/Xcode/">Xcode<sup>1</sup></a><a href="/tags/RenderDoc/">RenderDoc<sup>1</sup></a><a href="/tags/Stats/">Stats<sup>1</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/">性能监控<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%BB%9F%E8%AE%A1/">渲染统计<sup>1</sup></a><a href="/tags/FPS/">FPS<sup>1</sup></a><a href="/tags/Occlusion-Culling/">Occlusion Culling<sup>1</sup></a><a href="/tags/Overdraw/">Overdraw<sup>1</sup></a><a href="/tags/Base64/">Base64<sup>1</sup></a><a href="/tags/%E5%9B%BE%E7%89%87%E7%BC%96%E7%A0%81/">图片编码<sup>1</sup></a><a href="/tags/Texture2D/">Texture2D<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/">开发环境<sup>1</sup></a><a href="/tags/%E9%85%8D%E7%BD%AE/">配置<sup>1</sup></a><a href="/tags/Mono/">Mono<sup>1</sup></a><a href="/tags/NET-Core/">.NET Core<sup>1</sup></a><a href="/tags/%E4%B8%96%E7%95%8C%E8%A7%82/">世界观<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF/">渲染管线<sup>1</sup></a><a href="/tags/%E6%89%B9%E5%A4%84%E7%90%86/">批处理<sup>1</sup></a><a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/">图形学<sup>1</sup></a><a href="/tags/%E6%8C%87%E9%92%88/">指针<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/">编程基础<sup>2</sup></a><a href="/tags/%E7%AE%97%E6%B3%95/">算法<sup>2</sup></a><a href="/tags/%E6%95%B0%E7%BB%84/">数组<sup>1</sup></a><a href="/tags/%E6%8E%92%E5%BA%8F/">排序<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/">编程入门<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<sup>1</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">学习路线<sup>1</sup></a><a href="/tags/%E9%9D%A2%E8%AF%95%E5%87%86%E5%A4%87/">面试准备<sup>2</sup></a><a href="/tags/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式<sup>1</sup></a><a href="/tags/Regex/">Regex<sup>1</sup></a><a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%A4%84%E7%90%86/">字符串处理<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E9%AA%8C%E8%AF%81/">数据验证<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86/">文本处理<sup>1</sup></a><a href="/tags/%E8%8B%B1%E8%AF%AD/">英语<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E8%AF%8D%E6%B1%87/">技术词汇<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E6%9C%AF%E8%AF%AD/">编程术语<sup>1</sup></a><a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<sup>1</sup></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><a href="/" title="返回博客主页" id="site-name"><span class="title">主页</span><i class="solitude fas fa-home"></i></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">程序员必掌握的算法与数据结构：从入门到精通的学习路线</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/categories/%E5%8D%83%E5%B9%B4%E5%BF%97-%E9%81%93%E5%8A%AB/"><span>千年志*道劫</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/"><span>技术博客</span></a></div></div></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="nav-totop" onclick="sco.toTop()"><a class="totopbtn"><i class="solitude fas fa-arrow-up"></i><span id="percent">0</span></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude fas fa-bars"></i></a></div></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><span class="post-meta-categories"><a class="post-meta-categories" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/">技术文章</a></span><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>编程基础</span></a><a class="post-meta__tags" href="/tags/%E7%AE%97%E6%B3%95/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>算法</span></a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>数据结构</span></a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>学习路线</span></a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95%E5%87%86%E5%A4%87/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>面试准备</span></a></div></div></div></div><h1 class="post-title">程序员必掌握的算法与数据结构：从入门到精通的学习路线</h1><div id="post-meta"><div class="meta-secondline"></div></div></div><div class="post-radius-bottom"></div><article class="post-content article-container"><h1 id="📚-程序员必掌握的算法与数据结构：从入门到精通的学习路线"><a href="#📚-程序员必掌握的算法与数据结构：从入门到精通的学习路线" class="headerlink" title="📚 程序员必掌握的算法与数据结构：从入门到精通的学习路线"></a>📚 程序员必掌握的算法与数据结构：从入门到精通的学习路线</h1><blockquote>
+<p>💡 <strong>算法学习的价值</strong>：</p>
+<ul>
+<li>如何系统性地学习算法和数据结构？</li>
+<li>面试中常考的算法有哪些？</li>
+<li>从入门到精通的学习路径是什么？</li>
+<li>如何高效准备算法面试？</li>
+</ul>
+<p><strong>完整学习路线</strong>！覆盖所有必备算法和数据结构，助你成为算法高手！</p>
+</blockquote>
+<hr>
+<h2 id="🎯-学习目标"><a href="#🎯-学习目标" class="headerlink" title="🎯 学习目标"></a>🎯 学习目标</h2><h3 id="核心能力"><a href="#核心能力" class="headerlink" title="核心能力"></a>核心能力</h3><table>
+<thead>
+<tr>
+<th>能力</th>
+<th>说明</th>
+<th>重要性</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>基础算法</strong></td>
+<td>排序、查找、递归</td>
+<td>⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>数据结构</strong></td>
+<td>数组、链表、树、图</td>
+<td>⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>高级算法</strong></td>
+<td>动态规划、贪心、回溯</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>算法思维</strong></td>
+<td>分治、剪枝、优化</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="📖-基础阶段"><a href="#📖-基础阶段" class="headerlink" title="📖 基础阶段"></a>📖 基础阶段</h2><h3 id="1-数据结构基础"><a href="#1-数据结构基础" class="headerlink" title="1. 数据结构基础"></a>1. 数据结构基础</h3><table>
+<thead>
+<tr>
+<th>数据结构</th>
+<th>难度</th>
+<th>应用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数组</td>
+<td>⭐</td>
+<td>基础存储</td>
+</tr>
+<tr>
+<td>链表</td>
+<td>⭐⭐</td>
+<td>动态数据</td>
+</tr>
+<tr>
+<td>栈</td>
+<td>⭐⭐</td>
+<td>函数调用、表达式求值</td>
+</tr>
+<tr>
+<td>队列</td>
+<td>⭐⭐</td>
+<td>任务调度、BFS</td>
+</tr>
+<tr>
+<td>哈希表</td>
+<td>⭐⭐⭐</td>
+<td>快速查找</td>
+</tr>
+</tbody></table>
+<h3 id="2-基础算法"><a href="#2-基础算法" class="headerlink" title="2. 基础算法"></a>2. 基础算法</h3><table>
+<thead>
+<tr>
+<th>算法类型</th>
+<th>时间复杂度</th>
+<th>必须掌握</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>冒泡排序</td>
+<td>O(n²)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>选择排序</td>
+<td>O(n²)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>插入排序</td>
+<td>O(n²)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>快速排序</td>
+<td>O(n log n)</td>
+<td>✅✅✅</td>
+</tr>
+<tr>
+<td>归并排序</td>
+<td>O(n log n)</td>
+<td>✅✅</td>
+</tr>
+<tr>
+<td>二分查找</td>
+<td>O(log n)</td>
+<td>✅✅✅</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🚀-进阶阶段"><a href="#🚀-进阶阶段" class="headerlink" title="🚀 进阶阶段"></a>🚀 进阶阶段</h2><h3 id="3-树形结构"><a href="#3-树形结构" class="headerlink" title="3. 树形结构"></a>3. 树形结构</h3><table>
+<thead>
+<tr>
+<th>数据结构</th>
+<th>特点</th>
+<th>应用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>二叉树</td>
+<td>基础树结构</td>
+<td>表达式树</td>
+</tr>
+<tr>
+<td>二叉搜索树</td>
+<td>有序存储</td>
+<td>搜索优化</td>
+</tr>
+<tr>
+<td>平衡树 (AVL)</td>
+<td>自平衡</td>
+<td>数据库索引</td>
+</tr>
+<tr>
+<td>红黑树</td>
+<td>高效平衡</td>
+<td>STL map&#x2F;set</td>
+</tr>
+<tr>
+<td>堆</td>
+<td>优先队列</td>
+<td>堆排序、TopK</td>
+</tr>
+<tr>
+<td>字典树 (Trie)</td>
+<td>前缀匹配</td>
+<td>自动补全</td>
+</tr>
+</tbody></table>
+<h3 id="4-图算法"><a href="#4-图算法" class="headerlink" title="4. 图算法"></a>4. 图算法</h3><table>
+<thead>
+<tr>
+<th>算法</th>
+<th>类型</th>
+<th>难度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DFS</td>
+<td>深度优先搜索</td>
+<td>⭐⭐</td>
+</tr>
+<tr>
+<td>BFS</td>
+<td>广度优先搜索</td>
+<td>⭐⭐</td>
+</tr>
+<tr>
+<td>Dijkstra</td>
+<td>最短路径</td>
+<td>⭐⭐⭐</td>
+</tr>
+<tr>
+<td>Floyd-Warshall</td>
+<td>所有点对最短路径</td>
+<td>⭐⭐⭐</td>
+</tr>
+<tr>
+<td>最小生成树</td>
+<td>Prim&#x2F;Kruskal</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="💪-高级阶段"><a href="#💪-高级阶段" class="headerlink" title="💪 高级阶段"></a>💪 高级阶段</h2><h3 id="5-动态规划"><a href="#5-动态规划" class="headerlink" title="5. 动态规划"></a>5. 动态规划</h3><table>
+<thead>
+<tr>
+<th>问题类型</th>
+<th>经典题目</th>
+<th>难度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>线性 DP</td>
+<td>斐波那契、爬楼梯</td>
+<td>⭐⭐</td>
+</tr>
+<tr>
+<td>背包问题</td>
+<td>0-1背包、完全背包</td>
+<td>⭐⭐⭐</td>
+</tr>
+<tr>
+<td>区间 DP</td>
+<td>矩阵连乘</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td>状态压缩 DP</td>
+<td>TSP问题</td>
+<td>⭐⭐⭐⭐⭐</td>
+</tr>
+</tbody></table>
+<h3 id="6-其他高级算法"><a href="#6-其他高级算法" class="headerlink" title="6. 其他高级算法"></a>6. 其他高级算法</h3><table>
+<thead>
+<tr>
+<th>算法类型</th>
+<th>说明</th>
+<th>应用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>贪心算法</td>
+<td>局部最优</td>
+<td>霍夫曼编码</td>
+</tr>
+<tr>
+<td>回溯算法</td>
+<td>搜索+剪枝</td>
+<td>N皇后、数独</td>
+</tr>
+<tr>
+<td>分治算法</td>
+<td>分而治之</td>
+<td>归并排序、快速排序</td>
+</tr>
+<tr>
+<td>字符串匹配</td>
+<td>KMP、BM</td>
+<td>文本搜索</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🎓-学习资源"><a href="#🎓-学习资源" class="headerlink" title="🎓 学习资源"></a>🎓 学习资源</h2><h3 id="推荐资源"><a href="#推荐资源" class="headerlink" title="推荐资源"></a>推荐资源</h3><table>
+<thead>
+<tr>
+<th>资源类型</th>
+<th>名称</th>
+<th>链接</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>知乎回答</strong></td>
+<td>算法学习指南</td>
+<td><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/23148377/answer/863990767">点击查看</a></td>
+</tr>
+<tr>
+<td><strong>经典书籍</strong></td>
+<td>《算法导论》</td>
+<td>-</td>
+</tr>
+<tr>
+<td><strong>经典书籍</strong></td>
+<td>《算法（第4版）》</td>
+<td>-</td>
+</tr>
+<tr>
+<td><strong>在线平台</strong></td>
+<td>LeetCode</td>
+<td>leetcode.com</td>
+</tr>
+<tr>
+<td><strong>在线平台</strong></td>
+<td>牛客网</td>
+<td>nowcoder.com</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="📝-学习路径"><a href="#📝-学习路径" class="headerlink" title="📝 学习路径"></a>📝 学习路径</h2><h3 id="阶段一：基础（1-2个月）"><a href="#阶段一：基础（1-2个月）" class="headerlink" title="阶段一：基础（1-2个月）"></a>阶段一：基础（1-2个月）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">第1周：数组、链表、栈、队列</span><br><span class="line">第2周：哈希表、字符串</span><br><span class="line">第3-4周：基础排序算法</span><br><span class="line">第5-6周：二分查找、递归</span><br><span class="line">第7-8周：树的基础遍历</span><br></pre></td></tr></table></figure>
+
+<h3 id="阶段二：进阶（2-3个月）"><a href="#阶段二：进阶（2-3个月）" class="headerlink" title="阶段二：进阶（2-3个月）"></a>阶段二：进阶（2-3个月）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">第9-10周：二叉搜索树、堆</span><br><span class="line">第11-12周：图的基础（BFS、DFS）</span><br><span class="line">第13-14周：动态规划入门</span><br><span class="line">第15-16周：贪心算法、回溯算法</span><br></pre></td></tr></table></figure>
+
+<h3 id="阶段三：高级（3-4个月）"><a href="#阶段三：高级（3-4个月）" class="headerlink" title="阶段三：高级（3-4个月）"></a>阶段三：高级（3-4个月）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">第17-20周：动态规划进阶</span><br><span class="line">第21-24周：图算法进阶</span><br><span class="line">第25-28周：高级数据结构（线段树、树状数组等）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="💡-学习建议"><a href="#💡-学习建议" class="headerlink" title="💡 学习建议"></a>💡 学习建议</h2><table>
+<thead>
+<tr>
+<th>建议</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>循序渐进</strong></td>
+<td>不要跳跃学习，打好基础</td>
+</tr>
+<tr>
+<td><strong>动手实践</strong></td>
+<td>每个算法都要手写实现</td>
+</tr>
+<tr>
+<td><strong>刷题巩固</strong></td>
+<td>LeetCode 每天刷 1-2 题</td>
+</tr>
+<tr>
+<td><strong>总结归纳</strong></td>
+<td>建立自己的知识体系</td>
+</tr>
+<tr>
+<td><strong>面试准备</strong></td>
+<td>提前 3-6 个月开始准备</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🔥-必刷题目推荐"><a href="#🔥-必刷题目推荐" class="headerlink" title="🔥 必刷题目推荐"></a>🔥 必刷题目推荐</h2><h3 id="入门级（100题）"><a href="#入门级（100题）" class="headerlink" title="入门级（100题）"></a>入门级（100题）</h3><ol>
+<li>两数之和</li>
+<li>反转链表</li>
+<li>合并两个有序链表</li>
+<li>有效括号</li>
+<li>加一</li>
+<li>二叉树的最大深度</li>
+<li>爬楼梯</li>
+<li>斐波那契数</li>
+<li>合并两个有序数组</li>
+<li>环形链表</li>
+</ol>
+<h3 id="进阶级（200题）"><a href="#进阶级（200题）" class="headerlink" title="进阶级（200题）"></a>进阶级（200题）</h3><ol>
+<li>最长无重复子数组</li>
+<li>三数之和</li>
+<li>电话号码的字母组合</li>
+<li>子集</li>
+<li>单词搜索</li>
+<li>课程表</li>
+<li>岛屿数量</li>
+<li>跳跃游戏</li>
+<li>不同路径</li>
+<li>最小路径和</li>
+</ol>
+<hr>
+<p><strong>转载请注明来源</strong>，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 <a href="mailto:&#49;&#52;&#56;&#55;&#x38;&#52;&#50;&#x31;&#49;&#48;&#64;&#x71;&#x71;&#46;&#99;&#111;&#x6d;">&#49;&#52;&#56;&#55;&#x38;&#52;&#50;&#x31;&#49;&#48;&#64;&#x71;&#x71;&#46;&#99;&#111;&#x6d;</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><div class="post-copyright__author_img"><img class="post-copyright__author_img_front" src="/img/logo.png"></div><div class="post-copyright__author_name">xinzhuzi</div><div class="post-copyright__author_desc">记录技术与生活</div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">新诸子</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>编程基础<span class="tagsPageCount">2</span></span></a><a class="post-meta__tags" href="/tags/%E7%AE%97%E6%B3%95/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>算法<span class="tagsPageCount">2</span></span></a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>数据结构<span class="tagsPageCount">1</span></span></a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>学习路线<span class="tagsPageCount">1</span></span></a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95%E5%87%86%E5%A4%87/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>面试准备<span class="tagsPageCount">2</span></span></a></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/05/08/%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/2020-05-08-C%E5%9F%BA%E7%A1%80%E6%A1%88%E4%BE%8B/"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">C 语言基础算法案例 - 从水仙花数到冒泡排序</div></div></a></div><div class="next-post pull-right"><a href="/2020/05/08/%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/2020-05-08-%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">正则表达式完全指南：从入门到精通的实战手册</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><div class="top-group"><div class="sayhi" id="sayhi" onclick="sco.changeWittyWord()"></div></div></div><div class="avatar"><img alt="头像" src="/img/logo.png"></div><div class="description"></div><div class="bottom-group"><span class="left"><div class="name">xinzhuzi</div><div class="desc">只有迎风，风筝才能飞得更高。</div></span><div class="social-icons is-center"></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude fas fa-bars"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%F0%9F%93%9A-%E7%A8%8B%E5%BA%8F%E5%91%98%E5%BF%85%E6%8E%8C%E6%8F%A1%E7%9A%84%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%EF%BC%9A%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%9A%84%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF"><span class="toc-text">📚 程序员必掌握的算法与数据结构：从入门到精通的学习路线</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8E%AF-%E5%AD%A6%E4%B9%A0%E7%9B%AE%E6%A0%87"><span class="toc-text">🎯 学习目标</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E8%83%BD%E5%8A%9B"><span class="toc-text">核心能力</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%96-%E5%9F%BA%E7%A1%80%E9%98%B6%E6%AE%B5"><span class="toc-text">📖 基础阶段</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%9F%BA%E7%A1%80"><span class="toc-text">1. 数据结构基础</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%9F%BA%E7%A1%80%E7%AE%97%E6%B3%95"><span class="toc-text">2. 基础算法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9A%80-%E8%BF%9B%E9%98%B6%E9%98%B6%E6%AE%B5"><span class="toc-text">🚀 进阶阶段</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%A0%91%E5%BD%A2%E7%BB%93%E6%9E%84"><span class="toc-text">3. 树形结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%9B%BE%E7%AE%97%E6%B3%95"><span class="toc-text">4. 图算法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%92%AA-%E9%AB%98%E7%BA%A7%E9%98%B6%E6%AE%B5"><span class="toc-text">💪 高级阶段</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92"><span class="toc-text">5. 动态规划</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E5%85%B6%E4%BB%96%E9%AB%98%E7%BA%A7%E7%AE%97%E6%B3%95"><span class="toc-text">6. 其他高级算法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8E%93-%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%BA%90"><span class="toc-text">🎓 学习资源</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A8%E8%8D%90%E8%B5%84%E6%BA%90"><span class="toc-text">推荐资源</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%9D-%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84"><span class="toc-text">📝 学习路径</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%B8%80%EF%BC%9A%E5%9F%BA%E7%A1%80%EF%BC%881-2%E4%B8%AA%E6%9C%88%EF%BC%89"><span class="toc-text">阶段一：基础（1-2个月）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%BA%8C%EF%BC%9A%E8%BF%9B%E9%98%B6%EF%BC%882-3%E4%B8%AA%E6%9C%88%EF%BC%89"><span class="toc-text">阶段二：进阶（2-3个月）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%B8%89%EF%BC%9A%E9%AB%98%E7%BA%A7%EF%BC%883-4%E4%B8%AA%E6%9C%88%EF%BC%89"><span class="toc-text">阶段三：高级（3-4个月）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%92%A1-%E5%AD%A6%E4%B9%A0%E5%BB%BA%E8%AE%AE"><span class="toc-text">💡 学习建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%A5-%E5%BF%85%E5%88%B7%E9%A2%98%E7%9B%AE%E6%8E%A8%E8%8D%90"><span class="toc-text">🔥 必刷题目推荐</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%A5%E9%97%A8%E7%BA%A7%EF%BC%88100%E9%A2%98%EF%BC%89"><span class="toc-text">入门级（100题）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E9%98%B6%E7%BA%A7%EF%BC%88200%E9%A2%98%EF%BC%89"><span class="toc-text">进阶级（200题）</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude fas fa-map"></i><span>最近发布</span></div><div class="aside-list"><a class="aside-list-item" href="/2026/01/14/test-auto-deploy/" title="🤖 GitHub Actions 自动部署测试"><div class="content"><span class="title" href="/2026/01/14/test-auto-deploy/" title="🤖 GitHub Actions 自动部署测试">🤖 GitHub Actions 自动部署测试</span><span class="categories" href="/2026/01/14/test-auto-deploy/">测试文章</span></div></a><a class="aside-list-item" href="/2025/01/13/%E6%B8%B8%E6%88%8F/2025-01-13-%E6%B8%B8%E6%88%8F%E5%8D%B3%E5%B0%86%E5%8F%91%E5%94%AE/" title="游戏即将发售"><div class="content"><span class="title" href="/2025/01/13/%E6%B8%B8%E6%88%8F/2025-01-13-%E6%B8%B8%E6%88%8F%E5%8D%B3%E5%B0%86%E5%8F%91%E5%94%AE/" title="游戏即将发售">游戏即将发售</span><span class="categories" href="/2025/01/13/%E6%B8%B8%E6%88%8F/2025-01-13-%E6%B8%B8%E6%88%8F%E5%8D%B3%E5%B0%86%E5%8F%91%E5%94%AE/">千年志*道劫</span></div></a><a class="aside-list-item" href="/2025/01/13/%E5%B0%8F%E8%AF%B4/2025-01-13-%E9%81%93%E5%8A%AB/" title="道劫"><div class="content"><span class="title" href="/2025/01/13/%E5%B0%8F%E8%AF%B4/2025-01-13-%E9%81%93%E5%8A%AB/" title="道劫">道劫</span><span class="categories" href="/2025/01/13/%E5%B0%8F%E8%AF%B4/2025-01-13-%E9%81%93%E5%8A%AB/">千年志*道劫</span></div></a><a class="aside-list-item" href="/2020/05/08/AI%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/2020-05-08-AI,%E8%A1%8C%E4%B8%BA%E6%A0%91,FSM/" title="Unity 游戏 AI 核心术语详解 - 行为树与状态机"><div class="content"><span class="title" href="/2020/05/08/AI%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/2020-05-08-AI,%E8%A1%8C%E4%B8%BA%E6%A0%91,FSM/" title="Unity 游戏 AI 核心术语详解 - 行为树与状态机">Unity 游戏 AI 核心术语详解 - 行为树与状态机</span><span class="categories" href="/2020/05/08/AI%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/2020-05-08-AI,%E8%A1%8C%E4%B8%BA%E6%A0%91,FSM/">技术文章</span></div></a><a class="aside-list-item" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Lua%20%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" title="Lua 源码阅读完全指南 - 从虚拟机到垃圾回收"><div class="content"><span class="title" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Lua%20%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" title="Lua 源码阅读完全指南 - 从虚拟机到垃圾回收">Lua 源码阅读完全指南 - 从虚拟机到垃圾回收</span><span class="categories" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Lua%20%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">技术文章</span></div></a></div></div></div></div></main><footer id="footer"><!-- +footerDeals()  // 社交图标已移至footerBar中--><div id="st-footer"></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2023 - 2026 By<a class="footer-bar-link" href="/" title="xinzhuzi">xinzhuzi</a></div><div class="beian-group"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://hexo.io/" title="框架：Hexo">框架：Hexo</a><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com/everfu/hexo-theme-solitude" title="主题：Solitude">主题：Solitude</a></div></div><div class="footer-bar-right"><div id="footer_social_icons"><a class="social_icon social-QQ群" target="_blank" rel="noopener" href="https://qm.qq.com/cgi-bin/qm/qr?k=xxx&amp;jump_from=webapi" title="QQ群"><i class="solitude  fab fa-qq"></i></a><a class="social_icon social-QQ" href="tencent://message/?uin=1487842110&amp;Site=&amp;Menu=yes" title="QQ"><i class="solitude  fab fa-qq"></i></a><div class="wechat-wrapper"><a class="social_icon social-WeChat" href="javascript:void(0);" title="WeChat"><i class="solitude  fab fa-weixin"></i></a><img class="wechat-qr-code" src="/images/wechat-qr.jpg" alt="微信二维码"></div><a class="social_icon social-Bilibili" target="_blank" rel="noopener" href="https://space.bilibili.com/451180511" title="Bilibili"><i class="solitude  fab fa-bilibili"></i></a><a class="social_icon social-Douyin" target="_blank" rel="noopener" href="https://v.douyin.com/yN7I0458nxU/" title="Douyin"><i class="solitude  fab fa-tiktok"></i></a></div></div></div></div><div class="comment-barrage needEndHide"></div></footer></div><div><!-- Critical scripts loaded synchronously--><script src="/js/utils.js?v=3.0.21"></script><script src="/js/main.js?v=3.0.21"></script><!-- Non-critical scripts loaded asynchronously--><script async src="/js/third_party/waterfall.min.js?v=3.0.21"></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><!-- Feature-specific scripts loaded asynchronously--><script defer src="/js/tw_cn.js?v=3.0.21"></script><!-- UI enhancement scripts--><script defer src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><!-- Music player scripts--><!-- Cover color processing scripts--><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+utils.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+</script><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!-- Search functionality--><!-- Right menu functionality--><script src="/js/custom_category.js"></script><div class="js-pjax"></div></div><!-- pjax--><script>let pjax = null;
+
+function initPjax() {
+    if (typeof Pjax === 'undefined') {
+        console.warn('Pjax is not loaded yet, retrying...');
+        setTimeout(initPjax, 100);
+        return;
+    }
+
+    pjax = new Pjax({
+        elements: 'a:not([target="_blank"])',
+        selectors: ["title","#body-wrap","#site-config","meta[name=\"description\"]",".js-pjax","meta[property^=\"og:\"]","#config-diff",".rs_show",".rs_hide"],
+        cacheBust: false,
+        analytics: false,
+        scrollRestoration: false
+    })
+
+    // 将 pjax 实例挂载到全局
+    window.pjax = pjax;
+
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+        const newScript = document.createElement('script')
+        const content = item.text || item.textContent || item.innerHTML || ""
+        Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+        newScript.appendChild(document.createTextNode(content))
+        item.parentNode.replaceChild(newScript, item)
+    })
+
+    document.addEventListener('pjax:complete', () => {
+        window.refreshFn()
+
+        document.querySelectorAll('script[data-pjax]').forEach(item => {
+            const newScript = document.createElement('script')
+            const content = item.text || item.textContent || item.innerHTML || ""
+            Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+            newScript.appendChild(document.createTextNode(content))
+            item.parentNode.replaceChild(newScript, item)
+        })
+
+        GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+    })
+
+    document.addEventListener('pjax:error', (e) => {
+        if (e.request.status === 404) {
+            pjax.loadUrl('/404.html')
+        }
+    })
+}
+
+// 初始化 Pjax
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPjax);
+} else {
+    initPjax();
+}</script><!-- google adsense--></body></html>
+        <script>
+            const posts = ["2026/01/14/test-auto-deploy/","2025/01/13/游戏/2025-01-13-游戏即将发售/","2025/01/13/小说/2025-01-13-道劫/","2020/05/08/AI游戏设计/2020-05-08-AI,行为树,FSM/","2020/05/08/Lua热更新/2020-05-08-Lua 源码阅读/","2020/05/08/Lua热更新/2020-05-08-Tolua C# Lua 交互/","2020/05/08/Lua热更新/2020-05-08-ToLua C-C++ C# 交互/","2020/05/08/Lua热更新/2020-05-08-Tolua C-C++ Lua 交互/","2020/05/08/Lua热更新/2020-05-08-Tolua 介绍/","2020/05/08/其他/2020-05-08-MD 格式/","2020/05/08/其他/2020-05-08-诗词随笔/","2020/05/08/其他/2020-05-08-共产党宣言/","2020/05/08/工具使用/2020-05-08-Hexo 的简单操作/","2020/05/08/工具使用/2020-05-08-好用的插件软件/","2020/05/08/工具使用/2020-05-08-破解 TeamViewer/","2020/05/08/工具使用/2020-05-08-博客搭建以及编写/","2020/05/08/工具使用/2020-05-08-科学上网/","2020/05/08/网络编程/2020-05-08-BestHttp介绍1/","2020/05/08/网络编程/2020-05-08-BestHttp介绍2/","2020/05/08/网络编程/2020-05-08-Protobuf-Lua-Python/","2020/05/08/网络编程/2020-05-08-Net-net/","2020/05/08/网络编程/2020-05-08-帧同步/","2020/05/08/网络编程/2020-05-08-网络部分/","2020/05/08/Unity/2020-05-08-1 Canvas/","2020/05/08/Unity/2020-05-08-1 介绍UnityEditor/","2020/05/08/Unity/2020-05-08-10 Screenshot/","2020/05/08/Unity/2020-05-08-11 Handles/","2020/05/08/Unity/2020-05-08-12 Gizmos/","2020/05/08/Unity/2020-05-08-13 简单Node/","2020/05/08/Unity/2020-05-08-14 FlatNode/","2020/05/08/Unity/2020-05-08-14 NodeEditor/","2020/05/08/Unity/2020-05-08-3 数据交互/","2020/05/08/Unity/2020-05-08-2 UnityEditor常用属性/","2020/05/08/Unity/2020-05-08-4 EditorGUI/","2020/05/08/Unity/2020-05-08-5 EditorWindow/","2020/05/08/Unity/2020-05-08-6 MenuItem/","2020/05/08/Unity/2020-05-08-7 CustomEditor_PropertyDrawer/","2020/05/08/Unity/2020-05-08-8 EditorGUILayout/","2020/05/08/Unity/2020-05-08-9 EditorWindow案例1/","2020/05/08/Unity/2020-05-08-AssetBundle 全解析/","2020/05/08/Unity/2020-05-08-AssetBundle 打包策略/","2020/05/08/Unity/2020-05-08-Unity  浮点数精度/","2020/05/08/Unity/2020-05-08-Unity AndroidStudio工具检测优化/","2020/05/08/Unity/2020-05-08-Unity CPU优化/","2020/05/08/Unity/2020-05-08-Unity GPU优化/","2020/05/08/Unity/2020-05-08-Unity GC/","2020/05/08/Unity/2020-05-08-Unity NGUI-UGUI优化/","2020/05/08/Unity/2020-05-08-Unity NGUI/","2020/05/08/Unity/2020-05-08-Unity OverDraw优化/","2020/05/08/Unity/2020-05-08-Unity UGUI优化/","2020/05/08/Unity/2020-05-08-Unity UI优化/","2020/05/08/Unity/2020-05-08-Unity UWA工具检测优化/","2020/05/08/Unity/2020-05-08-Unity 代码编写规范/","2020/05/08/Unity/2020-05-08-Unity Xcode工具检测优化/","2020/05/08/Unity/2020-05-08-Unity 优化 1/","2020/05/08/Unity/2020-05-08-Unity 优化总纲/","2020/05/08/Unity/2020-05-08-Unity 内存优化/","2020/05/08/Unity/2020-05-08-Unity 网络优化/","2020/05/08/Unity/2020-05-08-Unity 渲染优化/","2020/05/08/Unity/2020-05-08-Unity 资源优化/","2020/05/08/Unity/2020-05-08-Unity-OcclusionCulling-Occlusion Culling/","2020/05/08/Unity/2020-05-08-Unity-Optimize-XCode/","2020/05/08/Unity/2020-05-08-Unity3D工程阅读方法,直捣黄龙篇/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第一章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第七章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第三章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第九章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第二章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第五章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第八章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第六章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十一章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十二章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十章/","2020/05/08/Unity/2020-05-08-Unity后工业化流程/","2020/05/08/Unity/2020-05-08-Unity后工业化流程1/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第四章/","2020/05/08/Unity/2020-05-08-Unity工具UPR/","2020/05/08/Unity/2020-05-08-Unity工具UWA/","2020/05/08/Unity/2020-05-08-Unity后工业化流程2/","2020/05/08/Unity/2020-05-08-Unity工具使用/","2020/05/08/Unity/2020-05-08-Unity编辑器中Stats窗口详解/","2020/05/08/Unity/2020-05-08-各个平台的路径/","2020/05/08/Unity/2020-05-08-图片与字符串互转/","2020/05/08/Unity/2020-05-08-在 Unity 下使用 VSCode 配置/","2020/05/08/Unity/2020-05-08-渲染基本流程/","2020/05/08/编程基础/2020-05-08-C#与C-C++的交互/","2020/05/08/编程基础/2020-05-08-C-C++指针详解/","2020/05/08/编程基础/2020-05-08-C基础案例/","2020/05/08/编程基础/2020-05-08-学习算法大纲/","2020/05/08/编程基础/2020-05-08-正则表达式/","2020/05/08/编程基础/2020-05-08-程序员需要掌握的英文单词/"];
+            function toRandomPost() {
+                const randomPost = posts[Math.floor(Math.random() * posts.length)];
+                pjax.loadUrl(GLOBAL_CONFIG.root + randomPost);
+            }
+        </script>

@@ -1,0 +1,1138 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Unity UWA 性能优化工具完全指南：从分析报告到实战优化 | 新诸子</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/img/pwa/favicon.png"><link rel="stylesheet" href="/css/index.css?v=3.0.21"><link rel="canonical" href="https://xinzhuzi.github.io/2020/05/08/Unity/2020-05-08-Unity%20UWA%E5%B7%A5%E5%85%B7%E6%A3%80%E6%B5%8B%E4%BC%98%E5%8C%96/index.html"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><!-- Feature-specific CSS--><!-- aplayer--><!-- swiper--><!-- fancybox ui--><!-- katex--><!-- Open Graph--><meta name="description" content="🛠️ Unity UWA 性能优化工具完全指南：从分析报告到实战优化 💡 UWA 工具的价值： 不知道如何系统分析性能问题？ UWA 性能报告怎么看？ CPU、内存、资源加载，如何针对性优化？ 想学习专业团队的优化方法？ 这篇文章！ 将全面解析 UWA 性能优化工具，从报告解读到优化策略，让"><!-- pwa--><meta name="apple-mobile-web-app-capable" content="新诸子"><meta name="theme-color" content="var(--efu-main)"><meta name="apple-mobile-web-app-status-bar-style" content="var(--efu-main)"><link rel="bookmark" href="/img/pwa/favicon.png"><link rel="apple-touch-icon" href="/img/pwa/favicon.png" sizes="180x180"><script>console.log(' %c Solitude %c ' + '3.0.21' + ' %c https://github.com/everfu/hexo-theme-solitude',
+    'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+    'background:#ff9a9a ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff',
+    'background:unset ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff')
+</script><script>(()=>{
+        const saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        };
+        window.utils = {
+            saveToLocal: saveToLocal,
+            getCSS: (url, id = false) => new Promise((resolve, reject) => {
+              const link = document.createElement('link')
+              link.rel = 'stylesheet'
+              link.href = url
+              if (id) link.id = id
+              link.onerror = reject
+              link.onload = link.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+              }
+              document.head.appendChild(link)
+            }),
+            getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+              const script = document.createElement('script')
+              script.src = url
+              script.async = true
+              script.onerror = reject
+              script.onload = script.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+              }
+
+              Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+              })
+
+              document.head.appendChild(script)
+            }),
+            addGlobalFn: (key, fn, name = false, parent = window) => {
+                const globalFn = parent.globalFn || {}
+                const keyObj = globalFn[key] || {}
+
+                if (name && keyObj[name]) return
+
+                name = name || Object.keys(keyObj).length
+                keyObj[name] = fn
+                globalFn[key] = keyObj
+                parent.globalFn = globalFn
+            },
+            addEventListenerPjax: (ele, event, fn, option = false) => {
+              ele.addEventListener(event, fn, option)
+              utils.addGlobalFn('pjax', () => {
+                  ele.removeEventListener(event, fn, option)
+              })
+            },
+            diffDateFormat: (selector) => {
+                selector.forEach(item => {
+                    const date = new Date(item.getAttribute('datetime') || item.textContent);
+                    item.textContent = (date.getMonth() + 1).toString()+'/'+date.getDate().toString();
+                });
+            },
+        }
+    })()</script><!-- theme--><script>initTheme = () => {
+    let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const cachedMode = utils.saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+    typeof rm === 'object' && rm.mode(cachedMode === 'dark' && isDarkMode)
+}
+initTheme()</script><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2023-04-20 00:00:00',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.avif'
+    },
+    copyright: false,
+    highlight: {"limit":200,"expand":true,"copy":true,"syntax":"highlight.js"},
+    randomlink: false,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"day":" 天","f12":"开发者模式已打开，请遵循GPL协议。","totalk":"无需删除空行，直接输入评论即可"},
+    aside: {
+        state: {
+            morning: "✨ 早上好，新的一天开始了",
+            noon: "🍲 午餐时间",
+            afternoon: "🌞 下午好",
+            night: "早点休息",
+            goodnight: "晚安 😴",
+        },
+        witty_words: [],
+        witty_comment: {
+            prefix: '好久不见，',
+            back: '欢迎再次回来，',
+        },
+    },
+    covercolor: {
+        enable: false
+    },
+    comment: false,
+    lightbox: 'null',
+    right_menu: false,
+    translate: {"translateDelay":0,"defaultEncoding":2},
+    lure: false,
+    expire: false,
+};</script><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: '',
+    toc: true,
+    comment: false,
+    ai_text: false,
+    color: false,
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body id="body"><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude fas fa-xmark"></i></div><div class="console-card-group"><div class="console-card-group-right"><div class="console-card tags" onclick="sco.hideConsole()"><div class="card-content"><div class="author-content-item-tips">标签</div><div class="author-content-item-title">寻找感兴趣的领域</div></div><div class="card-tag-cloud"><a href="/tags/GitHub-Actions/">GitHub Actions<sup>1</sup></a><a href="/tags/Hexo/">Hexo<sup>3</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/">自动部署<sup>1</sup></a><a href="/tags/Unity/">Unity<sup>66</sup></a><a href="/tags/AI/">AI<sup>1</sup></a><a href="/tags/%E8%A1%8C%E4%B8%BA%E6%A0%91/">行为树<sup>1</sup></a><a href="/tags/%E7%8A%B6%E6%80%81%E6%9C%BA/">状态机<sup>1</sup></a><a href="/tags/FSM/">FSM<sup>1</sup></a><a href="/tags/BT/">BT<sup>1</sup></a><a href="/tags/GOAP/">GOAP<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/">游戏设计<sup>1</sup></a><a href="/tags/Lua/">Lua<sup>5</sup></a><a href="/tags/LuaJIT/">LuaJIT<sup>2</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/">虚拟机<sup>2</sup></a><a href="/tags/GC/">GC<sup>4</sup></a><a href="/tags/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">源码阅读<sup>1</sup></a><a href="/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80/">脚本语言<sup>1</sup></a><a href="/tags/ToLua/">ToLua<sup>4</sup></a><a href="/tags/C/">C#<sup>3</sup></a><a href="/tags/%E4%BA%A4%E4%BA%92/">交互<sup>3</sup></a><a href="/tags/CLR/">CLR<sup>1</sup></a><a href="/tags/IL2CPP/">IL2CPP<sup>3</sup></a><a href="/tags/C/">C++<sup>3</sup></a><a href="/tags/P-Invoke/">P/Invoke<sup>1</sup></a><a href="/tags/%E4%BA%92%E6%93%8D%E4%BD%9C/">互操作<sup>1</sup></a><a href="/tags/DllImport/">DllImport<sup>1</sup></a><a href="/tags/Marshal/">Marshal<sup>1</sup></a><a href="/tags/C/">C<sup>3</sup></a><a href="/tags/API/">API<sup>1</sup></a><a href="/tags/%E6%A0%88/">栈<sup>1</sup></a><a href="/tags/tolua/">tolua<sup>1</sup></a><a href="/tags/%E7%83%AD%E6%9B%B4%E6%96%B0/">热更新<sup>3</sup></a><a href="/tags/%E8%B7%A8%E8%AF%AD%E8%A8%80%E4%BA%A4%E4%BA%92/">跨语言交互<sup>1</sup></a><a href="/tags/CMD/">CMD<sup>1</sup></a><a href="/tags/Windows/">Windows<sup>1</sup></a><a href="/tags/%E5%91%BD%E4%BB%A4%E8%A1%8C/">命令行<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%91%BD%E4%BB%A4/">网络命令<sup>1</sup></a><a href="/tags/%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86/">系统管理<sup>1</sup></a><a href="/tags/%E5%85%AC%E5%91%8A/">公告<sup>1</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/">博客<sup>2</sup></a><a href="/tags/%E9%9D%99%E6%80%81%E7%AB%99%E7%82%B9%E7%94%9F%E6%88%90%E5%99%A8/">静态站点生成器<sup>1</sup></a><a href="/tags/Node-js/">Node.js<sup>1</sup></a><a href="/tags/Git/">Git<sup>1</sup></a><a href="/tags/Mac/">Mac<sup>2</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具<sup>1</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E8%BD%AF%E4%BB%B6/">效率软件<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/">游戏开发<sup>1</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E9%93%BE/">工具链<sup>1</sup></a><a href="/tags/GitHub-Pages/">GitHub Pages<sup>1</sup></a><a href="/tags/Markdown/">Markdown<sup>1</sup></a><a href="/tags/%E5%86%99%E4%BD%9C/">写作<sup>1</sup></a><a href="/tags/VSCode/">VSCode<sup>2</sup></a><a href="/tags/VPN/">VPN<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%B7%A5%E5%85%B7/">网络工具<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E8%B5%84%E6%BA%90/">开发资源<sup>1</sup></a><a href="/tags/Google/">Google<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0/">技术学习<sup>1</sup></a><a href="/tags/GitHub%E5%8A%A0%E9%80%9F/">GitHub加速<sup>1</sup></a><a href="/tags/BestHTTP/">BestHTTP<sup>2</sup></a><a href="/tags/HTTP/">HTTP<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82/">网络请求<sup>1</sup></a><a href="/tags/%E6%8F%92%E4%BB%B6/">插件<sup>1</sup></a><a href="/tags/WebSocket/">WebSocket<sup>1</sup></a><a href="/tags/Socket-IO/">Socket.IO<sup>1</sup></a><a href="/tags/SignalR/">SignalR<sup>1</sup></a><a href="/tags/SSE/">SSE<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%97%B6%E9%80%9A%E4%BF%A1/">实时通信<sup>1</sup></a><a href="/tags/Protobuf/">Protobuf<sup>1</sup></a><a href="/tags/Python/">Python<sup>2</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/">网络通信<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%8F%E5%88%97%E5%8C%96/">数据序列化<sup>1</sup></a><a href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0/">跨平台<sup>1</sup></a><a href="/tags/%E5%B8%A7%E5%90%8C%E6%AD%A5/">帧同步<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%90%8C%E6%AD%A5/">网络同步<sup>1</sup></a><a href="/tags/%E5%A4%9A%E4%BA%BA%E6%B8%B8%E6%88%8F/">多人游戏<sup>1</sup></a><a href="/tags/%E5%AE%9A%E7%82%B9%E6%95%B0/">定点数<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%90%8C%E6%AD%A5/">游戏同步<sup>1</sup></a><a href="/tags/%E5%BC%B1%E7%BD%91%E4%BC%98%E5%8C%96/">弱网优化<sup>1</sup></a><a href="/tags/UGUI/">UGUI<sup>15</sup></a><a href="/tags/Canvas/">Canvas<sup>4</sup></a><a href="/tags/UI%E4%BC%98%E5%8C%96/">UI优化<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化<sup>16</sup></a><a href="/tags/RectTransform/">RectTransform<sup>2</sup></a><a href="/tags/UnityEditor/">UnityEditor<sup>12</sup></a><a href="/tags/%E7%BC%96%E8%BE%91%E5%99%A8%E6%89%A9%E5%B1%95/">编辑器扩展<sup>11</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91/">工具开发<sup>3</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E6%8F%90%E5%8D%87/">效率提升<sup>1</sup></a><a href="/tags/EditorWindow/">EditorWindow<sup>4</sup></a><a href="/tags/RenderTexture/">RenderTexture<sup>1</sup></a><a href="/tags/%E6%88%AA%E5%9B%BE%E5%B7%A5%E5%85%B7/">截图工具<sup>1</sup></a><a href="/tags/Handles/">Handles<sup>1</sup></a><a href="/tags/OnSceneGUI/">OnSceneGUI<sup>1</sup></a><a href="/tags/%E5%9C%BA%E6%99%AF%E8%A7%86%E5%9B%BE/">场景视图<sup>2</sup></a><a href="/tags/Gizmos/">Gizmos<sup>1</sup></a><a href="/tags/OnDrawGizmos/">OnDrawGizmos<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95%E5%B7%A5%E5%85%B7/">调试工具<sup>1</sup></a><a href="/tags/%E8%8A%82%E7%82%B9%E7%BC%96%E8%BE%91%E5%99%A8/">节点编辑器<sup>1</sup></a><a href="/tags/GraphView/">GraphView<sup>1</sup></a><a href="/tags/%E5%8F%AF%E8%A7%86%E5%8C%96%E7%BC%96%E7%A8%8B/">可视化编程<sup>1</sup></a><a href="/tags/%E6%8A%80%E8%83%BD%E7%BC%96%E8%BE%91%E5%99%A8/">技能编辑器<sup>1</sup></a><a href="/tags/FlatBuffers/">FlatBuffers<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BC%93%E5%AD%98/">数据缓存<sup>1</sup></a><a href="/tags/GamePlay/">GamePlay<sup>1</sup></a><a href="/tags/ScriptableObject/">ScriptableObject<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/">数据存储<sup>1</sup></a><a href="/tags/JSON/">JSON<sup>1</sup></a><a href="/tags/PropertyAttribute/">PropertyAttribute<sup>1</sup></a><a href="/tags/%E6%A3%80%E8%A7%86%E9%9D%A2%E6%9D%BF/">检视面板<sup>1</sup></a><a href="/tags/EditorGUI/">EditorGUI<sup>1</sup></a><a href="/tags/GUI%E6%8E%A7%E4%BB%B6/">GUI控件<sup>1</sup></a><a href="/tags/%E7%95%8C%E9%9D%A2%E8%AE%BE%E8%AE%A1/">界面设计<sup>2</sup></a><a href="/tags/%E7%AA%97%E5%8F%A3%E5%BC%80%E5%8F%91/">窗口开发<sup>1</sup></a><a href="/tags/MenuItem/">MenuItem<sup>1</sup></a><a href="/tags/%E8%8F%9C%E5%8D%95%E5%BC%80%E5%8F%91/">菜单开发<sup>1</sup></a><a href="/tags/%E5%BF%AB%E6%8D%B7%E9%94%AE/">快捷键<sup>1</sup></a><a href="/tags/CustomEditor/">CustomEditor<sup>1</sup></a><a href="/tags/PropertyDrawer/">PropertyDrawer<sup>1</sup></a><a href="/tags/Inspector/">Inspector<sup>1</sup></a><a href="/tags/EditorGUILayout/">EditorGUILayout<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E6%8E%A7%E4%BB%B6/">布局控件<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%88%98%E6%A1%88%E4%BE%8B/">实战案例<sup>2</sup></a><a href="/tags/AssetBundle/">AssetBundle<sup>5</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/">资源管理<sup>3</sup></a><a href="/tags/%E6%89%93%E5%8C%85%E7%AD%96%E7%95%A5/">打包策略<sup>3</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">内存管理<sup>4</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E5%88%86%E6%9E%90/">依赖分析<sup>1</sup></a><a href="/tags/%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96/">加载优化<sup>2</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E7%AE%A1%E7%90%86/">依赖管理<sup>1</sup></a><a href="/tags/%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">最佳实践<sup>2</sup></a><a href="/tags/%E6%B5%AE%E7%82%B9%E6%95%B0/">浮点数<sup>1</sup></a><a href="/tags/%E7%B2%BE%E5%BA%A6/">精度<sup>1</sup></a><a href="/tags/Transform/">Transform<sup>1</sup></a><a href="/tags/%E5%9D%90%E6%A0%87%E7%B3%BB%E7%BB%9F/">坐标系统<sup>1</sup></a><a href="/tags/%E7%9B%B8%E6%9C%BA/">相机<sup>1</sup></a><a href="/tags/Z-Buffer/">Z-Buffer<sup>1</sup></a><a href="/tags/%E4%BC%98%E5%8C%96/">优化<sup>3</sup></a><a href="/tags/Android/">Android<sup>2</sup></a><a href="/tags/Android-Studio/">Android Studio<sup>2</sup></a><a href="/tags/Profiler/">Profiler<sup>7</sup></a><a href="/tags/ADB/">ADB<sup>2</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90/">性能分析<sup>4</sup></a><a href="/tags/CPU%E4%BC%98%E5%8C%96/">CPU优化<sup>2</sup></a><a href="/tags/%E6%80%A7%E8%83%BD/">性能<sup>4</sup></a><a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程<sup>1</sup></a><a href="/tags/Job-System/">Job System<sup>1</sup></a><a href="/tags/Burst/">Burst<sup>1</sup></a><a href="/tags/%E5%8D%8F%E7%A8%8B/">协程<sup>1</sup></a><a href="/tags/GPU%E4%BC%98%E5%8C%96/">GPU优化<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93/">渲染<sup>1</sup></a><a href="/tags/Shader/">Shader<sup>3</sup></a><a href="/tags/DrawCall/">DrawCall<sup>9</sup></a><a href="/tags/Batch/">Batch<sup>1</sup></a><a href="/tags/OverDraw/">OverDraw<sup>5</sup></a><a href="/tags/LOD/">LOD<sup>2</sup></a><a href="/tags/Mobile/">Mobile<sup>1</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/">内存优化<sup>4</sup></a><a href="/tags/Boehm/">Boehm<sup>2</sup></a><a href="/tags/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">对象池<sup>2</sup></a><a href="/tags/Unsafe/">Unsafe<sup>1</sup></a><a href="/tags/NGUI/">NGUI<sup>3</sup></a><a href="/tags/UI%E6%A1%86%E6%9E%B6/">UI框架<sup>1</sup></a><a href="/tags/UIPanel/">UIPanel<sup>1</sup></a><a href="/tags/UIWidget/">UIWidget<sup>1</sup></a><a href="/tags/%E7%A7%BB%E5%8A%A8%E7%AB%AF/">移动端<sup>1</sup></a><a href="/tags/TBR/">TBR<sup>1</sup></a><a href="/tags/%E5%B8%A6%E5%AE%BD%E4%BC%98%E5%8C%96/">带宽优化<sup>2</sup></a><a href="/tags/GPU/">GPU<sup>2</sup></a><a href="/tags/%E5%90%88%E6%89%B9/">合批<sup>1</sup></a><a href="/tags/%E7%BD%91%E6%A0%BC%E9%87%8D%E5%BB%BA/">网格重建<sup>1</sup></a><a href="/tags/HUD%E4%BC%98%E5%8C%96/">HUD优化<sup>1</sup></a><a href="/tags/UWA/">UWA<sup>3</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E8%A7%84%E8%8C%83/">代码规范<sup>1</sup></a><a href="/tags/GC%E4%BC%98%E5%8C%96/">GC优化<sup>1</sup></a><a href="/tags/FPS%E6%A0%87%E5%87%86/">FPS标准<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96/">代码优化<sup>1</sup></a><a href="/tags/MonoBehaviour/">MonoBehaviour<sup>1</sup></a><a href="/tags/%E6%80%BB%E7%BA%B2/">总纲<sup>1</sup></a><a href="/tags/UPR/">UPR<sup>4</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB/">优化体系<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E4%BC%98%E5%8C%96/">渲染优化<sup>4</sup></a><a href="/tags/OverShading/">OverShading<sup>1</sup></a><a href="/tags/Shader%E4%BC%98%E5%8C%96/">Shader优化<sup>1</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E4%BC%98%E5%8C%96/">资源优化<sup>2</sup></a><a href="/tags/%E7%BA%B9%E7%90%86%E4%BC%98%E5%8C%96/">纹理优化<sup>1</sup></a><a href="/tags/%E9%81%AE%E6%8C%A1%E5%89%94%E9%99%A4/">遮挡剔除<sup>2</sup></a><a href="/tags/OcclusionCulling/">OcclusionCulling<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB/">代码阅读<sup>1</sup></a><a href="/tags/%E9%A1%B9%E7%9B%AE%E5%88%86%E6%9E%90/">项目分析<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E7%90%86%E8%A7%A3/">架构理解<sup>1</sup></a><a href="/tags/%E5%B7%A5%E7%A8%8B%E5%85%A5%E9%97%A8/">工程入门<sup>1</sup></a><a href="/tags/TextMeshPro/">TextMeshPro<sup>2</sup></a><a href="/tags/UI%E7%B3%BB%E7%BB%9F/">UI系统<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/">架构设计<sup>1</sup></a><a href="/tags/ScrollRect/">ScrollRect<sup>1</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%BB%9A%E5%8A%A8/">虚拟滚动<sup>1</sup></a><a href="/tags/%E5%88%97%E8%A1%A8%E4%BC%98%E5%8C%96/">列表优化<sup>1</sup></a><a href="/tags/%E9%94%9A%E7%82%B9/">锚点<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E7%B3%BB%E7%BB%9F/">布局系统<sup>1</sup></a><a href="/tags/UI%E9%80%82%E9%85%8D/">UI适配<sup>1</sup></a><a href="/tags/UI%E7%89%B9%E6%95%88/">UI特效<sup>1</sup></a><a href="/tags/%E7%B2%92%E5%AD%90%E7%B3%BB%E7%BB%9F/">粒子系统<sup>1</sup></a><a href="/tags/%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/">视觉效果<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E6%A8%A1%E5%BC%8F/">渲染模式<sup>1</sup></a><a href="/tags/TMP/">TMP<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E6%B8%B2%E6%9F%93/">文本渲染<sup>1</sup></a><a href="/tags/%E5%AD%97%E4%BD%93/">字体<sup>1</sup></a><a href="/tags/%E5%AF%8C%E6%96%87%E6%9C%AC/">富文本<sup>1</sup></a><a href="/tags/Sprite-Atlas/">Sprite Atlas<sup>1</sup></a><a href="/tags/%E5%9B%BE%E9%9B%86/">图集<sup>1</sup></a><a href="/tags/DoTween/">DoTween<sup>1</sup></a><a href="/tags/%E5%8A%A8%E7%94%BB/">动画<sup>1</sup></a><a href="/tags/%E8%BF%87%E6%B8%A1%E6%95%88%E6%9E%9C/">过渡效果<sup>1</sup></a><a href="/tags/UI%E5%8A%A8%E6%95%88/">UI动效<sup>1</sup></a><a href="/tags/UI%E6%9E%B6%E6%9E%84/">UI架构<sup>1</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E5%B7%A5%E5%85%B7/">优化工具<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95/">调试<sup>1</sup></a><a href="/tags/%E5%B1%8F%E5%B9%95%E9%80%82%E9%85%8D/">屏幕适配<sup>1</sup></a><a href="/tags/%E5%A4%9A%E5%88%86%E8%BE%A8%E7%8E%87/">多分辨率<sup>1</sup></a><a href="/tags/Canvas-Scaler/">Canvas Scaler<sup>1</sup></a><a href="/tags/%E9%80%82%E9%85%8D%E7%AD%96%E7%95%A5/">适配策略<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96/">自动化<sup>1</sup></a><a href="/tags/Jenkins/">Jenkins<sup>3</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/">性能测试<sup>1</sup></a><a href="/tags/Airtest/">Airtest<sup>2</sup></a><a href="/tags/CI-CD/">CI/CD<sup>2</sup></a><a href="/tags/%E5%B7%A5%E4%B8%9A%E5%8C%96%E6%B5%81%E7%A8%8B/">工业化流程<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%89%93%E5%8C%85/">自动化打包<sup>1</sup></a><a href="/tags/iOS/">iOS<sup>1</sup></a><a href="/tags/%E6%9E%84%E5%BB%BA/">构建<sup>1</sup></a><a href="/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/">持续集成<sup>1</sup></a><a href="/tags/EventSystem/">EventSystem<sup>1</sup></a><a href="/tags/%E4%BA%8B%E4%BB%B6/">事件<sup>1</sup></a><a href="/tags/UI%E4%BA%8B%E4%BB%B6/">UI事件<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/">自动化测试<sup>1</sup></a><a href="/tags/ARM/">ARM<sup>1</sup></a><a href="/tags/Xcode/">Xcode<sup>1</sup></a><a href="/tags/RenderDoc/">RenderDoc<sup>1</sup></a><a href="/tags/Stats/">Stats<sup>1</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/">性能监控<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%BB%9F%E8%AE%A1/">渲染统计<sup>1</sup></a><a href="/tags/FPS/">FPS<sup>1</sup></a><a href="/tags/Occlusion-Culling/">Occlusion Culling<sup>1</sup></a><a href="/tags/Overdraw/">Overdraw<sup>1</sup></a><a href="/tags/Base64/">Base64<sup>1</sup></a><a href="/tags/%E5%9B%BE%E7%89%87%E7%BC%96%E7%A0%81/">图片编码<sup>1</sup></a><a href="/tags/Texture2D/">Texture2D<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/">开发环境<sup>1</sup></a><a href="/tags/%E9%85%8D%E7%BD%AE/">配置<sup>1</sup></a><a href="/tags/Mono/">Mono<sup>1</sup></a><a href="/tags/NET-Core/">.NET Core<sup>1</sup></a><a href="/tags/%E4%B8%96%E7%95%8C%E8%A7%82/">世界观<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF/">渲染管线<sup>1</sup></a><a href="/tags/%E6%89%B9%E5%A4%84%E7%90%86/">批处理<sup>1</sup></a><a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/">图形学<sup>1</sup></a><a href="/tags/%E6%8C%87%E9%92%88/">指针<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/">编程基础<sup>2</sup></a><a href="/tags/%E7%AE%97%E6%B3%95/">算法<sup>2</sup></a><a href="/tags/%E6%95%B0%E7%BB%84/">数组<sup>1</sup></a><a href="/tags/%E6%8E%92%E5%BA%8F/">排序<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/">编程入门<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<sup>1</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">学习路线<sup>1</sup></a><a href="/tags/%E9%9D%A2%E8%AF%95%E5%87%86%E5%A4%87/">面试准备<sup>2</sup></a><a href="/tags/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式<sup>1</sup></a><a href="/tags/Regex/">Regex<sup>1</sup></a><a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%A4%84%E7%90%86/">字符串处理<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E9%AA%8C%E8%AF%81/">数据验证<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86/">文本处理<sup>1</sup></a><a href="/tags/%E8%8B%B1%E8%AF%AD/">英语<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E8%AF%8D%E6%B1%87/">技术词汇<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E6%9C%AF%E8%AF%AD/">编程术语<sup>1</sup></a><a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<sup>1</sup></a></div></div><div class="console-card history" onclick="sco.hideConsole()"><ul class="card-archive-list"><li class="item"><a href="/archives/2026/01/"><span class="date">2026/01</span><div class="count-group"><span class="count">1</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/2025/01/"><span class="date">2025/01</span><div class="count-group"><span class="count">2</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/2020/05/"><span class="date">2020/05</span><div class="count-group"><span class="count">89</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/"><span class="date">全部文章</span><div class="count-group"><span class="count">92</span><span class="unit">篇</span></div></a></li></ul></div></div></div><div class="button-group"><div class="console-btn-item"><span class="darkmode_switchbutton" onclick="sco.switchDarkMode()" title="昼夜切换"><i class="solitude fas fa-circle-half-stroke"></i></span></div><div class="console-btn-item" id="consoleHideAside"><span class="asideSwitch" onclick="sco.switchHideAside()" title="边栏显示控制"><i class="solitude fas fa-arrows-left-right-to-line"></i></span></div></div><div class="console-mask" onclick="sco.hideConsole()"></div></div><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">92</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">272</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude fas fa-circle-half-stroke"></i><span>显示模式</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/categories/%E5%8D%83%E5%B9%B4%E5%BF%97-%E9%81%93%E5%8A%AB/"><span>千年志*道劫</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/"><span>技术博客</span></a></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-tags"><div class="card-tag-cloud"><a href="/tags/GitHub-Actions/">GitHub Actions<sup>1</sup></a><a href="/tags/Hexo/">Hexo<sup>3</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/">自动部署<sup>1</sup></a><a href="/tags/Unity/">Unity<sup>66</sup></a><a href="/tags/AI/">AI<sup>1</sup></a><a href="/tags/%E8%A1%8C%E4%B8%BA%E6%A0%91/">行为树<sup>1</sup></a><a href="/tags/%E7%8A%B6%E6%80%81%E6%9C%BA/">状态机<sup>1</sup></a><a href="/tags/FSM/">FSM<sup>1</sup></a><a href="/tags/BT/">BT<sup>1</sup></a><a href="/tags/GOAP/">GOAP<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/">游戏设计<sup>1</sup></a><a href="/tags/Lua/">Lua<sup>5</sup></a><a href="/tags/LuaJIT/">LuaJIT<sup>2</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/">虚拟机<sup>2</sup></a><a href="/tags/GC/">GC<sup>4</sup></a><a href="/tags/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">源码阅读<sup>1</sup></a><a href="/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80/">脚本语言<sup>1</sup></a><a href="/tags/ToLua/">ToLua<sup>4</sup></a><a href="/tags/C/">C#<sup>3</sup></a><a href="/tags/%E4%BA%A4%E4%BA%92/">交互<sup>3</sup></a><a href="/tags/CLR/">CLR<sup>1</sup></a><a href="/tags/IL2CPP/">IL2CPP<sup>3</sup></a><a href="/tags/C/">C++<sup>3</sup></a><a href="/tags/P-Invoke/">P/Invoke<sup>1</sup></a><a href="/tags/%E4%BA%92%E6%93%8D%E4%BD%9C/">互操作<sup>1</sup></a><a href="/tags/DllImport/">DllImport<sup>1</sup></a><a href="/tags/Marshal/">Marshal<sup>1</sup></a><a href="/tags/C/">C<sup>3</sup></a><a href="/tags/API/">API<sup>1</sup></a><a href="/tags/%E6%A0%88/">栈<sup>1</sup></a><a href="/tags/tolua/">tolua<sup>1</sup></a><a href="/tags/%E7%83%AD%E6%9B%B4%E6%96%B0/">热更新<sup>3</sup></a><a href="/tags/%E8%B7%A8%E8%AF%AD%E8%A8%80%E4%BA%A4%E4%BA%92/">跨语言交互<sup>1</sup></a><a href="/tags/CMD/">CMD<sup>1</sup></a><a href="/tags/Windows/">Windows<sup>1</sup></a><a href="/tags/%E5%91%BD%E4%BB%A4%E8%A1%8C/">命令行<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%91%BD%E4%BB%A4/">网络命令<sup>1</sup></a><a href="/tags/%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86/">系统管理<sup>1</sup></a><a href="/tags/%E5%85%AC%E5%91%8A/">公告<sup>1</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/">博客<sup>2</sup></a><a href="/tags/%E9%9D%99%E6%80%81%E7%AB%99%E7%82%B9%E7%94%9F%E6%88%90%E5%99%A8/">静态站点生成器<sup>1</sup></a><a href="/tags/Node-js/">Node.js<sup>1</sup></a><a href="/tags/Git/">Git<sup>1</sup></a><a href="/tags/Mac/">Mac<sup>2</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具<sup>1</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E8%BD%AF%E4%BB%B6/">效率软件<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/">游戏开发<sup>1</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E9%93%BE/">工具链<sup>1</sup></a><a href="/tags/GitHub-Pages/">GitHub Pages<sup>1</sup></a><a href="/tags/Markdown/">Markdown<sup>1</sup></a><a href="/tags/%E5%86%99%E4%BD%9C/">写作<sup>1</sup></a><a href="/tags/VSCode/">VSCode<sup>2</sup></a><a href="/tags/VPN/">VPN<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%B7%A5%E5%85%B7/">网络工具<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E8%B5%84%E6%BA%90/">开发资源<sup>1</sup></a><a href="/tags/Google/">Google<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0/">技术学习<sup>1</sup></a><a href="/tags/GitHub%E5%8A%A0%E9%80%9F/">GitHub加速<sup>1</sup></a><a href="/tags/BestHTTP/">BestHTTP<sup>2</sup></a><a href="/tags/HTTP/">HTTP<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82/">网络请求<sup>1</sup></a><a href="/tags/%E6%8F%92%E4%BB%B6/">插件<sup>1</sup></a><a href="/tags/WebSocket/">WebSocket<sup>1</sup></a><a href="/tags/Socket-IO/">Socket.IO<sup>1</sup></a><a href="/tags/SignalR/">SignalR<sup>1</sup></a><a href="/tags/SSE/">SSE<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%97%B6%E9%80%9A%E4%BF%A1/">实时通信<sup>1</sup></a><a href="/tags/Protobuf/">Protobuf<sup>1</sup></a><a href="/tags/Python/">Python<sup>2</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/">网络通信<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%8F%E5%88%97%E5%8C%96/">数据序列化<sup>1</sup></a><a href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0/">跨平台<sup>1</sup></a><a href="/tags/%E5%B8%A7%E5%90%8C%E6%AD%A5/">帧同步<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%90%8C%E6%AD%A5/">网络同步<sup>1</sup></a><a href="/tags/%E5%A4%9A%E4%BA%BA%E6%B8%B8%E6%88%8F/">多人游戏<sup>1</sup></a><a href="/tags/%E5%AE%9A%E7%82%B9%E6%95%B0/">定点数<sup>1</sup></a><a href="/tags/%E6%B8%B8%E6%88%8F%E5%90%8C%E6%AD%A5/">游戏同步<sup>1</sup></a><a href="/tags/%E5%BC%B1%E7%BD%91%E4%BC%98%E5%8C%96/">弱网优化<sup>1</sup></a><a href="/tags/UGUI/">UGUI<sup>15</sup></a><a href="/tags/Canvas/">Canvas<sup>4</sup></a><a href="/tags/UI%E4%BC%98%E5%8C%96/">UI优化<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化<sup>16</sup></a><a href="/tags/RectTransform/">RectTransform<sup>2</sup></a><a href="/tags/UnityEditor/">UnityEditor<sup>12</sup></a><a href="/tags/%E7%BC%96%E8%BE%91%E5%99%A8%E6%89%A9%E5%B1%95/">编辑器扩展<sup>11</sup></a><a href="/tags/%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91/">工具开发<sup>3</sup></a><a href="/tags/%E6%95%88%E7%8E%87%E6%8F%90%E5%8D%87/">效率提升<sup>1</sup></a><a href="/tags/EditorWindow/">EditorWindow<sup>4</sup></a><a href="/tags/RenderTexture/">RenderTexture<sup>1</sup></a><a href="/tags/%E6%88%AA%E5%9B%BE%E5%B7%A5%E5%85%B7/">截图工具<sup>1</sup></a><a href="/tags/Handles/">Handles<sup>1</sup></a><a href="/tags/OnSceneGUI/">OnSceneGUI<sup>1</sup></a><a href="/tags/%E5%9C%BA%E6%99%AF%E8%A7%86%E5%9B%BE/">场景视图<sup>2</sup></a><a href="/tags/Gizmos/">Gizmos<sup>1</sup></a><a href="/tags/OnDrawGizmos/">OnDrawGizmos<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95%E5%B7%A5%E5%85%B7/">调试工具<sup>1</sup></a><a href="/tags/%E8%8A%82%E7%82%B9%E7%BC%96%E8%BE%91%E5%99%A8/">节点编辑器<sup>1</sup></a><a href="/tags/GraphView/">GraphView<sup>1</sup></a><a href="/tags/%E5%8F%AF%E8%A7%86%E5%8C%96%E7%BC%96%E7%A8%8B/">可视化编程<sup>1</sup></a><a href="/tags/%E6%8A%80%E8%83%BD%E7%BC%96%E8%BE%91%E5%99%A8/">技能编辑器<sup>1</sup></a><a href="/tags/FlatBuffers/">FlatBuffers<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BC%93%E5%AD%98/">数据缓存<sup>1</sup></a><a href="/tags/GamePlay/">GamePlay<sup>1</sup></a><a href="/tags/ScriptableObject/">ScriptableObject<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/">数据存储<sup>1</sup></a><a href="/tags/JSON/">JSON<sup>1</sup></a><a href="/tags/PropertyAttribute/">PropertyAttribute<sup>1</sup></a><a href="/tags/%E6%A3%80%E8%A7%86%E9%9D%A2%E6%9D%BF/">检视面板<sup>1</sup></a><a href="/tags/EditorGUI/">EditorGUI<sup>1</sup></a><a href="/tags/GUI%E6%8E%A7%E4%BB%B6/">GUI控件<sup>1</sup></a><a href="/tags/%E7%95%8C%E9%9D%A2%E8%AE%BE%E8%AE%A1/">界面设计<sup>2</sup></a><a href="/tags/%E7%AA%97%E5%8F%A3%E5%BC%80%E5%8F%91/">窗口开发<sup>1</sup></a><a href="/tags/MenuItem/">MenuItem<sup>1</sup></a><a href="/tags/%E8%8F%9C%E5%8D%95%E5%BC%80%E5%8F%91/">菜单开发<sup>1</sup></a><a href="/tags/%E5%BF%AB%E6%8D%B7%E9%94%AE/">快捷键<sup>1</sup></a><a href="/tags/CustomEditor/">CustomEditor<sup>1</sup></a><a href="/tags/PropertyDrawer/">PropertyDrawer<sup>1</sup></a><a href="/tags/Inspector/">Inspector<sup>1</sup></a><a href="/tags/EditorGUILayout/">EditorGUILayout<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E6%8E%A7%E4%BB%B6/">布局控件<sup>1</sup></a><a href="/tags/%E5%AE%9E%E6%88%98%E6%A1%88%E4%BE%8B/">实战案例<sup>2</sup></a><a href="/tags/AssetBundle/">AssetBundle<sup>5</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/">资源管理<sup>3</sup></a><a href="/tags/%E6%89%93%E5%8C%85%E7%AD%96%E7%95%A5/">打包策略<sup>3</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">内存管理<sup>4</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E5%88%86%E6%9E%90/">依赖分析<sup>1</sup></a><a href="/tags/%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96/">加载优化<sup>2</sup></a><a href="/tags/%E4%BE%9D%E8%B5%96%E7%AE%A1%E7%90%86/">依赖管理<sup>1</sup></a><a href="/tags/%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">最佳实践<sup>2</sup></a><a href="/tags/%E6%B5%AE%E7%82%B9%E6%95%B0/">浮点数<sup>1</sup></a><a href="/tags/%E7%B2%BE%E5%BA%A6/">精度<sup>1</sup></a><a href="/tags/Transform/">Transform<sup>1</sup></a><a href="/tags/%E5%9D%90%E6%A0%87%E7%B3%BB%E7%BB%9F/">坐标系统<sup>1</sup></a><a href="/tags/%E7%9B%B8%E6%9C%BA/">相机<sup>1</sup></a><a href="/tags/Z-Buffer/">Z-Buffer<sup>1</sup></a><a href="/tags/%E4%BC%98%E5%8C%96/">优化<sup>3</sup></a><a href="/tags/Android/">Android<sup>2</sup></a><a href="/tags/Android-Studio/">Android Studio<sup>2</sup></a><a href="/tags/Profiler/">Profiler<sup>7</sup></a><a href="/tags/ADB/">ADB<sup>2</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90/">性能分析<sup>4</sup></a><a href="/tags/CPU%E4%BC%98%E5%8C%96/">CPU优化<sup>2</sup></a><a href="/tags/%E6%80%A7%E8%83%BD/">性能<sup>4</sup></a><a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程<sup>1</sup></a><a href="/tags/Job-System/">Job System<sup>1</sup></a><a href="/tags/Burst/">Burst<sup>1</sup></a><a href="/tags/%E5%8D%8F%E7%A8%8B/">协程<sup>1</sup></a><a href="/tags/GPU%E4%BC%98%E5%8C%96/">GPU优化<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93/">渲染<sup>1</sup></a><a href="/tags/Shader/">Shader<sup>3</sup></a><a href="/tags/DrawCall/">DrawCall<sup>9</sup></a><a href="/tags/Batch/">Batch<sup>1</sup></a><a href="/tags/OverDraw/">OverDraw<sup>5</sup></a><a href="/tags/LOD/">LOD<sup>2</sup></a><a href="/tags/Mobile/">Mobile<sup>1</sup></a><a href="/tags/%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/">内存优化<sup>4</sup></a><a href="/tags/Boehm/">Boehm<sup>2</sup></a><a href="/tags/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">对象池<sup>2</sup></a><a href="/tags/Unsafe/">Unsafe<sup>1</sup></a><a href="/tags/NGUI/">NGUI<sup>3</sup></a><a href="/tags/UI%E6%A1%86%E6%9E%B6/">UI框架<sup>1</sup></a><a href="/tags/UIPanel/">UIPanel<sup>1</sup></a><a href="/tags/UIWidget/">UIWidget<sup>1</sup></a><a href="/tags/%E7%A7%BB%E5%8A%A8%E7%AB%AF/">移动端<sup>1</sup></a><a href="/tags/TBR/">TBR<sup>1</sup></a><a href="/tags/%E5%B8%A6%E5%AE%BD%E4%BC%98%E5%8C%96/">带宽优化<sup>2</sup></a><a href="/tags/GPU/">GPU<sup>2</sup></a><a href="/tags/%E5%90%88%E6%89%B9/">合批<sup>1</sup></a><a href="/tags/%E7%BD%91%E6%A0%BC%E9%87%8D%E5%BB%BA/">网格重建<sup>1</sup></a><a href="/tags/HUD%E4%BC%98%E5%8C%96/">HUD优化<sup>1</sup></a><a href="/tags/UWA/">UWA<sup>3</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E8%A7%84%E8%8C%83/">代码规范<sup>1</sup></a><a href="/tags/GC%E4%BC%98%E5%8C%96/">GC优化<sup>1</sup></a><a href="/tags/FPS%E6%A0%87%E5%87%86/">FPS标准<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96/">代码优化<sup>1</sup></a><a href="/tags/MonoBehaviour/">MonoBehaviour<sup>1</sup></a><a href="/tags/%E6%80%BB%E7%BA%B2/">总纲<sup>1</sup></a><a href="/tags/UPR/">UPR<sup>4</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB/">优化体系<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E4%BC%98%E5%8C%96/">渲染优化<sup>4</sup></a><a href="/tags/OverShading/">OverShading<sup>1</sup></a><a href="/tags/Shader%E4%BC%98%E5%8C%96/">Shader优化<sup>1</sup></a><a href="/tags/%E8%B5%84%E6%BA%90%E4%BC%98%E5%8C%96/">资源优化<sup>2</sup></a><a href="/tags/%E7%BA%B9%E7%90%86%E4%BC%98%E5%8C%96/">纹理优化<sup>1</sup></a><a href="/tags/%E9%81%AE%E6%8C%A1%E5%89%94%E9%99%A4/">遮挡剔除<sup>2</sup></a><a href="/tags/OcclusionCulling/">OcclusionCulling<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB/">代码阅读<sup>1</sup></a><a href="/tags/%E9%A1%B9%E7%9B%AE%E5%88%86%E6%9E%90/">项目分析<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E7%90%86%E8%A7%A3/">架构理解<sup>1</sup></a><a href="/tags/%E5%B7%A5%E7%A8%8B%E5%85%A5%E9%97%A8/">工程入门<sup>1</sup></a><a href="/tags/TextMeshPro/">TextMeshPro<sup>2</sup></a><a href="/tags/UI%E7%B3%BB%E7%BB%9F/">UI系统<sup>1</sup></a><a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/">架构设计<sup>1</sup></a><a href="/tags/ScrollRect/">ScrollRect<sup>1</sup></a><a href="/tags/%E8%99%9A%E6%8B%9F%E6%BB%9A%E5%8A%A8/">虚拟滚动<sup>1</sup></a><a href="/tags/%E5%88%97%E8%A1%A8%E4%BC%98%E5%8C%96/">列表优化<sup>1</sup></a><a href="/tags/%E9%94%9A%E7%82%B9/">锚点<sup>1</sup></a><a href="/tags/%E5%B8%83%E5%B1%80%E7%B3%BB%E7%BB%9F/">布局系统<sup>1</sup></a><a href="/tags/UI%E9%80%82%E9%85%8D/">UI适配<sup>1</sup></a><a href="/tags/UI%E7%89%B9%E6%95%88/">UI特效<sup>1</sup></a><a href="/tags/%E7%B2%92%E5%AD%90%E7%B3%BB%E7%BB%9F/">粒子系统<sup>1</sup></a><a href="/tags/%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/">视觉效果<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E6%A8%A1%E5%BC%8F/">渲染模式<sup>1</sup></a><a href="/tags/TMP/">TMP<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E6%B8%B2%E6%9F%93/">文本渲染<sup>1</sup></a><a href="/tags/%E5%AD%97%E4%BD%93/">字体<sup>1</sup></a><a href="/tags/%E5%AF%8C%E6%96%87%E6%9C%AC/">富文本<sup>1</sup></a><a href="/tags/Sprite-Atlas/">Sprite Atlas<sup>1</sup></a><a href="/tags/%E5%9B%BE%E9%9B%86/">图集<sup>1</sup></a><a href="/tags/DoTween/">DoTween<sup>1</sup></a><a href="/tags/%E5%8A%A8%E7%94%BB/">动画<sup>1</sup></a><a href="/tags/%E8%BF%87%E6%B8%A1%E6%95%88%E6%9E%9C/">过渡效果<sup>1</sup></a><a href="/tags/UI%E5%8A%A8%E6%95%88/">UI动效<sup>1</sup></a><a href="/tags/UI%E6%9E%B6%E6%9E%84/">UI架构<sup>1</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E5%B7%A5%E5%85%B7/">优化工具<sup>1</sup></a><a href="/tags/%E8%B0%83%E8%AF%95/">调试<sup>1</sup></a><a href="/tags/%E5%B1%8F%E5%B9%95%E9%80%82%E9%85%8D/">屏幕适配<sup>1</sup></a><a href="/tags/%E5%A4%9A%E5%88%86%E8%BE%A8%E7%8E%87/">多分辨率<sup>1</sup></a><a href="/tags/Canvas-Scaler/">Canvas Scaler<sup>1</sup></a><a href="/tags/%E9%80%82%E9%85%8D%E7%AD%96%E7%95%A5/">适配策略<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96/">自动化<sup>1</sup></a><a href="/tags/Jenkins/">Jenkins<sup>3</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/">性能测试<sup>1</sup></a><a href="/tags/Airtest/">Airtest<sup>2</sup></a><a href="/tags/CI-CD/">CI/CD<sup>2</sup></a><a href="/tags/%E5%B7%A5%E4%B8%9A%E5%8C%96%E6%B5%81%E7%A8%8B/">工业化流程<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%89%93%E5%8C%85/">自动化打包<sup>1</sup></a><a href="/tags/iOS/">iOS<sup>1</sup></a><a href="/tags/%E6%9E%84%E5%BB%BA/">构建<sup>1</sup></a><a href="/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/">持续集成<sup>1</sup></a><a href="/tags/EventSystem/">EventSystem<sup>1</sup></a><a href="/tags/%E4%BA%8B%E4%BB%B6/">事件<sup>1</sup></a><a href="/tags/UI%E4%BA%8B%E4%BB%B6/">UI事件<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/">自动化测试<sup>1</sup></a><a href="/tags/ARM/">ARM<sup>1</sup></a><a href="/tags/Xcode/">Xcode<sup>1</sup></a><a href="/tags/RenderDoc/">RenderDoc<sup>1</sup></a><a href="/tags/Stats/">Stats<sup>1</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/">性能监控<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%BB%9F%E8%AE%A1/">渲染统计<sup>1</sup></a><a href="/tags/FPS/">FPS<sup>1</sup></a><a href="/tags/Occlusion-Culling/">Occlusion Culling<sup>1</sup></a><a href="/tags/Overdraw/">Overdraw<sup>1</sup></a><a href="/tags/Base64/">Base64<sup>1</sup></a><a href="/tags/%E5%9B%BE%E7%89%87%E7%BC%96%E7%A0%81/">图片编码<sup>1</sup></a><a href="/tags/Texture2D/">Texture2D<sup>1</sup></a><a href="/tags/%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/">开发环境<sup>1</sup></a><a href="/tags/%E9%85%8D%E7%BD%AE/">配置<sup>1</sup></a><a href="/tags/Mono/">Mono<sup>1</sup></a><a href="/tags/NET-Core/">.NET Core<sup>1</sup></a><a href="/tags/%E4%B8%96%E7%95%8C%E8%A7%82/">世界观<sup>1</sup></a><a href="/tags/%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF/">渲染管线<sup>1</sup></a><a href="/tags/%E6%89%B9%E5%A4%84%E7%90%86/">批处理<sup>1</sup></a><a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/">图形学<sup>1</sup></a><a href="/tags/%E6%8C%87%E9%92%88/">指针<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/">编程基础<sup>2</sup></a><a href="/tags/%E7%AE%97%E6%B3%95/">算法<sup>2</sup></a><a href="/tags/%E6%95%B0%E7%BB%84/">数组<sup>1</sup></a><a href="/tags/%E6%8E%92%E5%BA%8F/">排序<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/">编程入门<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<sup>1</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">学习路线<sup>1</sup></a><a href="/tags/%E9%9D%A2%E8%AF%95%E5%87%86%E5%A4%87/">面试准备<sup>2</sup></a><a href="/tags/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式<sup>1</sup></a><a href="/tags/Regex/">Regex<sup>1</sup></a><a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%A4%84%E7%90%86/">字符串处理<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E9%AA%8C%E8%AF%81/">数据验证<sup>1</sup></a><a href="/tags/%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86/">文本处理<sup>1</sup></a><a href="/tags/%E8%8B%B1%E8%AF%AD/">英语<sup>1</sup></a><a href="/tags/%E6%8A%80%E6%9C%AF%E8%AF%8D%E6%B1%87/">技术词汇<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A8%8B%E6%9C%AF%E8%AF%AD/">编程术语<sup>1</sup></a><a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<sup>1</sup></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><a href="/" title="返回博客主页" id="site-name"><span class="title">主页</span><i class="solitude fas fa-home"></i></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">Unity UWA 性能优化工具完全指南：从分析报告到实战优化</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/categories/%E5%8D%83%E5%B9%B4%E5%BF%97-%E9%81%93%E5%8A%AB/"><span>千年志*道劫</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/"><span>技术博客</span></a></div></div></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="nav-totop" onclick="sco.toTop()"><a class="totopbtn"><i class="solitude fas fa-arrow-up"></i><span id="percent">0</span></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude fas fa-bars"></i></a></div></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><span class="post-meta-categories"><a class="post-meta-categories" href="/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/">技术文章</a></span><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Unity/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>Unity</span></a><a class="post-meta__tags" href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>性能优化</span></a><a class="post-meta__tags" href="/tags/AssetBundle/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>AssetBundle</span></a><a class="post-meta__tags" href="/tags/Profiler/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>Profiler</span></a><a class="post-meta__tags" href="/tags/CPU%E4%BC%98%E5%8C%96/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>CPU优化</span></a><a class="post-meta__tags" href="/tags/%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>内存优化</span></a><a class="post-meta__tags" href="/tags/UWA/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>UWA</span></a></div></div></div></div><h1 class="post-title">Unity UWA 性能优化工具完全指南：从分析报告到实战优化</h1><div id="post-meta"><div class="meta-secondline"></div></div></div><div class="post-radius-bottom"></div><article class="post-content article-container"><h1 id="🛠️-Unity-UWA-性能优化工具完全指南：从分析报告到实战优化"><a href="#🛠️-Unity-UWA-性能优化工具完全指南：从分析报告到实战优化" class="headerlink" title="🛠️ Unity UWA 性能优化工具完全指南：从分析报告到实战优化"></a>🛠️ Unity UWA 性能优化工具完全指南：从分析报告到实战优化</h1><blockquote>
+<p>💡 <strong>UWA 工具的价值</strong>：</p>
+<ul>
+<li>不知道如何系统分析性能问题？</li>
+<li>UWA 性能报告怎么看？</li>
+<li>CPU、内存、资源加载，如何针对性优化？</li>
+<li>想学习专业团队的优化方法？</li>
+</ul>
+<p><strong>这篇文章！</strong> 将全面解析 UWA 性能优化工具，从报告解读到优化策略，让你的游戏性能更上一层楼！</p>
+</blockquote>
+<hr>
+<h2 id="一、UWA-工具概览"><a href="#一、UWA-工具概览" class="headerlink" title="一、UWA 工具概览"></a>一、UWA 工具概览</h2><h3 id="1-1-官方资源"><a href="#1-1-官方资源" class="headerlink" title="1.1 官方资源"></a>1.1 官方资源</h3><table>
+<thead>
+<tr>
+<th>资源类型</th>
+<th>链接</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>UWA 优化百科</strong></td>
+<td><a target="_blank" rel="noopener" href="https://blog.uwa4d.com/archives/Index.html">blog.uwa4d.com&#x2F;archives&#x2F;Index.html</a></td>
+<td>优化知识向导</td>
+</tr>
+<tr>
+<td><strong>性能优化合集</strong></td>
+<td><a target="_blank" rel="noopener" href="https://blog.uwa4d.com/archives/allinone.html">blog.uwa4d.com&#x2F;archives&#x2F;allinone.html</a></td>
+<td>All In One 优化合集</td>
+</tr>
+<tr>
+<td><strong>报告解读</strong></td>
+<td><a target="_blank" rel="noopener" href="https://blog.uwa4d.com/archives/Simple_PA_General.html">blog.uwa4d.com&#x2F;archives&#x2F;Simple_PA_General.html</a></td>
+<td>如何看懂性能报告</td>
+</tr>
+<tr>
+<td><strong>在线演示</strong></td>
+<td><a target="_blank" rel="noopener" href="https://www.uwa4d.com/demo/pa.html">www.uwa4d.com/demo/pa.html</a></td>
+<td>性能分析图演示</td>
+</tr>
+</tbody></table>
+<h3 id="1-2-性能报告示例"><a href="#1-2-性能报告示例" class="headerlink" title="1.2 性能报告示例"></a>1.2 性能报告示例</h3><blockquote>
+<p>访问在线演示：<a target="_blank" rel="noopener" href="https://www.uwa4d.com/demo/pa.html?v=5x&platform=android&name=jws&device=RedMiNote2">UWA 性能分析演示</a></p>
+</blockquote>
+<hr>
+<h2 id="二、性能总结指标"><a href="#二、性能总结指标" class="headerlink" title="二、性能总结指标"></a>二、性能总结指标</h2><h3 id="2-1-核心性能指标"><a href="#2-1-核心性能指标" class="headerlink" title="2.1 核心性能指标"></a>2.1 核心性能指标</h3><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>说明</th>
+<th>目标值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>总体帧数</strong></td>
+<td>10分钟测试的理想帧数范围</td>
+<td>16000~18000帧 (30fps)</td>
+</tr>
+<tr>
+<td><strong>GC 次数</strong></td>
+<td>垃圾回收调用次数</td>
+<td>&gt;1000帧&#x2F;次</td>
+</tr>
+<tr>
+<td><strong>CPU 均值</strong></td>
+<td>平均每帧 CPU 占用</td>
+<td>越低越好</td>
+</tr>
+<tr>
+<td><strong>CPU 占用占比</strong></td>
+<td>超过 33ms 的帧数占比</td>
+<td>&lt;10% (UWA 建议)</td>
+</tr>
+<tr>
+<td><strong>堆内存</strong></td>
+<td>Mono 堆内存占用</td>
+<td>&lt;150MB (移动端)</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-Mono-vs-IL2CPP-内存特性"><a href="#2-2-Mono-vs-IL2CPP-内存特性" class="headerlink" title="2.2 Mono vs IL2CPP 内存特性"></a>2.2 Mono vs IL2CPP 内存特性</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>Mono</th>
+<th>IL2CPP</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Reserved Total</strong></td>
+<td>只升不降</td>
+<td>可以下降</td>
+</tr>
+<tr>
+<td><strong>内存回收</strong></td>
+<td>不返还给系统</td>
+<td>可以返还给系统</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">内存占用分配建议:</span><br><span class="line">┌─────────────────────────────────────┐</span><br><span class="line">│  纹理资源     33%                   │</span><br><span class="line">│  Mono 内存   26%                    │</span><br><span class="line">│  网格资源     13%                    │</span><br><span class="line">│  动画片段     10%                    │</span><br><span class="line">│  音频片段     10%                    │</span><br><span class="line">│  其他         8%                    │</span><br><span class="line">└─────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、高-CPU-占用函数"><a href="#三、高-CPU-占用函数" class="headerlink" title="三、高 CPU 占用函数"></a>三、高 CPU 占用函数</h2><h3 id="3-1-渲染相关"><a href="#3-1-渲染相关" class="headerlink" title="3.1 渲染相关"></a>3.1 渲染相关</h3><table>
+<thead>
+<tr>
+<th>函数</th>
+<th>说明</th>
+<th>优化方向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Camera.Render</strong></td>
+<td>相机渲染准备</td>
+<td>优化渲染内容，减少渲染对象</td>
+</tr>
+<tr>
+<td><strong>MeshSkinning.Update</strong></td>
+<td>蒙皮网格更新</td>
+<td>降低骨骼数量，优化网格</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-UI-相关"><a href="#3-2-UI-相关" class="headerlink" title="3.2 UI 相关"></a>3.2 UI 相关</h3><table>
+<thead>
+<tr>
+<th>函数</th>
+<th>说明</th>
+<th>优化方向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>UIPanel.LateUpdate()</strong></td>
+<td>NGUI 网格重建</td>
+<td>动静分离，控制动态元素数量</td>
+</tr>
+<tr>
+<td><strong>UICamera.Update()</strong></td>
+<td>NGUI 输入处理</td>
+<td>减少事件监听</td>
+</tr>
+<tr>
+<td><strong>UIRect.Update()</strong></td>
+<td>NGUI 矩形更新</td>
+<td>减少动态变化</td>
+</tr>
+</tbody></table>
+<h3 id="3-3-动画相关"><a href="#3-3-动画相关" class="headerlink" title="3.3 动画相关"></a>3.3 动画相关</h3><table>
+<thead>
+<tr>
+<th>函数</th>
+<th>说明</th>
+<th>优化方向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Animators.Update</strong></td>
+<td>动画控制器更新</td>
+<td>减少 Animator 数量</td>
+</tr>
+<tr>
+<td><strong>Animation.Update</strong></td>
+<td>动画组件更新</td>
+<td>使用 AnimationClip 压缩</td>
+</tr>
+</tbody></table>
+<h3 id="3-4-加载相关"><a href="#3-4-加载相关" class="headerlink" title="3.4 加载相关"></a>3.4 加载相关</h3><table>
+<thead>
+<tr>
+<th>函数</th>
+<th>说明</th>
+<th>优化方向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Loading.UpdatePreloading</strong></td>
+<td>场景预加载</td>
+<td>优化资源大小，使用异步加载</td>
+</tr>
+<tr>
+<td><strong>LoadingManager.Update()</strong></td>
+<td>加载管理器</td>
+<td>分帧加载</td>
+</tr>
+</tbody></table>
+<h3 id="3-5-物理相关"><a href="#3-5-物理相关" class="headerlink" title="3.5 物理相关"></a>3.5 物理相关</h3><table>
+<thead>
+<tr>
+<th>函数</th>
+<th>说明</th>
+<th>优化方向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Physics.Processing</strong></td>
+<td>物理模拟处理</td>
+<td>减少物理对象，简化碰撞体</td>
+</tr>
+<tr>
+<td><strong>NavMeshManager</strong></td>
+<td>导航网格管理</td>
+<td>优化寻路频率</td>
+</tr>
+</tbody></table>
+<h3 id="3-6-其他高频函数"><a href="#3-6-其他高频函数" class="headerlink" title="3.6 其他高频函数"></a>3.6 其他高频函数</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">UnityEngine.SetupCoroutine()</span><br><span class="line">Destroy</span><br><span class="line">TweenEffectBase.Update()</span><br><span class="line">SoundManager.Update()</span><br><span class="line">AINormalWarrior.Update()</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="四、高堆内存分配函数"><a href="#四、高堆内存分配函数" class="headerlink" title="四、高堆内存分配函数"></a>四、高堆内存分配函数</h2><h3 id="4-1-核心问题函数"><a href="#4-1-核心问题函数" class="headerlink" title="4.1 核心问题函数"></a>4.1 核心问题函数</h3><table>
+<thead>
+<tr>
+<th>函数</th>
+<th>问题</th>
+<th>优化方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>UIPanel.LateUpdate()</strong></td>
+<td>UI 网格重建分配内存</td>
+<td>动静分离，减少重建</td>
+</tr>
+<tr>
+<td><strong>UnityEngine.SetupCoroutine()</strong></td>
+<td>协程启动分配</td>
+<td>避免频繁创建协程</td>
+</tr>
+<tr>
+<td><strong>UICamera.Update()</strong></td>
+<td>每帧分配</td>
+<td>优化事件处理逻辑</td>
+</tr>
+<tr>
+<td><strong>iTween.Update()</strong></td>
+<td>补间动画分配</td>
+<td>替换为更高效的方案</td>
+</tr>
+<tr>
+<td><strong>Instantiate</strong></td>
+<td>实例化分配</td>
+<td>使用对象池</td>
+</tr>
+</tbody></table>
+<h3 id="4-2-堆内存分配原则"><a href="#4-2-堆内存分配原则" class="headerlink" title="4.2 堆内存分配原则"></a>4.2 堆内存分配原则</h3><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ❌ 错误：Update 中分配堆内存</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Update</span>()</span></span><br><span class="line">&#123;</span><br><span class="line">    List&lt;<span class="built_in">int</span>&gt; list = <span class="keyword">new</span> List&lt;<span class="built_in">int</span>&gt;();  <span class="comment">// 每帧分配</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ✅ 正确：复用对象</span></span><br><span class="line"><span class="keyword">private</span> List&lt;<span class="built_in">int</span>&gt; cachedList = <span class="keyword">new</span> List&lt;<span class="built_in">int</span>&gt;();</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Update</span>()</span></span><br><span class="line">&#123;</span><br><span class="line">    cachedList.Clear();</span><br><span class="line">    <span class="comment">// 使用 cachedList</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="五、CPU-优化篇"><a href="#五、CPU-优化篇" class="headerlink" title="五、CPU 优化篇"></a>五、CPU 优化篇</h2><h3 id="5-1-渲染模块优化"><a href="#5-1-渲染模块优化" class="headerlink" title="5.1 渲染模块优化"></a>5.1 渲染模块优化</h3><h4 id="Draw-Call-优化"><a href="#Draw-Call-优化" class="headerlink" title="Draw Call 优化"></a>Draw Call 优化</h4><table>
+<thead>
+<tr>
+<th>策略</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>减少材质种类</strong></td>
+<td>合并相同材质的物体</td>
+</tr>
+<tr>
+<td><strong>Draw Call Batching</strong></td>
+<td>使用批处理减少 DC 数量</td>
+</tr>
+<tr>
+<td><strong>带宽平衡</strong></td>
+<td>Draw Call 与总线带宽的天平平衡</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>⚠️ <strong>注意</strong>：DrawCall 越小越好是误区！决定渲染性能的除了 DrawCall 还有总线带宽。</p>
+</blockquote>
+<h4 id="资源简化"><a href="#资源简化" class="headerlink" title="资源简化"></a>资源简化</h4><table>
+<thead>
+<tr>
+<th>优化项</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>三角形面片数</strong></td>
+<td>降低模型面片数</td>
+</tr>
+<tr>
+<td><strong>纹理分辨率</strong></td>
+<td>使用合适的分辨率</td>
+</tr>
+<tr>
+<td><strong>网格资源</strong></td>
+<td>优化 Mesh 数据量</td>
+</tr>
+</tbody></table>
+<h3 id="5-2-UI-模块优化"><a href="#5-2-UI-模块优化" class="headerlink" title="5.2 UI 模块优化"></a>5.2 UI 模块优化</h3><h4 id="UIPanel-LateUpdate-优化"><a href="#UIPanel-LateUpdate-优化" class="headerlink" title="UIPanel.LateUpdate 优化"></a>UIPanel.LateUpdate 优化</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">NGUI 优化原则:</span><br><span class="line">┌─────────────────────────────────────┐</span><br><span class="line">│  1. 动静分离                       │</span><br><span class="line">│     → 动态/静态 UI 分离到不同 UIPanel│</span><br><span class="line">│                                     │</span><br><span class="line">│  2. 同步性划分                      │</span><br><span class="line">│     → 运动频率不同的 UI 分离        │</span><br><span class="line">│                                     │</span><br><span class="line">│  3. 控制动态元素数量                │</span><br><span class="line">│     → 每组 UIPanel 5~10 个动态 UI  │</span><br><span class="line">└─────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h4 id="UI-优化技巧"><a href="#UI-优化技巧" class="headerlink" title="UI 优化技巧"></a>UI 优化技巧</h4><table>
+<thead>
+<tr>
+<th>技巧</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>动静分离</strong></td>
+<td>UI 重建以 UIPanel 为单位</td>
+</tr>
+<tr>
+<td><strong>同步分组</strong></td>
+<td>运动频率一致的放在同一 Panel</td>
+</tr>
+<tr>
+<td><strong>数量控制</strong></td>
+<td>每组 Panel 动态元素 5~10 个</td>
+</tr>
+<tr>
+<td><strong>概率优化</strong></td>
+<td>从概率上降低单帧重建开销</td>
+</tr>
+</tbody></table>
+<h3 id="5-3-加载模块优化"><a href="#5-3-加载模块优化" class="headerlink" title="5.3 加载模块优化"></a>5.3 加载模块优化</h3><h4 id="场景卸载开销"><a href="#场景卸载开销" class="headerlink" title="场景卸载开销"></a>场景卸载开销</h4><table>
+<thead>
+<tr>
+<th>函数</th>
+<th>开销来源</th>
+<th>优化方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Destroy</strong></td>
+<td>OnDestroy 回调代码</td>
+<td>优化 OnDestroy 逻辑</td>
+</tr>
+<tr>
+<td><strong>Resources.UnloadUnusedAssets</strong></td>
+<td>资源卸载检测</td>
+<td>减少资源数量，预清理</td>
+</tr>
+</tbody></table>
+<h4 id="场景加载开销"><a href="#场景加载开销" class="headerlink" title="场景加载开销"></a>场景加载开销</h4><table>
+<thead>
+<tr>
+<th>函数</th>
+<th>开销来源</th>
+<th>优化方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>资源加载</strong></td>
+<td>纹理&#x2F;网格&#x2F;材质大小</td>
+<td>压缩资源格式</td>
+</tr>
+<tr>
+<td><strong>Instantiate</strong></td>
+<td>实例化 + 序列化</td>
+<td>预加载，对象池</td>
+</tr>
+<tr>
+<td><strong>SerializedField</strong></td>
+<td>序列化开销</td>
+<td>减少序列化字段</td>
+</tr>
+</tbody></table>
+<h4 id="加载优化建议"><a href="#加载优化建议" class="headerlink" title="加载优化建议"></a>加载优化建议</h4><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ✅ 预加载依赖资源</span></span><br><span class="line"><span class="comment">// 1. 依赖关系打包</span></span><br><span class="line"><span class="comment">// 2. 场景加载前预加载依赖</span></span><br><span class="line"><span class="comment">// 3. 使用对象池复用实例</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ❌ 避免：运行时同步加载大量资源</span></span><br><span class="line">Instantiate(prefab);  <span class="comment">// 如果资源未加载会非常慢</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="5-4-代码效率优化"><a href="#5-4-代码效率优化" class="headerlink" title="5.4 代码效率优化"></a>5.4 代码效率优化</h3><h4 id="性能”二八原则”"><a href="#性能”二八原则”" class="headerlink" title="性能”二八原则”"></a>性能”二八原则”</h4><blockquote>
+<p>80% 的性能开销集中在 20% 的函数上</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>高开销函数类型</th>
+<th>优化重点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Camera.Render</strong></td>
+<td>渲染内容优化</td>
+</tr>
+<tr>
+<td><strong>MovementScript.FixedUpdate()</strong></td>
+<td>物理移动优化</td>
+</tr>
+<tr>
+<td><strong>ParticleSystem.Update</strong></td>
+<td>粒子数量控制</td>
+</tr>
+<tr>
+<td><strong>Physics.Simulate</strong></td>
+<td>物理对象减少</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="六、内存优化篇"><a href="#六、内存优化篇" class="headerlink" title="六、内存优化篇"></a>六、内存优化篇</h2><h3 id="6-1-内存分类"><a href="#6-1-内存分类" class="headerlink" title="6.1 内存分类"></a>6.1 内存分类</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">Unity 内存结构:</span><br><span class="line">┌─────────────────────────────────────┐</span><br><span class="line">│  Unity 资源内存     70%+            │</span><br><span class="line">│  ├─ 纹理 (Texture)                  │</span><br><span class="line">│  ├─ 网格 (Mesh)                     │</span><br><span class="line">│  ├─ 动画 (AnimationClip)            │</span><br><span class="line">│  └─ 音频 (AudioClip)                │</span><br><span class="line">│                                     │</span><br><span class="line">│  引擎模块内存                       │</span><br><span class="line">│  ├─ GameObject / Component          │</span><br><span class="line">│  ├─ WebStream                       │</span><br><span class="line">│  └─ SerializedFile                 │</span><br><span class="line">│                                     │</span><br><span class="line">│  托管堆内存                         │</span><br><span class="line">│  └─ Mono / IL2CPP                   │</span><br><span class="line">│                                     │</span><br><span class="line">│  第三方插件内存                     │</span><br><span class="line">│  └─ toLua 等脚本引擎                │</span><br><span class="line">└─────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-纹理内存优化"><a href="#6-2-纹理内存优化" class="headerlink" title="6.2 纹理内存优化"></a>6.2 纹理内存优化</h3><h4 id="纹理格式选择"><a href="#纹理格式选择" class="headerlink" title="纹理格式选择"></a>纹理格式选择</h4><table>
+<thead>
+<tr>
+<th>平台</th>
+<th>推荐格式</th>
+<th>备选方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Android</strong></td>
+<td>ETC2 (OpenGL ES 3.0+)</td>
+<td>ETC1 + Alpha8 (ES 2.0)</td>
+</tr>
+<tr>
+<td><strong>iOS</strong></td>
+<td>PVRTC 4BPP</td>
+<td>ASTC</td>
+</tr>
+<tr>
+<td><strong>PC</strong></td>
+<td>DXT &#x2F; BC7</td>
+<td>RGBA16</td>
+</tr>
+</tbody></table>
+<h4 id="纹理优化策略"><a href="#纹理优化策略" class="headerlink" title="纹理优化策略"></a>纹理优化策略</h4><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>解决方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>色阶问题</strong></td>
+<td>减少色差范围，使用硬件压缩格式</td>
+</tr>
+<tr>
+<td><strong>ETC1 无透明</strong></td>
+<td>分离 RGB 和 Alpha 为两张 ETC1</td>
+</tr>
+<tr>
+<td><strong>尺寸过大</strong></td>
+<td>降低分辨率，够用就好</td>
+</tr>
+<tr>
+<td><strong>Mimap 开启</strong></td>
+<td>UI 纹理关闭 Mipmap</td>
+</tr>
+<tr>
+<td><strong>Read &amp; Write</strong></td>
+<td>默认关闭，节省内存</td>
+</tr>
+</tbody></table>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ETC1 透明贴图分离方案</span></span><br><span class="line"><span class="comment">// RGB 通道: ETC1 压缩</span></span><br><span class="line"><span class="comment">// Alpha 通道: Alpha8 + ETC1 压缩</span></span><br><span class="line"><span class="comment">// 通过 Shader 合成渲染</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ✅ 使用 RGBA16 作为折中方案</span></span><br><span class="line"><span class="comment">// 比 RGBA32 节省 50% 内存</span></span><br><span class="line"><span class="comment">// 视觉效果接近无压缩</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-网格内存优化"><a href="#6-3-网格内存优化" class="headerlink" title="6.3 网格内存优化"></a>6.3 网格内存优化</h3><h4 id="顶点属性优化"><a href="#顶点属性优化" class="headerlink" title="顶点属性优化"></a>顶点属性优化</h4><table>
+<thead>
+<tr>
+<th>属性</th>
+<th>内存影响</th>
+<th>优化建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Position</strong></td>
+<td>必需</td>
+<td>保留</td>
+</tr>
+<tr>
+<td><strong>UV</strong></td>
+<td>必需</td>
+<td>保留</td>
+</tr>
+<tr>
+<td><strong>Normal</strong></td>
+<td>增加</td>
+<td>按需使用</td>
+</tr>
+<tr>
+<td><strong>Tangent</strong></td>
+<td>增加</td>
+<td>按需使用</td>
+</tr>
+<tr>
+<td><strong>Color</strong></td>
+<td>增加</td>
+<td>按需使用</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>⚠️ <strong>批处理注意</strong>：不同顶点属性的网格拼合时，会补齐所有属性，大幅增加内存！</p>
+</blockquote>
+<h4 id="网格优化建议"><a href="#网格优化建议" class="headerlink" title="网格优化建议"></a>网格优化建议</h4><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ❌ 避免不同属性网格批处理</span></span><br><span class="line"><span class="comment">// 99 个只有 Position+UV 的 Mesh</span></span><br><span class="line"><span class="comment">// 1 个有 Position+UV+Normal+Tangent+Color 的 Mesh</span></span><br><span class="line"><span class="comment">// 拼合后：所有 Mesh 都会有 5 种属性</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ✅ 相同属性网格分组批处理</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="6-4-引擎模块内存"><a href="#6-4-引擎模块内存" class="headerlink" title="6.4 引擎模块内存"></a>6.4 引擎模块内存</h3><h4 id="WebStream-和-SerializedFile"><a href="#WebStream-和-SerializedFile" class="headerlink" title="WebStream 和 SerializedFile"></a>WebStream 和 SerializedFile</h4><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>来源</th>
+<th>优化方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>WebStream</strong></td>
+<td>AssetBundle 原始+解压数据</td>
+<td>使用 LoadFromFile</td>
+</tr>
+<tr>
+<td><strong>SerializedFile</strong></td>
+<td>AssetBundle 序列化文件</td>
+<td>卸载未使用的 AB</td>
+</tr>
+</tbody></table>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ❌ 使用 WWW / CreateFromMemory</span></span><br><span class="line"><span class="comment">// 内存 = 原始文件 + 解压数据 + DecompressionBuffer</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ✅ 使用 LoadFromFile / LoadFromCacheOrDownload</span></span><br><span class="line"><span class="comment">// 直接从文件读取，内存占用更小</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="6-5-托管堆内存优化"><a href="#6-5-托管堆内存优化" class="headerlink" title="6.5 托管堆内存优化"></a>6.5 托管堆内存优化</h3><h4 id="主要内存分配来源"><a href="#主要内存分配来源" class="headerlink" title="主要内存分配来源"></a>主要内存分配来源</h4><table>
+<thead>
+<tr>
+<th>来源</th>
+<th>优化方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>高频 New Class&#x2F;Container</strong></td>
+<td>Update 中避免分配</td>
+</tr>
+<tr>
+<td><strong>Log 输出</strong></td>
+<td>控制日志输出</td>
+</tr>
+<tr>
+<td><strong>UIPanel.LateUpdate</strong></td>
+<td>动静分离</td>
+</tr>
+<tr>
+<td><strong>String 连接</strong></td>
+<td>使用 StringBuilder</td>
+</tr>
+<tr>
+<td><strong>GetComponent</strong></td>
+<td>缓存组件引用</td>
+</tr>
+</tbody></table>
+<h4 id="Mono-内存分配计算"><a href="#Mono-内存分配计算" class="headerlink" title="Mono 内存分配计算"></a>Mono 内存分配计算</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">假设某函数每帧分配 100B：</span><br><span class="line">帧率 30fps → 每秒 3KB → 每分钟 180KB → 10分钟 1.8MB</span><br><span class="line"></span><br><span class="line">如果有 10 个这样的函数 → 10分钟 18MB</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-6-内存分配合理额度"><a href="#6-6-内存分配合理额度" class="headerlink" title="6.6 内存分配合理额度"></a>6.6 内存分配合理额度</h3><table>
+<thead>
+<tr>
+<th>资源类型</th>
+<th>占比</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>纹理资源</td>
+<td>33%</td>
+</tr>
+<tr>
+<td>Mono 内存</td>
+<td>26%</td>
+</tr>
+<tr>
+<td>网格资源</td>
+<td>13%</td>
+</tr>
+<tr>
+<td>动画片段</td>
+<td>10%</td>
+</tr>
+<tr>
+<td>音频片段</td>
+<td>10%</td>
+</tr>
+<tr>
+<td>其他</td>
+<td>8%</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="七、内存泄露检测"><a href="#七、内存泄露检测" class="headerlink" title="七、内存泄露检测"></a>七、内存泄露检测</h2><h3 id="7-1-内存泄露误区"><a href="#7-1-内存泄露误区" class="headerlink" title="7.1 内存泄露误区"></a>7.1 内存泄露误区</h3><table>
+<thead>
+<tr>
+<th>误区</th>
+<th>真相</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>进出场景内存不一致 &#x3D; 泄露</td>
+<td>资源常驻、Mono 只升不降</td>
+</tr>
+<tr>
+<td>PSS 未回落 &#x3D; 泄露</td>
+<td>系统 Cache 不会及时清理</td>
+</tr>
+</tbody></table>
+<h3 id="7-2-资源泄露检测"><a href="#7-2-资源泄露检测" class="headerlink" title="7.2 资源泄露检测"></a>7.2 资源泄露检测</h3><h4 id="方法一：资源生命周期"><a href="#方法一：资源生命周期" class="headerlink" title="方法一：资源生命周期"></a>方法一：资源生命周期</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">UWA 资源生命周期分析:</span><br><span class="line">┌─────────────────────────────────────┐</span><br><span class="line">│  预加载资源 → 合理的常驻资源        │</span><br><span class="line">│  泄露资源 → 需要修复的资源          │</span><br><span class="line">└─────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h4 id="方法二：场景比较"><a href="#方法二：场景比较" class="headerlink" title="方法二：场景比较"></a>方法二：场景比较</h4><table>
+<thead>
+<tr>
+<th>比较方式</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>同场景不同时刻</strong></td>
+<td>查找资源使用差异</td>
+</tr>
+<tr>
+<td><strong>不同类型场景</strong></td>
+<td>检查”共同资源”是否合理</td>
+</tr>
+</tbody></table>
+<h4 id="方法三：Profiler-检测"><a href="#方法三：Profiler-检测" class="headerlink" title="方法三：Profiler 检测"></a>方法三：Profiler 检测</h4><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 检查 WebStream / SerializedFile</span></span><br><span class="line"><span class="comment">// 1. Profiler Memory → Take Sample</span></span><br><span class="line"><span class="comment">// 2. 查看 AssetBundle 名称</span></span><br><span class="line"><span class="comment">// 3. 判断是否存在泄露</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="7-3-资源冗余"><a href="#7-3-资源冗余" class="headerlink" title="7.3 资源冗余"></a>7.3 资源冗余</h3><h4 id="冗余来源"><a href="#冗余来源" class="headerlink" title="冗余来源"></a>冗余来源</h4><table>
+<thead>
+<tr>
+<th>来源</th>
+<th>解决方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>AssetBundle 打包问题</strong></td>
+<td>依赖打包，避免重复</td>
+</tr>
+<tr>
+<td><strong>资源实例化</strong></td>
+<td>预制多材质，避免运行时修改</td>
+</tr>
+</tbody></table>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ❌ 运行时修改 Material 属性</span></span><br><span class="line">material.color = hitColor;  <span class="comment">// 创建 instance Material</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ✅ 预制多个 Material</span></span><br><span class="line">Material normalMaterial;</span><br><span class="line">Material hitMaterial1;</span><br><span class="line">Material hitMaterial2;</span><br><span class="line"><span class="comment">// 根据情况替换</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="八、AssetBundle-打包优化"><a href="#八、AssetBundle-打包优化" class="headerlink" title="八、AssetBundle 打包优化"></a>八、AssetBundle 打包优化</h2><h3 id="8-1-打包-API"><a href="#8-1-打包-API" class="headerlink" title="8.1 打包 API"></a>8.1 打包 API</h3><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 唯一打包 API</span></span><br><span class="line">BuildPipeline.BuildAssetBundles(</span><br><span class="line">    outputPath,</span><br><span class="line">    builds,</span><br><span class="line">    assetBundleOptions,</span><br><span class="line">    targetPlatform</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-2-打包规则"><a href="#8-2-打包规则" class="headerlink" title="8.2 打包规则"></a>8.2 打包规则</h3><table>
+<thead>
+<tr>
+<th>规则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>abName</strong></td>
+<td>相同 abName 打入同一 Bundle</td>
+</tr>
+<tr>
+<td><strong>依赖关系</strong></td>
+<td>自动建立依赖，避免冗余</td>
+</tr>
+<tr>
+<td><strong>增量发布</strong></td>
+<td>自动跳过未变的 Bundle</td>
+</tr>
+<tr>
+<td><strong>Manifest</strong></td>
+<td>记录 Bundle 信息和依赖关系</td>
+</tr>
+</tbody></table>
+<h3 id="8-3-重要选项"><a href="#8-3-重要选项" class="headerlink" title="8.3 重要选项"></a>8.3 重要选项</h3><table>
+<thead>
+<tr>
+<th>选项</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>CompleteAssets</strong></td>
+<td>保证资源完备性</td>
+</tr>
+<tr>
+<td><strong>CollectDependencies</strong></td>
+<td>收集依赖项</td>
+</tr>
+<tr>
+<td><strong>DeterministicAssetBundle</strong></td>
+<td>维护固定 ID</td>
+</tr>
+<tr>
+<td><strong>DisableWriteTypeTree</strong></td>
+<td>减小 Bundle 大小</td>
+</tr>
+</tbody></table>
+<h3 id="8-4-Variant-参数"><a href="#8-4-Variant-参数" class="headerlink" title="8.4 Variant 参数"></a>8.4 Variant 参数</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Variant 用途:</span><br><span class="line">┌─────────────────────────────────────┐</span><br><span class="line">│  多分辨率支持                        │</span><br><span class="line">│  • 相同 abName + 不同 variant        │</span><br><span class="line">│  • 资源一一对应                      │</span><br><span class="line">│  • ID 相同，可相互替换               │</span><br><span class="line">│                                     │</span><br><span class="line">│  示例: 手机/平板 UI 分辨率适配       │</span><br><span class="line">└─────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-5-打包注意事项"><a href="#8-5-打包注意事项" class="headerlink" title="8.5 打包注意事项"></a>8.5 打包注意事项</h3><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>解决方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Prefab 不建立依赖</strong></td>
+<td>共享纹理需要单独设置 abName</td>
+</tr>
+<tr>
+<td><strong>Shader Stripping</strong></td>
+<td>手动模式，勾选相应 Mode</td>
+</tr>
+<tr>
+<td><strong>代码热更新</strong></td>
+<td>分离数据和逻辑，DLL 动态加载</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="九、资源加载优化"><a href="#九、资源加载优化" class="headerlink" title="九、资源加载优化"></a>九、资源加载优化</h2><h3 id="9-1-加载耗时分析"><a href="#9-1-加载耗时分析" class="headerlink" title="9.1 加载耗时分析"></a>9.1 加载耗时分析</h3><table>
+<thead>
+<tr>
+<th>资源类型</th>
+<th>主要耗时因素</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>纹理</strong></td>
+<td>分辨率、格式、Mipmap</td>
+</tr>
+<tr>
+<td><strong>网格</strong></td>
+<td>面片数、顶点属性</td>
+</tr>
+<tr>
+<td><strong>Shader</strong></td>
+<td>解析耗时（Keyword 数量）</td>
+</tr>
+<tr>
+<td><strong>动画</strong></td>
+<td>压缩格式</td>
+</tr>
+</tbody></table>
+<h3 id="9-2-纹理加载优化"><a href="#9-2-纹理加载优化" class="headerlink" title="9.2 纹理加载优化"></a>9.2 纹理加载优化</h3><h4 id="加载效率对比"><a href="#加载效率对比" class="headerlink" title="加载效率对比"></a>加载效率对比</h4><table>
+<thead>
+<tr>
+<th>格式</th>
+<th>加载效率</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>ETC1&#x2F;ETC2</strong></td>
+<td>最高</td>
+<td>Android 推荐</td>
+</tr>
+<tr>
+<td><strong>PVRTC 4BPP</strong></td>
+<td>最高</td>
+<td>iOS 推荐</td>
+</tr>
+<tr>
+<td><strong>RGBA16</strong></td>
+<td>很高</td>
+<td>折中方案</td>
+</tr>
+<tr>
+<td><strong>RGBA32</strong></td>
+<td>较低</td>
+<td>谨慎使用</td>
+</tr>
+</tbody></table>
+<h4 id="优化建议"><a href="#优化建议" class="headerlink" title="优化建议"></a>优化建议</h4><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1. 严格控制 RGBA32/ARGB32 使用</span></span><br><span class="line"><span class="comment">// 2. 优先使用硬件压缩格式</span></span><br><span class="line"><span class="comment">// 3. RGBA16 作为视觉效果折中</span></span><br><span class="line"><span class="comment">// 4. 检查 UI 纹理 Mipmap 是否关闭</span></span><br><span class="line"><span class="comment">// 5. 谨慎使用 ETC2（ES 2.0 设备会回退到 RGBA32）</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="9-3-网格加载优化"><a href="#9-3-网格加载优化" class="headerlink" title="9.3 网格加载优化"></a>9.3 网格加载优化</h3><h4 id="顶点属性影响"><a href="#顶点属性影响" class="headerlink" title="顶点属性影响"></a>顶点属性影响</h4><table>
+<thead>
+<tr>
+<th>顶点数</th>
+<th>加载耗时</th>
+<th>内存占用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&lt;5000</td>
+<td>低</td>
+<td>低</td>
+</tr>
+<tr>
+<td>5000-15000</td>
+<td>中</td>
+<td>中</td>
+</tr>
+<tr>
+<td>&gt;15000</td>
+<td>高</td>
+<td>高</td>
+</tr>
+</tbody></table>
+<h4 id="优化建议-1"><a href="#优化建议-1" class="headerlink" title="优化建议"></a>优化建议</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">网格优化清单:</span><br><span class="line">☐ 降低顶点和面片数量</span><br><span class="line">☐ 谨慎处理顶点属性</span><br><span class="line">☐ 关闭 Read/Write（不进行读写时）</span><br><span class="line">☐ 避免不同属性网格批处理</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-4-Shader-加载优化"><a href="#9-4-Shader-加载优化" class="headerlink" title="9.4 Shader 加载优化"></a>9.4 Shader 加载优化</h3><h4 id="Shader-解析瓶颈"><a href="#Shader-解析瓶颈" class="headerlink" title="Shader 解析瓶颈"></a>Shader 解析瓶颈</h4><table>
+<thead>
+<tr>
+<th>因素</th>
+<th>影响</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Keyword 数量</strong></td>
+<td>越多越慢</td>
+</tr>
+<tr>
+<td><strong>Fallback</strong></td>
+<td>增加解析开销</td>
+</tr>
+<tr>
+<td><strong>变体数量</strong></td>
+<td>影响加载时间</td>
+</tr>
+</tbody></table>
+<h4 id="Shader-优化方案"><a href="#Shader-优化方案" class="headerlink" title="Shader 优化方案"></a>Shader 优化方案</h4><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1. 使用 skip_variants 去除 Keyword</span></span><br><span class="line"><span class="comment">// 2. 去除不必要的 Fallback</span></span><br><span class="line"><span class="comment">// 3. WarmUp 预编译</span></span><br><span class="line">Shader.WarmupAllShaders();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 或使用 ShaderVariantCollection</span></span><br><span class="line">ShaderVariantCollection svc = <span class="keyword">new</span> ShaderVariantCollection();</span><br><span class="line">svc.Add(<span class="keyword">new</span> ShaderVariantCollection.ShaderVariant(</span><br><span class="line">    shader,</span><br><span class="line">    passType,</span><br><span class="line">    keywords</span><br><span class="line">));</span><br><span class="line">svc.WarmUp();</span><br></pre></td></tr></table></figure>
+
+<h4 id="Shader-打包策略"><a href="#Shader-打包策略" class="headerlink" title="Shader 打包策略"></a>Shader 打包策略</h4><table>
+<thead>
+<tr>
+<th>策略</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>独立 AB 包</strong></td>
+<td>所有 Shader 打包，预加载常驻</td>
+</tr>
+<tr>
+<td><strong>预加载</strong></td>
+<td>游戏启动时加载，避免运行时卡顿</td>
+</tr>
+<tr>
+<td><strong>剔除变体</strong></td>
+<td>只打包使用的变体</td>
+</tr>
+</tbody></table>
+<h3 id="9-5-动画加载优化"><a href="#9-5-动画加载优化" class="headerlink" title="9.5 动画加载优化"></a>9.5 动画加载优化</h3><h4 id="压缩格式对比"><a href="#压缩格式对比" class="headerlink" title="压缩格式对比"></a>压缩格式对比</h4><table>
+<thead>
+<tr>
+<th>格式</th>
+<th>加载效率</th>
+<th>视觉质量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Off</strong></td>
+<td>慢</td>
+<td>最优</td>
+</tr>
+<tr>
+<td><strong>Keyframe Reduction</strong></td>
+<td>中</td>
+<td>中</td>
+</tr>
+<tr>
+<td><strong>Optimal</strong></td>
+<td>快</td>
+<td>可能有损失</td>
+</tr>
+</tbody></table>
+<h4 id="优化建议-2"><a href="#优化建议-2" class="headerlink" title="优化建议"></a>优化建议</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">动画优化:</span><br><span class="line">• 推荐 Optimal 压缩模式</span><br><span class="line">• 检查视觉质量是否可接受</span><br><span class="line">• Humanoid 比 Generic 更小</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="十、Profiler-性能参数"><a href="#十、Profiler-性能参数" class="headerlink" title="十、Profiler 性能参数"></a>十、Profiler 性能参数</h2><h3 id="10-1-WaitForTargetFPS"><a href="#10-1-WaitForTargetFPS" class="headerlink" title="10.1 WaitForTargetFPS"></a>10.1 WaitForTargetFPS</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">WaitForTargetFPS 原理:</span><br><span class="line">┌─────────────────────────────────────┐</span><br><span class="line">│  设定目标帧率 (Application.targetFPS) │</span><br><span class="line">│  ↓                                  │</span><br><span class="line">│  上一帧 &lt; 目标帧率                   │</span><br><span class="line">│  ↓                                  │</span><br><span class="line">│  本帧等待，维持目标帧率              │</span><br><span class="line">└─────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>CPU 开销过低</strong></td>
+<td>等待目标帧率</td>
+</tr>
+<tr>
+<td><strong>CPU 开销过高</strong></td>
+<td>无法达到目标帧率</td>
+</tr>
+</tbody></table>
+<h3 id="10-2-Gfx-WaitForPresent-Graphics-PresentAndSync"><a href="#10-2-Gfx-WaitForPresent-Graphics-PresentAndSync" class="headerlink" title="10.2 Gfx.WaitForPresent &#x2F; Graphics.PresentAndSync"></a>10.2 Gfx.WaitForPresent &#x2F; Graphics.PresentAndSync</h3><h4 id="参数说明"><a href="#参数说明" class="headerlink" title="参数说明"></a>参数说明</h4><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>渲染模式</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Gfx.WaitForPresent</strong></td>
+<td>多线程渲染</td>
+<td>主线程等待渲染线程</td>
+</tr>
+<tr>
+<td><strong>Graphics.PresentAndSync</strong></td>
+<td>单线程渲染</td>
+<td>主线程 Present 等待</td>
+</tr>
+</tbody></table>
+<h4 id="CPU-占用高的原因"><a href="#CPU-占用高的原因" class="headerlink" title="CPU 占用高的原因"></a>CPU 占用高的原因</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">三种主要原因:</span><br><span class="line">┌─────────────────────────────────────┐</span><br><span class="line">│  1. CPU 开销低                       │</span><br><span class="line">│     → 等待 GPU 完成渲染或 VSync     │</span><br><span class="line">│                                     │</span><br><span class="line">│  2. CPU 开销高                       │</span><br><span class="line">│     → Present 错过 VSync            │</span><br><span class="line">│                                     │</span><br><span class="line">│  3. GPU 开销高                       │</span><br><span class="line">│     → 等待上一帧渲染完成            │</span><br><span class="line">└─────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h4 id="VSync-地铁比喻"><a href="#VSync-地铁比喻" class="headerlink" title="VSync 地铁比喻"></a>VSync 地铁比喻</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">VSync 就像地铁到站:</span><br><span class="line">┌─────────────────────────────────────┐</span><br><span class="line">│  地铁每 16.6ms (60fps) 一班          │</span><br><span class="line">│                                     │</span><br><span class="line">│  早到 → 等待时间短                   │</span><br><span class="line">│  晚到 → 等下一班 (错过 VSync)        │</span><br><span class="line">│                                     │</span><br><span class="line">│  CPU Present = 乘客上车             │</span><br><span class="line">└─────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h4 id="优化建议-3"><a href="#优化建议-3" class="headerlink" title="优化建议"></a>优化建议</h4><blockquote>
+<p><strong>重要</strong>：忽略 Gfx.WaitForPresent 和 Graphics.PresentAndSync 参数，优化其他一切可优化的地方！</p>
+</blockquote>
+<hr>
+<h2 id="十一、优化检查清单"><a href="#十一、优化检查清单" class="headerlink" title="十一、优化检查清单"></a>十一、优化检查清单</h2><h3 id="11-1-CPU-优化"><a href="#11-1-CPU-优化" class="headerlink" title="11.1 CPU 优化"></a>11.1 CPU 优化</h3><ul>
+<li><input disabled="" type="checkbox"> 降低 DrawCall</li>
+<li><input disabled="" type="checkbox"> 简化资源（三角形、纹理）</li>
+<li><input disabled="" type="checkbox"> NGUI 动静分离</li>
+<li><input disabled="" type="checkbox"> 减少 UIPanel 动态元素</li>
+<li><input disabled="" type="checkbox"> 优化 Instantiate</li>
+<li><input disabled="" type="checkbox"> 减少序列化字段</li>
+<li><input disabled="" type="checkbox"> 控制 Log 输出</li>
+</ul>
+<h3 id="11-2-内存优化"><a href="#11-2-内存优化" class="headerlink" title="11.2 内存优化"></a>11.2 内存优化</h3><ul>
+<li><input disabled="" type="checkbox"> 纹理使用硬件压缩格式</li>
+<li><input disabled="" type="checkbox"> 网格顶点属性优化</li>
+<li><input disabled="" type="checkbox"> 关闭 Read&#x2F;Write</li>
+<li><input disabled="" type="checkbox"> AssetBundle 依赖打包</li>
+<li><input disabled="" type="checkbox"> 使用 LoadFromFile</li>
+<li><input disabled="" type="checkbox"> 避免 Mono 堆内存分配</li>
+</ul>
+<h3 id="11-3-资源加载优化"><a href="#11-3-资源加载优化" class="headerlink" title="11.3 资源加载优化"></a>11.3 资源加载优化</h3><ul>
+<li><input disabled="" type="checkbox"> 使用 LZ4 压缩</li>
+<li><input disabled="" type="checkbox"> Shader 预加载常驻</li>
+<li><input disabled="" type="checkbox"> 动画使用 Optimal 压缩</li>
+<li><input disabled="" type="checkbox"> 异步加载资源</li>
+<li><input disabled="" type="checkbox"> 开启 Async Upload Pipeline</li>
+</ul>
+<hr>
+<h2 id="十二、参考资料"><a href="#十二、参考资料" class="headerlink" title="十二、参考资料"></a>十二、参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.uwa4d.com/archives/Index.html">UWA 优化百科向导</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.uwa4d.com/archives/allinone.html">UWA 性能优化大合集</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.uwa4d.com/archives/Simple_PA_General.html">如何看懂性能报告</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.uwa4d.com/archives/ABTheory.html">AssetBundle 管理机制</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.uwa4d.com/archives/HotFix.html">Android平台代码热更新</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/suifcd/article/details/50942686">WaitForTargetFPS 详解</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.uwa4d.com/archives/USparkle_iOS.html">Xcode 增量打包</a></li>
+</ul>
+<hr>
+<p><strong>转载请注明来源</strong>，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 <a href="mailto:&#49;&#52;&#x38;&#55;&#56;&#52;&#x32;&#x31;&#x31;&#48;&#x40;&#x71;&#x71;&#x2e;&#99;&#111;&#x6d;">&#49;&#52;&#x38;&#55;&#56;&#52;&#x32;&#x31;&#x31;&#48;&#x40;&#x71;&#x71;&#x2e;&#99;&#111;&#x6d;</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><div class="post-copyright__author_img"><img class="post-copyright__author_img_front" src="/img/logo.png"></div><div class="post-copyright__author_name">xinzhuzi</div><div class="post-copyright__author_desc">记录技术与生活</div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">新诸子</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Unity/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>Unity<span class="tagsPageCount">66</span></span></a><a class="post-meta__tags" href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>性能优化<span class="tagsPageCount">16</span></span></a><a class="post-meta__tags" href="/tags/AssetBundle/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>AssetBundle<span class="tagsPageCount">5</span></span></a><a class="post-meta__tags" href="/tags/Profiler/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>Profiler<span class="tagsPageCount">7</span></span></a><a class="post-meta__tags" href="/tags/CPU%E4%BC%98%E5%8C%96/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>CPU优化<span class="tagsPageCount">2</span></span></a><a class="post-meta__tags" href="/tags/%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>内存优化<span class="tagsPageCount">4</span></span></a><a class="post-meta__tags" href="/tags/UWA/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>UWA<span class="tagsPageCount">3</span></span></a></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/05/08/Unity/2020-05-08-Unity%20UI%E4%BC%98%E5%8C%96/"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Unity UI 优化完全手册：NGUI 与 UGUI 的性能提升之道</div></div></a></div><div class="next-post pull-right"><a href="/2020/05/08/Unity/2020-05-08-Unity%20%E4%BB%A3%E7%A0%81%E7%BC%96%E5%86%99%E8%A7%84%E8%8C%83/"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Unity 代码编写规范与优化标准 - 从代码质量到性能调优</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><div class="top-group"><div class="sayhi" id="sayhi" onclick="sco.changeWittyWord()"></div></div></div><div class="avatar"><img alt="头像" src="/img/logo.png"></div><div class="description"></div><div class="bottom-group"><span class="left"><div class="name">xinzhuzi</div><div class="desc">只有迎风，风筝才能飞得更高。</div></span><div class="social-icons is-center"></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude fas fa-bars"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%F0%9F%9B%A0%EF%B8%8F-Unity-UWA-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%B7%A5%E5%85%B7%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97%EF%BC%9A%E4%BB%8E%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A%E5%88%B0%E5%AE%9E%E6%88%98%E4%BC%98%E5%8C%96"><span class="toc-text">🛠️ Unity UWA 性能优化工具完全指南：从分析报告到实战优化</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81UWA-%E5%B7%A5%E5%85%B7%E6%A6%82%E8%A7%88"><span class="toc-text">一、UWA 工具概览</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%AE%98%E6%96%B9%E8%B5%84%E6%BA%90"><span class="toc-text">1.1 官方资源</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%80%A7%E8%83%BD%E6%8A%A5%E5%91%8A%E7%A4%BA%E4%BE%8B"><span class="toc-text">1.2 性能报告示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%80%A7%E8%83%BD%E6%80%BB%E7%BB%93%E6%8C%87%E6%A0%87"><span class="toc-text">二、性能总结指标</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%A0%B8%E5%BF%83%E6%80%A7%E8%83%BD%E6%8C%87%E6%A0%87"><span class="toc-text">2.1 核心性能指标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Mono-vs-IL2CPP-%E5%86%85%E5%AD%98%E7%89%B9%E6%80%A7"><span class="toc-text">2.2 Mono vs IL2CPP 内存特性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E9%AB%98-CPU-%E5%8D%A0%E7%94%A8%E5%87%BD%E6%95%B0"><span class="toc-text">三、高 CPU 占用函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%B8%B2%E6%9F%93%E7%9B%B8%E5%85%B3"><span class="toc-text">3.1 渲染相关</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-UI-%E7%9B%B8%E5%85%B3"><span class="toc-text">3.2 UI 相关</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%8A%A8%E7%94%BB%E7%9B%B8%E5%85%B3"><span class="toc-text">3.3 动画相关</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%8A%A0%E8%BD%BD%E7%9B%B8%E5%85%B3"><span class="toc-text">3.4 加载相关</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E7%89%A9%E7%90%86%E7%9B%B8%E5%85%B3"><span class="toc-text">3.5 物理相关</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-%E5%85%B6%E4%BB%96%E9%AB%98%E9%A2%91%E5%87%BD%E6%95%B0"><span class="toc-text">3.6 其他高频函数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E9%AB%98%E5%A0%86%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%87%BD%E6%95%B0"><span class="toc-text">四、高堆内存分配函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%A0%B8%E5%BF%83%E9%97%AE%E9%A2%98%E5%87%BD%E6%95%B0"><span class="toc-text">4.1 核心问题函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E5%A0%86%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%8E%9F%E5%88%99"><span class="toc-text">4.2 堆内存分配原则</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81CPU-%E4%BC%98%E5%8C%96%E7%AF%87"><span class="toc-text">五、CPU 优化篇</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%B8%B2%E6%9F%93%E6%A8%A1%E5%9D%97%E4%BC%98%E5%8C%96"><span class="toc-text">5.1 渲染模块优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Draw-Call-%E4%BC%98%E5%8C%96"><span class="toc-text">Draw Call 优化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B5%84%E6%BA%90%E7%AE%80%E5%8C%96"><span class="toc-text">资源简化</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-UI-%E6%A8%A1%E5%9D%97%E4%BC%98%E5%8C%96"><span class="toc-text">5.2 UI 模块优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#UIPanel-LateUpdate-%E4%BC%98%E5%8C%96"><span class="toc-text">UIPanel.LateUpdate 优化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#UI-%E4%BC%98%E5%8C%96%E6%8A%80%E5%B7%A7"><span class="toc-text">UI 优化技巧</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E5%8A%A0%E8%BD%BD%E6%A8%A1%E5%9D%97%E4%BC%98%E5%8C%96"><span class="toc-text">5.3 加载模块优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF%E5%8D%B8%E8%BD%BD%E5%BC%80%E9%94%80"><span class="toc-text">场景卸载开销</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF%E5%8A%A0%E8%BD%BD%E5%BC%80%E9%94%80"><span class="toc-text">场景加载开销</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96%E5%BB%BA%E8%AE%AE"><span class="toc-text">加载优化建议</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E4%BB%A3%E7%A0%81%E6%95%88%E7%8E%87%E4%BC%98%E5%8C%96"><span class="toc-text">5.4 代码效率优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%A7%E8%83%BD%E2%80%9D%E4%BA%8C%E5%85%AB%E5%8E%9F%E5%88%99%E2%80%9D"><span class="toc-text">性能”二八原则”</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96%E7%AF%87"><span class="toc-text">六、内存优化篇</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%86%85%E5%AD%98%E5%88%86%E7%B1%BB"><span class="toc-text">6.1 内存分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E7%BA%B9%E7%90%86%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96"><span class="toc-text">6.2 纹理内存优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%B9%E7%90%86%E6%A0%BC%E5%BC%8F%E9%80%89%E6%8B%A9"><span class="toc-text">纹理格式选择</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%B9%E7%90%86%E4%BC%98%E5%8C%96%E7%AD%96%E7%95%A5"><span class="toc-text">纹理优化策略</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E7%BD%91%E6%A0%BC%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96"><span class="toc-text">6.3 网格内存优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A1%B6%E7%82%B9%E5%B1%9E%E6%80%A7%E4%BC%98%E5%8C%96"><span class="toc-text">顶点属性优化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BD%91%E6%A0%BC%E4%BC%98%E5%8C%96%E5%BB%BA%E8%AE%AE"><span class="toc-text">网格优化建议</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E5%BC%95%E6%93%8E%E6%A8%A1%E5%9D%97%E5%86%85%E5%AD%98"><span class="toc-text">6.4 引擎模块内存</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#WebStream-%E5%92%8C-SerializedFile"><span class="toc-text">WebStream 和 SerializedFile</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-5-%E6%89%98%E7%AE%A1%E5%A0%86%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96"><span class="toc-text">6.5 托管堆内存优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BB%E8%A6%81%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E6%9D%A5%E6%BA%90"><span class="toc-text">主要内存分配来源</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Mono-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E8%AE%A1%E7%AE%97"><span class="toc-text">Mono 内存分配计算</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-6-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%90%88%E7%90%86%E9%A2%9D%E5%BA%A6"><span class="toc-text">6.6 内存分配合理额度</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2%E6%A3%80%E6%B5%8B"><span class="toc-text">七、内存泄露检测</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2%E8%AF%AF%E5%8C%BA"><span class="toc-text">7.1 内存泄露误区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E8%B5%84%E6%BA%90%E6%B3%84%E9%9C%B2%E6%A3%80%E6%B5%8B"><span class="toc-text">7.2 资源泄露检测</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%B8%80%EF%BC%9A%E8%B5%84%E6%BA%90%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-text">方法一：资源生命周期</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%BA%8C%EF%BC%9A%E5%9C%BA%E6%99%AF%E6%AF%94%E8%BE%83"><span class="toc-text">方法二：场景比较</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%B8%89%EF%BC%9AProfiler-%E6%A3%80%E6%B5%8B"><span class="toc-text">方法三：Profiler 检测</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E8%B5%84%E6%BA%90%E5%86%97%E4%BD%99"><span class="toc-text">7.3 资源冗余</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%97%E4%BD%99%E6%9D%A5%E6%BA%90"><span class="toc-text">冗余来源</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81AssetBundle-%E6%89%93%E5%8C%85%E4%BC%98%E5%8C%96"><span class="toc-text">八、AssetBundle 打包优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E6%89%93%E5%8C%85-API"><span class="toc-text">8.1 打包 API</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E6%89%93%E5%8C%85%E8%A7%84%E5%88%99"><span class="toc-text">8.2 打包规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E9%87%8D%E8%A6%81%E9%80%89%E9%A1%B9"><span class="toc-text">8.3 重要选项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-Variant-%E5%8F%82%E6%95%B0"><span class="toc-text">8.4 Variant 参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-5-%E6%89%93%E5%8C%85%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">8.5 打包注意事项</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E8%B5%84%E6%BA%90%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96"><span class="toc-text">九、资源加载优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E5%8A%A0%E8%BD%BD%E8%80%97%E6%97%B6%E5%88%86%E6%9E%90"><span class="toc-text">9.1 加载耗时分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E7%BA%B9%E7%90%86%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96"><span class="toc-text">9.2 纹理加载优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8A%A0%E8%BD%BD%E6%95%88%E7%8E%87%E5%AF%B9%E6%AF%94"><span class="toc-text">加载效率对比</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E5%BB%BA%E8%AE%AE"><span class="toc-text">优化建议</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-%E7%BD%91%E6%A0%BC%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96"><span class="toc-text">9.3 网格加载优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A1%B6%E7%82%B9%E5%B1%9E%E6%80%A7%E5%BD%B1%E5%93%8D"><span class="toc-text">顶点属性影响</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E5%BB%BA%E8%AE%AE-1"><span class="toc-text">优化建议</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-4-Shader-%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96"><span class="toc-text">9.4 Shader 加载优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Shader-%E8%A7%A3%E6%9E%90%E7%93%B6%E9%A2%88"><span class="toc-text">Shader 解析瓶颈</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Shader-%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88"><span class="toc-text">Shader 优化方案</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Shader-%E6%89%93%E5%8C%85%E7%AD%96%E7%95%A5"><span class="toc-text">Shader 打包策略</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-5-%E5%8A%A8%E7%94%BB%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96"><span class="toc-text">9.5 动画加载优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8E%8B%E7%BC%A9%E6%A0%BC%E5%BC%8F%E5%AF%B9%E6%AF%94"><span class="toc-text">压缩格式对比</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E5%BB%BA%E8%AE%AE-2"><span class="toc-text">优化建议</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81Profiler-%E6%80%A7%E8%83%BD%E5%8F%82%E6%95%B0"><span class="toc-text">十、Profiler 性能参数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-WaitForTargetFPS"><span class="toc-text">10.1 WaitForTargetFPS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-Gfx-WaitForPresent-Graphics-PresentAndSync"><span class="toc-text">10.2 Gfx.WaitForPresent &#x2F; Graphics.PresentAndSync</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E"><span class="toc-text">参数说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CPU-%E5%8D%A0%E7%94%A8%E9%AB%98%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="toc-text">CPU 占用高的原因</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#VSync-%E5%9C%B0%E9%93%81%E6%AF%94%E5%96%BB"><span class="toc-text">VSync 地铁比喻</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E5%BB%BA%E8%AE%AE-3"><span class="toc-text">优化建议</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E4%BC%98%E5%8C%96%E6%A3%80%E6%9F%A5%E6%B8%85%E5%8D%95"><span class="toc-text">十一、优化检查清单</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-CPU-%E4%BC%98%E5%8C%96"><span class="toc-text">11.1 CPU 优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-2-%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96"><span class="toc-text">11.2 内存优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-3-%E8%B5%84%E6%BA%90%E5%8A%A0%E8%BD%BD%E4%BC%98%E5%8C%96"><span class="toc-text">11.3 资源加载优化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text">十二、参考资料</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude fas fa-map"></i><span>最近发布</span></div><div class="aside-list"><a class="aside-list-item" href="/2026/01/14/test-auto-deploy/" title="🤖 GitHub Actions 自动部署测试"><div class="content"><span class="title" href="/2026/01/14/test-auto-deploy/" title="🤖 GitHub Actions 自动部署测试">🤖 GitHub Actions 自动部署测试</span><span class="categories" href="/2026/01/14/test-auto-deploy/">测试文章</span></div></a><a class="aside-list-item" href="/2025/01/13/%E6%B8%B8%E6%88%8F/2025-01-13-%E6%B8%B8%E6%88%8F%E5%8D%B3%E5%B0%86%E5%8F%91%E5%94%AE/" title="游戏即将发售"><div class="content"><span class="title" href="/2025/01/13/%E6%B8%B8%E6%88%8F/2025-01-13-%E6%B8%B8%E6%88%8F%E5%8D%B3%E5%B0%86%E5%8F%91%E5%94%AE/" title="游戏即将发售">游戏即将发售</span><span class="categories" href="/2025/01/13/%E6%B8%B8%E6%88%8F/2025-01-13-%E6%B8%B8%E6%88%8F%E5%8D%B3%E5%B0%86%E5%8F%91%E5%94%AE/">千年志*道劫</span></div></a><a class="aside-list-item" href="/2025/01/13/%E5%B0%8F%E8%AF%B4/2025-01-13-%E9%81%93%E5%8A%AB/" title="道劫"><div class="content"><span class="title" href="/2025/01/13/%E5%B0%8F%E8%AF%B4/2025-01-13-%E9%81%93%E5%8A%AB/" title="道劫">道劫</span><span class="categories" href="/2025/01/13/%E5%B0%8F%E8%AF%B4/2025-01-13-%E9%81%93%E5%8A%AB/">千年志*道劫</span></div></a><a class="aside-list-item" href="/2020/05/08/AI%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/2020-05-08-AI,%E8%A1%8C%E4%B8%BA%E6%A0%91,FSM/" title="Unity 游戏 AI 核心术语详解 - 行为树与状态机"><div class="content"><span class="title" href="/2020/05/08/AI%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/2020-05-08-AI,%E8%A1%8C%E4%B8%BA%E6%A0%91,FSM/" title="Unity 游戏 AI 核心术语详解 - 行为树与状态机">Unity 游戏 AI 核心术语详解 - 行为树与状态机</span><span class="categories" href="/2020/05/08/AI%E6%B8%B8%E6%88%8F%E8%AE%BE%E8%AE%A1/2020-05-08-AI,%E8%A1%8C%E4%B8%BA%E6%A0%91,FSM/">技术文章</span></div></a><a class="aside-list-item" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Lua%20%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" title="Lua 源码阅读完全指南 - 从虚拟机到垃圾回收"><div class="content"><span class="title" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Lua%20%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" title="Lua 源码阅读完全指南 - 从虚拟机到垃圾回收">Lua 源码阅读完全指南 - 从虚拟机到垃圾回收</span><span class="categories" href="/2020/05/08/Lua%E7%83%AD%E6%9B%B4%E6%96%B0/2020-05-08-Lua%20%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">技术文章</span></div></a></div></div></div></div></main><footer id="footer"><!-- +footerDeals()  // 社交图标已移至footerBar中--><div id="st-footer"></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2023 - 2026 By<a class="footer-bar-link" href="/" title="xinzhuzi">xinzhuzi</a></div><div class="beian-group"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://hexo.io/" title="框架：Hexo">框架：Hexo</a><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com/everfu/hexo-theme-solitude" title="主题：Solitude">主题：Solitude</a></div></div><div class="footer-bar-right"><div id="footer_social_icons"><a class="social_icon social-QQ群" target="_blank" rel="noopener" href="https://qm.qq.com/cgi-bin/qm/qr?k=xxx&amp;jump_from=webapi" title="QQ群"><i class="solitude  fab fa-qq"></i></a><a class="social_icon social-QQ" href="tencent://message/?uin=1487842110&amp;Site=&amp;Menu=yes" title="QQ"><i class="solitude  fab fa-qq"></i></a><div class="wechat-wrapper"><a class="social_icon social-WeChat" href="javascript:void(0);" title="WeChat"><i class="solitude  fab fa-weixin"></i></a><img class="wechat-qr-code" src="/images/wechat-qr.jpg" alt="微信二维码"></div><a class="social_icon social-Bilibili" target="_blank" rel="noopener" href="https://space.bilibili.com/451180511" title="Bilibili"><i class="solitude  fab fa-bilibili"></i></a><a class="social_icon social-Douyin" target="_blank" rel="noopener" href="https://v.douyin.com/yN7I0458nxU/" title="Douyin"><i class="solitude  fab fa-tiktok"></i></a></div></div></div></div><div class="comment-barrage needEndHide"></div></footer></div><div><!-- Critical scripts loaded synchronously--><script src="/js/utils.js?v=3.0.21"></script><script src="/js/main.js?v=3.0.21"></script><!-- Non-critical scripts loaded asynchronously--><script async src="/js/third_party/waterfall.min.js?v=3.0.21"></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><!-- Feature-specific scripts loaded asynchronously--><script defer src="/js/tw_cn.js?v=3.0.21"></script><!-- UI enhancement scripts--><script defer src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><!-- Music player scripts--><!-- Cover color processing scripts--><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+utils.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+</script><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!-- Search functionality--><!-- Right menu functionality--><script src="/js/custom_category.js"></script><div class="js-pjax"></div></div><!-- pjax--><script>let pjax = null;
+
+function initPjax() {
+    if (typeof Pjax === 'undefined') {
+        console.warn('Pjax is not loaded yet, retrying...');
+        setTimeout(initPjax, 100);
+        return;
+    }
+
+    pjax = new Pjax({
+        elements: 'a:not([target="_blank"])',
+        selectors: ["title","#body-wrap","#site-config","meta[name=\"description\"]",".js-pjax","meta[property^=\"og:\"]","#config-diff",".rs_show",".rs_hide"],
+        cacheBust: false,
+        analytics: false,
+        scrollRestoration: false
+    })
+
+    // 将 pjax 实例挂载到全局
+    window.pjax = pjax;
+
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+        const newScript = document.createElement('script')
+        const content = item.text || item.textContent || item.innerHTML || ""
+        Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+        newScript.appendChild(document.createTextNode(content))
+        item.parentNode.replaceChild(newScript, item)
+    })
+
+    document.addEventListener('pjax:complete', () => {
+        window.refreshFn()
+
+        document.querySelectorAll('script[data-pjax]').forEach(item => {
+            const newScript = document.createElement('script')
+            const content = item.text || item.textContent || item.innerHTML || ""
+            Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+            newScript.appendChild(document.createTextNode(content))
+            item.parentNode.replaceChild(newScript, item)
+        })
+
+        GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+    })
+
+    document.addEventListener('pjax:error', (e) => {
+        if (e.request.status === 404) {
+            pjax.loadUrl('/404.html')
+        }
+    })
+}
+
+// 初始化 Pjax
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPjax);
+} else {
+    initPjax();
+}</script><!-- google adsense--></body></html>
+        <script>
+            const posts = ["2026/01/14/test-auto-deploy/","2025/01/13/游戏/2025-01-13-游戏即将发售/","2025/01/13/小说/2025-01-13-道劫/","2020/05/08/AI游戏设计/2020-05-08-AI,行为树,FSM/","2020/05/08/Lua热更新/2020-05-08-Lua 源码阅读/","2020/05/08/Lua热更新/2020-05-08-Tolua C# Lua 交互/","2020/05/08/Lua热更新/2020-05-08-ToLua C-C++ C# 交互/","2020/05/08/Lua热更新/2020-05-08-Tolua C-C++ Lua 交互/","2020/05/08/Lua热更新/2020-05-08-Tolua 介绍/","2020/05/08/其他/2020-05-08-MD 格式/","2020/05/08/其他/2020-05-08-诗词随笔/","2020/05/08/其他/2020-05-08-共产党宣言/","2020/05/08/工具使用/2020-05-08-Hexo 的简单操作/","2020/05/08/工具使用/2020-05-08-好用的插件软件/","2020/05/08/工具使用/2020-05-08-破解 TeamViewer/","2020/05/08/工具使用/2020-05-08-博客搭建以及编写/","2020/05/08/工具使用/2020-05-08-科学上网/","2020/05/08/网络编程/2020-05-08-BestHttp介绍1/","2020/05/08/网络编程/2020-05-08-BestHttp介绍2/","2020/05/08/网络编程/2020-05-08-Protobuf-Lua-Python/","2020/05/08/网络编程/2020-05-08-Net-net/","2020/05/08/网络编程/2020-05-08-帧同步/","2020/05/08/网络编程/2020-05-08-网络部分/","2020/05/08/Unity/2020-05-08-1 Canvas/","2020/05/08/Unity/2020-05-08-1 介绍UnityEditor/","2020/05/08/Unity/2020-05-08-10 Screenshot/","2020/05/08/Unity/2020-05-08-11 Handles/","2020/05/08/Unity/2020-05-08-12 Gizmos/","2020/05/08/Unity/2020-05-08-13 简单Node/","2020/05/08/Unity/2020-05-08-14 FlatNode/","2020/05/08/Unity/2020-05-08-14 NodeEditor/","2020/05/08/Unity/2020-05-08-3 数据交互/","2020/05/08/Unity/2020-05-08-2 UnityEditor常用属性/","2020/05/08/Unity/2020-05-08-4 EditorGUI/","2020/05/08/Unity/2020-05-08-5 EditorWindow/","2020/05/08/Unity/2020-05-08-6 MenuItem/","2020/05/08/Unity/2020-05-08-7 CustomEditor_PropertyDrawer/","2020/05/08/Unity/2020-05-08-8 EditorGUILayout/","2020/05/08/Unity/2020-05-08-9 EditorWindow案例1/","2020/05/08/Unity/2020-05-08-AssetBundle 全解析/","2020/05/08/Unity/2020-05-08-AssetBundle 打包策略/","2020/05/08/Unity/2020-05-08-Unity  浮点数精度/","2020/05/08/Unity/2020-05-08-Unity AndroidStudio工具检测优化/","2020/05/08/Unity/2020-05-08-Unity CPU优化/","2020/05/08/Unity/2020-05-08-Unity GPU优化/","2020/05/08/Unity/2020-05-08-Unity GC/","2020/05/08/Unity/2020-05-08-Unity NGUI-UGUI优化/","2020/05/08/Unity/2020-05-08-Unity NGUI/","2020/05/08/Unity/2020-05-08-Unity OverDraw优化/","2020/05/08/Unity/2020-05-08-Unity UGUI优化/","2020/05/08/Unity/2020-05-08-Unity UI优化/","2020/05/08/Unity/2020-05-08-Unity UWA工具检测优化/","2020/05/08/Unity/2020-05-08-Unity 代码编写规范/","2020/05/08/Unity/2020-05-08-Unity Xcode工具检测优化/","2020/05/08/Unity/2020-05-08-Unity 优化 1/","2020/05/08/Unity/2020-05-08-Unity 优化总纲/","2020/05/08/Unity/2020-05-08-Unity 内存优化/","2020/05/08/Unity/2020-05-08-Unity 网络优化/","2020/05/08/Unity/2020-05-08-Unity 渲染优化/","2020/05/08/Unity/2020-05-08-Unity 资源优化/","2020/05/08/Unity/2020-05-08-Unity-OcclusionCulling-Occlusion Culling/","2020/05/08/Unity/2020-05-08-Unity-Optimize-XCode/","2020/05/08/Unity/2020-05-08-Unity3D工程阅读方法,直捣黄龙篇/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第一章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第七章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第三章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第九章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第二章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第五章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第八章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第六章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十一章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十二章/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第十章/","2020/05/08/Unity/2020-05-08-Unity后工业化流程/","2020/05/08/Unity/2020-05-08-Unity后工业化流程1/","2020/05/08/Unity/2020-05-08-UnityUI-UGUI&TMP 系列第四章/","2020/05/08/Unity/2020-05-08-Unity工具UPR/","2020/05/08/Unity/2020-05-08-Unity工具UWA/","2020/05/08/Unity/2020-05-08-Unity后工业化流程2/","2020/05/08/Unity/2020-05-08-Unity工具使用/","2020/05/08/Unity/2020-05-08-Unity编辑器中Stats窗口详解/","2020/05/08/Unity/2020-05-08-各个平台的路径/","2020/05/08/Unity/2020-05-08-图片与字符串互转/","2020/05/08/Unity/2020-05-08-在 Unity 下使用 VSCode 配置/","2020/05/08/Unity/2020-05-08-渲染基本流程/","2020/05/08/编程基础/2020-05-08-C#与C-C++的交互/","2020/05/08/编程基础/2020-05-08-C-C++指针详解/","2020/05/08/编程基础/2020-05-08-C基础案例/","2020/05/08/编程基础/2020-05-08-学习算法大纲/","2020/05/08/编程基础/2020-05-08-正则表达式/","2020/05/08/编程基础/2020-05-08-程序员需要掌握的英文单词/"];
+            function toRandomPost() {
+                const randomPost = posts[Math.floor(Math.random() * posts.length)];
+                pjax.loadUrl(GLOBAL_CONFIG.root + randomPost);
+            }
+        </script>

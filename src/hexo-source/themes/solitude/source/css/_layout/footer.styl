@@ -1,0 +1,390 @@
+#footer
+  position relative
+  background linear-gradient(180deg, var(--efu-card-bg-none) 0, var(--efu-card-bg) 25%)
+  display flex
+  flex-direction column
+  margin-top .5rem
+
+  +maxWidth768()
+    margin-top 0
+
+  &:before
+    position absolute
+    width 100%
+    height 100%
+    content ''
+    z-index -1
+
+
+  if hexo-config('post.footer.enable')
+    div#st-footer-bar
+      display flex
+      flex-direction column
+      align-items center
+      margin-top 16px
+
+      a.footer-bar-link
+        padding 4px 16px
+        background var(--efu-secondbg)
+        border-radius 20px
+        margin-top 8px
+        font-size 14px
+        cursor pointer
+        border var(--style-border-always)
+
+        &:hover
+          background var(--efu-main)
+          color var(--efu-white)
+          transform scale(1.1)
+          border-color var(--efu-main)
+
+      .footer-logo
+        font-size 24px
+
+      .footer-bar-description
+        color var(--efu-secondtext)
+        font-weight 700
+        padding: 0 0.5rem
+        text-align: center
+
+  #footer_deal
+    justify-content center
+    display flex
+    padding-top 2rem
+    align-items center
+
+    +maxWidth768()
+      flex-wrap wrap
+      flex-direction row
+
+    i
+      font-size .8rem
+      line-height .9rem
+      height .9rem
+
+    .deal_link
+      display flex
+      margin 1rem 27px
+      color var(--efu-card-bg)
+      border-radius 3rem
+      width 32px
+      height 32px
+      background var(--efu-fontcolor)
+      justify-content center
+      align-items center
+      transition .3s
+
+      &:hover
+        color var(--efu-white)
+        background var(--efu-main)
+        transform scale(1.1)
+
+    .footer_mini_logo
+      width 50px
+      height 50px
+      margin 0 1rem
+      cursor pointer
+      transition cubic-bezier(0, 0, 0, 1.29) .5s
+      user-select none
+      border-radius 50px
+      overflow hidden
+      +maxWidth768()
+        display none
+
+      &:hover
+        transform scale(1.2)
+
+  #st-footer
+    display flex
+    flex-direction row
+    width 100%
+    max-width 1200px
+    justify-content space-evenly
+    flex-wrap wrap
+    margin 1rem auto 3rem
+    padding 0 1rem
+
+    .footer-links
+      display flex
+      flex-direction column
+
+    .footer-item
+      font-size .8rem
+      line-height .8rem
+      color var(--efu-fontcolor)
+      margin-right auto
+      overflow hidden
+      white-space nowrap
+      text-overflow ellipsis
+      max-width 120px
+      cursor pointer
+      padding 8px
+      border-radius 12px
+
+      &:hover
+        color var(--efu-theme)
+        background var(--efu-main-op-light)
+
+        [data-theme=dark] &
+          background var(--efu-theme-op)
+
+    .footer-group
+      min-width 120px
+
+    .footer-title-group
+      display flex
+      align-items center
+      margin .5rem 0 .7rem 8px
+
+      a
+        margin-left 8px
+
+        &:hover i
+          color var(--efu-main)
+          opacity 1
+
+      i
+        line-height 1
+        color var(--efu-secondtext)
+        transition .3s
+        font-size 16px
+        opacity .6
+
+      .footer-title
+        margin 0
+
+    .footer-title
+      color var(--efu-secondtext)
+      font-size .8rem
+      margin-left 8px
+
+    .random-friends-btn
+      display flex
+      margin-left 8px
+
+  /#footer-bar
+    color var(--efu-fontcolor)
+    margin-top 1rem
+    background var(--efu-secondbg)
+    display flex
+    overflow hidden
+    z-index 1
+    transition .3s
+    border-top var(--style-border-always)
+
+    .footer-bar-links
+      display flex
+      justify-content space-between
+      max-width 1400px
+      width 100%
+      margin 0 auto
+      flex-wrap wrap
+      align-items center
+      line-height 1
+      padding 1rem 1.5rem
+      +maxWidth768()
+        justify-content center
+        gap 8px
+
+    .footer-bar-left
+      display flex
+      gap 8px
+      flex-direction column
+      +maxWidth768()
+        align-items center
+
+      .copyright
+        display flex
+        flex-direction row
+        align-items center
+
+        .footer-bar-link
+          margin 0
+      .beian-group
+        display flex
+        gap 8px
+        flex-wrap wrap
+        +maxWidth768()
+          justify-content center
+
+        a:hover
+          background 0 0
+          color var(--efu-main)
+
+        .beian-icon
+          height 14px
+          min-width 13px
+          min-height 14px
+
+        .footer-bar-link
+          font-size 12px
+          font-weight 400
+          color var(--efu-secondtext)
+          padding 0
+          margin 0
+          display flex
+          align-items center
+          gap 4px
+        
+
+    .footer-bar-link
+      margin 0 4px
+      color var(--efu-fontcolor)
+      font-size .8rem
+      font-weight 700
+      white-space nowrap
+      padding 8px
+      border-radius 32px
+      line-height 1
+      display flex
+      align-items center
+      gap .5rem
+
+      .author-avatar
+        width 20px
+        border-radius 20px
+        min-height 20px
+        min-width 20px
+
+      i
+        font-size 14px
+      
+      img
+        height 20px
+
+      &:hover
+        color var(--efu-theme)
+        background var(--efu-main-op)
+
+    .footer-bar-right
+      display flex
+      flex-direction row
+      flex-wrap wrap
+      align-items center
+
+    > div > div.footer-bar-left > span
+      margin-right 1rem
+
+  #footer_social_icons
+    display flex
+    gap 12px
+    align-items center
+    margin-right 16px
+
+    .social_icon
+      display flex
+      justify-content center
+      align-items center
+      width 32px
+      height 32px
+      border-radius 50%
+      transition all 0.3s ease
+      text-decoration none
+      font-size 16px
+
+      i
+        font-size 16px
+
+      &:hover
+        transform scale(1.15)
+        box-shadow 0 4px 8px rgba(0, 0, 0, 0.2)
+
+    // QQ群 - 腾讯蓝
+    .social-QQ群
+      background #12B7F5
+      color #FFFFFF
+
+      &:hover
+        background #0EA6E0
+
+    // QQ个人 - 白色（带边框）
+    .social-QQ
+      background #FFFFFF
+      color #000000
+      border 1px solid #E5E7EB
+
+      &:hover
+        background #F3F4F6
+        border-color #12B7F5
+
+    // 微信 - 微信绿
+    .social-WeChat
+      background #07C160
+      color #FFFFFF
+
+      &:hover
+        background #06AD56
+
+    // 微信二维码悬停效果
+    .wechat-wrapper
+      position relative
+      display inline-block
+
+      .wechat-qr-code
+        position absolute
+        bottom 45px
+        left 50%
+        transform translateX(-50%) scale(0)
+        width 200px
+        height 200px
+        object-fit contain
+        background #FFFFFF
+        border-radius 8px
+        padding 8px
+        box-shadow 0 4px 20px rgba(0, 0, 0, 0.15)
+        opacity 0
+        visibility hidden
+        transition all 0.3s cubic-bezier(0.4, 0, 0.2, 1)
+        z-index 1000
+        pointer-events none
+
+        &::after
+          content ''
+          position absolute
+          bottom -6px
+          left 50%
+          transform translateX(-50%)
+          border-left 6px solid transparent
+          border-right 6px solid transparent
+          border-top 6px solid #FFFFFF
+
+      &:hover .wechat-qr-code
+        opacity 1
+        visibility visible
+        transform translateX(-50%) scale(1)
+
+    +maxWidth768()
+      .wechat-wrapper .wechat-qr-code
+        width 150px
+        height 150px
+        bottom 40px
+
+
+    // 哔哩哔哩 - 粉红色
+    .social-Bilibili
+      background #FB7299
+      color #FFFFFF
+
+      &:hover
+        background #E45C82
+
+    // 抖音 - 黑色
+    .social-Douyin
+      background #000000
+      color #FFFFFF
+
+      &:hover
+        background #1F2937
+
+    +maxWidth768()
+      margin-right 0
+      margin-top 8px
+      gap 8px
+
+      .social_icon
+        width 28px
+        height 28px
+        font-size 14px
+
+        i
+          font-size 14px

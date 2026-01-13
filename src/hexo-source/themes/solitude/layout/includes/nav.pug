@@ -1,0 +1,46 @@
+//- ===========================================
+//- 导航栏模板
+//- ===========================================
+
+include ./mixins/common.pug
+
+//- 网站名称渲染mixin
+mixin siteName()
+  +link('/', '', { 
+    id: 'site-name', 
+    title: _p('nav.site_name_title') 
+  })
+    case theme.site.name.class
+      when 'i_class'
+        +icon(theme.site.name.custom, '', { style: 'font-size: 16px;' })
+      when 'img'
+        img(src=theme.site.name.custom, alt=config.title)
+      when 'text'
+        span.title= theme.site.name.custom
+    +icon('fas fa-home')
+
+nav#nav.show
+    #nav-group
+        #blog_name
+            //- 分组导航按钮
+            if theme.nav.group && Object.keys(theme.nav.group).length > 0
+              .back-home-button(tabindex="-1")
+                +icon('fas fa-bars-progress', '', { class: 'back-home-button-icon' })
+                include ./widgets/nav/group
+            
+            //- 网站名称
+            +siteName()
+        
+        //- 页面名称遮罩
+        #page-name-mask
+            #page-name
+                a#page-name-text(onclick="sco.toTop()")= title || config.title
+        
+        //- 主菜单
+        #menus
+            include ./widgets/nav/menu.pug
+        
+        //- 导航左右区域
+        #nav-left
+        #nav-right
+            include ./widgets/nav/right.pug
