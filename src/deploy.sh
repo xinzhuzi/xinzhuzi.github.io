@@ -109,9 +109,9 @@ for item in *; do
     fi
 done
 
-# 删除隐藏文件（除了.git和.gitignore）
+# 删除隐藏文件（除了.git、.gitignore 和 .github）
 for item in .*; do
-    if [ "$item" = "." ] || [ "$item" = ".." ] || [ "$item" = ".git" ] || [ "$item" = ".gitignore" ]; then
+    if [ "$item" = "." ] || [ "$item" = ".." ] || [ "$item" = ".git" ] || [ "$item" = ".gitignore" ] || [ "$item" = ".github" ]; then
         continue
     fi
     if [ -e "$item" ]; then
