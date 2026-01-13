@@ -90,7 +90,7 @@ echo ""
 echo -e "${YELLOW}🗑️  清理旧的静态文件（保留src）${NC}"
 
 # 定义要保留的目录
-KEEP=("src" ".git" ".github" ".gitignore" "README.md" "CNAME" "LICENSE")
+KEEP=("src" ".git" ".github" ".nojekyll" ".gitignore" "README.md" "CNAME" "LICENSE")
 
 # 删除文件和目录（保留指定的）
 for item in *; do
@@ -109,9 +109,9 @@ for item in *; do
     fi
 done
 
-# 删除隐藏文件（除了.git、.gitignore 和 .github）
+# 删除隐藏文件（除了.git、.gitignore、.github 和 .nojekyll）
 for item in .*; do
-    if [ "$item" = "." ] || [ "$item" = ".." ] || [ "$item" = ".git" ] || [ "$item" = ".gitignore" ] || [ "$item" = ".github" ]; then
+    if [ "$item" = "." ] || [ "$item" = ".." ] || [ "$item" = ".git" ] || [ "$item" = ".gitignore" ] || [ "$item" = ".github" ] || [ "$item" = ".nojekyll" ]; then
         continue
     fi
     if [ -e "$item" ]; then
