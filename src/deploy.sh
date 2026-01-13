@@ -90,7 +90,7 @@ echo ""
 echo -e "${YELLOW}🗑️  清理旧的静态文件（保留src）${NC}"
 
 # 定义要保留的目录
-KEEP=("src" ".git" ".gitignore" "README.md" "CNAME" "LICENSE")
+KEEP=("src" ".git" ".github" ".gitignore" "README.md" "CNAME" "LICENSE")
 
 # 删除文件和目录（保留指定的）
 for item in *; do

@@ -1,0 +1,71 @@
+name: Hexo Blog Auto Deploy
+
+# 触发条件：推送到 master 分支时自动执行
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 检出代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          submodules: true  # 如果有子模块
+
+      # 2. 设置 Node.js 环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3. 缓存依赖以加速构建
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: src/hexo-source/node_modules
+          key: ${{ runner.os }}-hexo-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-hexo-
+
+      # 4. 安装 Hexo CLI 和依赖
+      - name: Install dependencies
+        run: |
+          npm install -g hexo-cli
+          cd src/hexo-source
+          npm install
+
+      # 5. 生成静态文件
+      - name: Generate static files
+        run: |
+          cd src/hexo-source
+          hexo clean
+          hexo generate
+
+      # 6. 复制生成的文件到根目录
+      - name: Copy generated files
+        run: |
+          # 清理旧的静态文件（保留 src 和 .git）
+          find . -maxdepth 1 -type f -name "*.html" -delete
+          find . -maxdepth 1 -type d ! -name ".*" ! -name "src" ! -name "." -exec rm -rf {} + 2>/dev/null || true
+
+          # 复制新生成的静态文件
+          cp -r src/hexo-source/public/* ./
+
+      # 7. 部署到 GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          publish_branch: master
+          force_orphan: false
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'Auto deploy blog ${{ github.event.head_commit.message }}'
